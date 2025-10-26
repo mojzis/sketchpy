@@ -175,8 +175,8 @@
         </ul>
 
         <div class="hint">
-            <strong>✨ Autocomplete:</strong> Type <code>can.</code> to see all Canvas methods with their parameters!
-            Press <strong>Tab</strong> or <strong>Enter</strong> to accept. <code>Ctrl+Space</code> for manual suggestions.
+            <strong>✨ Autocomplete:</strong> Type <code>can.</code> to see Canvas methods!
+            Press <strong>Tab</strong> or <strong>Enter</strong> to insert working example code with all parameters. Then customize the values!
         </div>
 
         <h3>Steps:</h3>
@@ -305,68 +305,68 @@ can</textarea>
         const API_DEFINITIONS = window.API_DEFINITIONS = (function() {
             const api = {};
 
-            // Canvas methods showing default parameter values
+            // Canvas methods with working example code
             api['can'] = [
                 {
                     label: "circle",
                     type: "method",
-                    apply: "circle(x, y, radius, fill=None, outline=None)",
+                    apply: "circle(100, 100, 50, fill=Color.RED)",
                     detail: "(x, y, radius, fill=None, outline=None)",
                     info: "Draw a circle at position (x, y) with given radius"
                 },
                 {
                     label: "rect",
                     type: "method",
-                    apply: "rect(x, y, width, height, fill=None, outline=None)",
+                    apply: "rect(100, 100, 200, 150, fill=Color.BLUE)",
                     detail: "(x, y, width, height, fill=None, outline=None)",
                     info: "Draw a rectangle"
                 },
                 {
                     label: "ellipse",
                     type: "method",
-                    apply: "ellipse(x, y, width, height, fill=None, outline=None)",
+                    apply: "ellipse(200, 150, 100, 60, fill=Color.GREEN)",
                     detail: "(x, y, width, height, fill=None, outline=None)",
                     info: "Draw an ellipse"
                 },
                 {
                     label: "line",
                     type: "method",
-                    apply: "line(x1, y1, x2, y2, color=None, width=1)",
+                    apply: "line(50, 50, 200, 200, color=Color.BLACK, width=2)",
                     detail: "(x1, y1, x2, y2, color=None, width=1)",
                     info: "Draw a line between two points"
                 },
                 {
                     label: "polygon",
                     type: "method",
-                    apply: "polygon(points, fill=None, outline=None)",
+                    apply: "polygon([(100, 100), (200, 100), (150, 200)], fill=Color.PURPLE)",
                     detail: "(points, fill=None, outline=None)",
                     info: "Draw a polygon from a list of points"
                 },
                 {
                     label: "text",
                     type: "method",
-                    apply: "text(x, y, text, font_size=12, color=None)",
+                    apply: "text(100, 100, \"Hello!\", font_size=24, color=Color.BLACK)",
                     detail: "(x, y, text, font_size=12, color=None)",
                     info: "Draw text at position (x, y)"
                 },
                 {
                     label: "rounded_rect",
                     type: "method",
-                    apply: "rounded_rect(x, y, width, height, radius, fill=None, outline=None)",
+                    apply: "rounded_rect(100, 100, 200, 150, 15, fill=Color.ORANGE)",
                     detail: "(x, y, width, height, radius, fill=None, outline=None)",
                     info: "Draw a rectangle with rounded corners"
                 },
                 {
                     label: "grid",
                     type: "method",
-                    apply: "grid(spacing=50, color='#E8E8E8', show_coords=False)",
+                    apply: "grid(spacing=50, show_coords=True)",
                     detail: "(spacing=50, color='#E8E8E8', show_coords=False)",
                     info: "Draw a coordinate grid with optional labels"
                 },
                 {
                     label: "show_palette",
                     type: "method",
-                    apply: "show_palette(palette_class)",
+                    apply: "show_palette(CreativeGardenPalette)",
                     detail: "(palette_class, columns=4, rect_width=120, rect_height=40, padding=10)",
                     info: "Display all colors from a palette class"
                 },
@@ -435,12 +435,12 @@ can</textarea>
             return api;
         })();
 
-        // General keywords (classes)
+        // General keywords (classes) with working examples
         const generalKeywords = [
             {
                 label: "Canvas",
                 type: "class",
-                apply: "Canvas(width, height)",
+                apply: "Canvas(800, 600)",
                 detail: "(width, height)",
                 info: "Create a new drawing canvas"
             },
