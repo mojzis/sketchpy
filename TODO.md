@@ -14,8 +14,9 @@
 - gradients ?
 
 ## meta stuff
-- claude skills
-- ideas interchange with claude
+- claude skills 🚧
+ - testing ?
+- ideas interchange with claude.ai 🚧
 
 
 ## NTH

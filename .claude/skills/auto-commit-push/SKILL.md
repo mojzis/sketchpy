@@ -61,6 +61,17 @@ with configurable spacing and optional labels.
 - ✅ "Update grid() to support custom label formatting"
 - ✅ "Add optional axis labels to coordinate grid"
 
+## Handling Documentation Updates
+
+When git diff shows changes to PROJECT_STATE.md or DECISIONS.md alongside code changes:
+- Focus the commit message on the PRIMARY change (the code/feature)
+- Don't mention the documentation updates in the message
+- The docs are supporting artifacts, not the main change
+
+When ONLY documentation files changed:
+- Create a commit message like: "docs: update project state and decisions"
+- List the key updates made
+
 ## Instructions
 
 When invoked, use the Task tool to launch a general-purpose agent that will handle the complete commit and push workflow:

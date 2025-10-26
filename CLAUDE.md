@@ -253,38 +253,19 @@ Pre-built educational shapes demonstrate composition:
 
 ## Claude Code Skills
 
-This project includes custom skills that automate common development workflows.
+This project includes custom skills that automate common development workflows. Skills are located in `.claude/skills/`.
 
-### Auto-Commit-Push Skill
+### Available Skills
 
-**Location**: `.claude/skills/auto-commit-push/`
+**auto-commit-push**
+- Automatically creates commits and pushes after completing work
+- Triggered when: feature complete, bug fixed, tests passing, refactoring done
+- Can also manually request: "commit and push these changes"
 
-**Purpose**: Automatically creates concise commits and pushes to remote after completing meaningful chunks of work.
-
-**When Claude Uses This**:
-Claude will automatically invoke this skill when you:
-- Complete a feature or sub-feature
-- Fix a bug
-- Finish a refactoring
-- Get tests passing
-- Complete any logical unit of work
-
-**What It Does**:
-1. Reviews changes via `git status` and `git diff`
-2. Analyzes recent commits to match the project's commit message style
-3. Creates a concise, descriptive commit message
-4. Stages relevant files
-5. Commits with the generated message
-6. Pushes to the remote repository
-
-**Manual Invocation**:
-You can also explicitly ask: "commit and push these changes" or "create a commit for this work"
-
-**Safety Features**:
-- Won't commit if there are no changes
-- Won't push if not on a trackable branch
-- Respects `.gitignore` patterns
-- Shows confirmation of what was committed
+**project-documentation-tracker**
+- Maintains PROJECT_STATE.md (implementation status, architecture) and DECISIONS.md (decision rationale, trade-offs)
+- Triggered when: completing tasks, making architectural decisions, finishing features
+- Can also manually request: "update project documentation"
 
 ## Project Structure Notes
 
