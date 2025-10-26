@@ -71,6 +71,68 @@ Add dependencies: `pyyaml` for YAML parsing, `markdown` for Markdown-to-HTML con
 
 ---
 
+## Alpine.js for Reactive UI Framework (2025-10-26)
+
+**Status**: Accepted
+
+**Context**
+After implementing the YAML-based lesson structure (Phase 0) and building a multi-lesson generation system (Phase 1), needed a way to add client-side interactivity for lesson switching, dynamic content loading, and UI state management. The application needs reactive UI without heavy framework overhead, and must work well with server-rendered HTML.
+
+**Decision**
+Use Alpine.js v3 for client-side state management and reactive UI. Load from CDN, integrate with minimal wrapper (`appState()` function in `/static/js/app.js`), and inject lesson data via template variables (`window.CURRENT_LESSON`, `window.ALL_LESSONS`).
+
+**Rationale**
+- Extremely lightweight (~15KB gzipped) compared to React/Vue
+- No build step required - works directly in browser
+- Perfect for progressive enhancement of server-rendered HTML
+- Declarative syntax similar to Vue.js (familiar to many developers)
+- Minimal learning curve for simple use cases
+- Works well with Jinja2-rendered templates
+- Can start minimal and grow functionality incrementally
+
+**Trade-offs**
+- **Pros**:
+  - Tiny bundle size, fast load time
+  - No webpack/build configuration needed
+  - Simple `x-data`, `x-show`, `x-bind` directives easy to understand
+  - Can enhance existing HTML without rewriting
+  - CDN delivery with good caching
+  - Active development and community
+
+- **Cons**:
+  - Less powerful than React/Vue for complex apps
+  - No component system (but not needed for this use case)
+  - Smaller ecosystem than major frameworks
+  - Limited TypeScript support
+  - Performance may degrade with very large DOM trees (not our use case)
+
+**Alternatives Considered**
+
+1. **React**
+   - Why rejected: Requires build step, much larger bundle size (~45KB), overkill for our use case, would require rewriting server-rendered HTML
+
+2. **Vue.js**
+   - Why rejected: Larger than Alpine (~33KB for runtime), requires more setup, progressive enhancement less natural
+
+3. **Vanilla JavaScript**
+   - Why rejected: Would need to manually implement reactivity, state management, and DOM updates - reinventing the wheel
+
+4. **Svelte**
+   - Why rejected: Requires build step and compilation, not suitable for CDN delivery, overkill for simple interactivity
+
+5. **Petite-Vue**
+   - Why rejected: While lightweight like Alpine, Alpine has better documentation and larger community
+
+6. **htmx**
+   - Why rejected: Great for server-driven interactions but doesn't provide client-side state management we need for lesson switching
+
+**Related Decisions**
+- YAML + Markdown lesson structure (provides the data Alpine will manage)
+- Multi-lesson build system (generates the HTML Alpine enhances)
+- Future: Lesson selector UI (Phase 2 - will use Alpine directives)
+
+---
+
 ## CodeMirror 6 Keymap Precedence for Custom Shortcuts (2025-10-26)
 
 **Status**: Accepted

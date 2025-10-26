@@ -3,6 +3,10 @@
 
 import re
 import logging
+import yaml
+import markdown
+import json
+import shutil
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
@@ -76,6 +80,102 @@ def process_shapes_code(shapes_path: Path) -> str:
     return processed_code.strip()
 
 
+class LessonLoader:
+    """Load and process lesson content from YAML and Markdown."""
+
+    def __init__(self, project_root: Path):
+        self.project_root = project_root
+        self.lessons_dir = project_root / 'lessons'
+        self.md = markdown.Markdown(extensions=['fenced_code', 'tables'])
+
+    def load_lessons_config(self):
+        """Load lessons.yaml"""
+        yaml_path = self.lessons_dir / 'lessons.yaml'
+        with open(yaml_path, 'r') as f:
+            return yaml.safe_load(f)
+
+    def load_lesson_content(self, lesson_id: str):
+        """Load lesson markdown, starter code, and optional help."""
+        lesson_dir = self.lessons_dir / lesson_id
+
+        content = {}
+
+        # Required files
+        content['instructions_html'] = self.md.convert(
+            (lesson_dir / 'lesson.md').read_text()
+        )
+        content['starter_code'] = (lesson_dir / 'starter.py').read_text()
+
+        # Optional files
+        help_file = lesson_dir / 'help.md'
+        if help_file.exists():
+            content['help_html'] = self.md.convert(help_file.read_text())
+        else:
+            content['help_html'] = '<p>No additional help available.</p>'
+
+        return content
+
+
+def build_lessons(project_root: Path, shapes_code: str):
+    """Build individual lesson pages."""
+    loader = LessonLoader(project_root)
+    lessons_config = loader.load_lessons_config()
+
+    templates_dir = project_root / 'templates'
+    output_dir = project_root / 'output'
+
+    # Setup Jinja2 environment
+    env = Environment(loader=FileSystemLoader(templates_dir))
+
+    # Build each lesson
+    all_lessons = []
+    for lesson_meta in lessons_config['lessons']:
+        lesson_id = lesson_meta['id']
+        logger.info(f"  Building lesson: {lesson_id}")
+
+        # Load lesson content
+        content = loader.load_lesson_content(lesson_id)
+
+        # Merge metadata and content
+        lesson_data = {**lesson_meta, **content}
+        all_lessons.append(lesson_data)
+
+        # Render lesson page
+        template = env.get_template('lesson.html.jinja')
+        html = template.render(
+            lesson=lesson_data,
+            all_lessons=lessons_config['lessons'],
+            shapes_code=shapes_code
+        )
+
+        # Write output
+        lesson_path = output_dir / 'lessons' / f"{lesson_id}.html"
+        lesson_path.parent.mkdir(parents=True, exist_ok=True)
+        lesson_path.write_text(html)
+        logger.info(f"    → lessons/{lesson_id}.html ({len(html)} bytes)")
+
+    # Write lessons.json for client-side use
+    lessons_json_path = output_dir / 'static' / 'data' / 'lessons.json'
+    lessons_json_path.parent.mkdir(parents=True, exist_ok=True)
+    lessons_json_path.write_text(json.dumps(all_lessons, indent=2))
+    logger.info(f"  → static/data/lessons.json")
+
+    # Copy static files (js, css, etc.) to output
+    static_src = project_root / 'static'
+    static_dest = output_dir / 'static'
+    if static_src.exists():
+        # Copy static files, but skip the data directory (we just created it)
+        for item in static_src.iterdir():
+            if item.name != 'data':
+                dest = static_dest / item.name
+                if item.is_dir():
+                    shutil.copytree(item, dest, dirs_exist_ok=True)
+                else:
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(item, dest)
+        logger.info(f"  → static/ files copied")
+
+
 def main():
     """Generate index.html from template."""
     # Setup paths
@@ -83,7 +183,6 @@ def main():
     shapes_path = project_root / 'sketchpy' / 'shapes.py'
     templates_dir = project_root / 'templates'
     output_dir = project_root / 'output'
-    output_file = output_dir / 'index.html'
 
     # Ensure output directory exists
     output_dir.mkdir(exist_ok=True)
@@ -93,15 +192,18 @@ def main():
 
     # Setup Jinja2 environment
     env = Environment(loader=FileSystemLoader(templates_dir))
+
+    # Build old single-page version (keep as fallback)
     template = env.get_template('index.html.jinja')
-
-    # Render template
     html_content = template.render(shapes_code=shapes_code)
-
-    # Write output
+    output_file = output_dir / 'index.html'
     output_file.write_text(html_content)
-
     logger.info(f"🔨 Built output/index.html ({len(html_content)} bytes)")
+
+    # Build new multi-lesson version
+    build_lessons(project_root, shapes_code)
+
+    logger.info("✅ Build complete!")
 
 
 if __name__ == '__main__':

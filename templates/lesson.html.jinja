@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Python Graphics Learning</title>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- CodeMirror 6 styles are included in the library -->
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Left panel - instructions */
+        .instructions {
+            width: 350px;
+            background: #f5f5f5;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 2px solid #ddd;
+        }
+
+        .instructions h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .instructions h3 {
+            color: #555;
+            margin: 15px 0 10px 0;
+            font-size: 16px;
+        }
+
+        .instructions code {
+            background: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+            line-height: 1.6;
+        }
+
+        .instructions li {
+            margin: 8px 0;
+        }
+
+        .hint {
+            background: #fff3cd;
+            padding: 10px;
+            border-left: 4px solid #ffc107;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        /* Right panel - editor + canvas */
+        .workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .toolbar {
+            background: #2d2d2d;
+            padding: 10px 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .toolbar button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .toolbar button:hover {
+            background: #45a049;
+        }
+
+        .toolbar button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .editor-container {
+            flex: 1;
+            position: relative;
+            background: #282a36;
+        }
+
+        .editor-container .cm-editor {
+            height: 100%;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .editor-container .cm-scroller {
+            overflow: auto;
+        }
+
+        #editor {
+            display: none;
+        }
+
+        .canvas-container {
+            height: 400px;
+            background: white;
+            border-top: 2px solid #ddd;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .canvas-container svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .error {
+            background: #f44336;
+            color: white;
+            padding: 10px 20px;
+            display: none;
+        }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div x-data="appState()" class="app-container">
+    <div class="instructions">
+        {{ lesson.instructions_html | safe }}
+    </div>
+
+    <div class="workspace">
+        <div class="toolbar">
+            <button id="runBtn" onclick="runCode()">▶ Run Code</button>
+            <button onclick="clearCanvas()">🗑️ Clear</button>
+            <span id="status" style="color: #aaa; margin-left: 10px;"></span>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="editor-container">
+            <textarea id="editor" spellcheck="false">{{ lesson.starter_code }}</textarea>
+        </div>
+
+        <div class="canvas-container" id="canvas">
+            <div style="color: #999;">Your drawing will appear here. Click "Run Code" ▶</div>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">Loading Python... ⏳</div>
+
+    <!-- Import Map for CodeMirror 6 -->
+    <script type="importmap">
+    {
+        "imports": {
+            "@codemirror/": "https://esm.sh/@codemirror/",
+            "@lezer/": "https://esm.sh/@lezer/",
+            "codemirror": "https://esm.sh/codemirror@6.0.1"
+        }
+    }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+    <script type="module">
+        import { EditorView, basicSetup } from "codemirror";
+        import { python } from "@codemirror/lang-python";
+        import { oneDark } from "@codemirror/theme-one-dark";
+        import { autocompletion } from "@codemirror/autocomplete";
+        import { keymap } from "@codemirror/view";
+        import { Prec } from "@codemirror/state";
+
+        let pyodide;
+        let editor;
+
+        // Expose pyodide to window for test access (will be set after initialization)
+        Object.defineProperty(window, 'pyodide', {
+            get() { return pyodide; },
+            set(value) { pyodide = value; }
+        });
+
+        // ===== API DEFINITIONS WITH DEFAULT PARAMETERS =====
+        const API_DEFINITIONS = window.API_DEFINITIONS = (function() {
+            const api = {};
+
+            // Canvas methods with working example code (includes parameter names)
+            api['can'] = [
+                {
+                    label: "circle",
+                    type: "method",
+                    apply: "circle(x=100, y=100, radius=50, fill=Color.RED)",
+                    detail: "(x, y, radius, fill=None, outline=None)",
+                    info: "Draw a circle at position (x, y) with given radius"
+                },
+                {
+                    label: "rect",
+                    type: "method",
+                    apply: "rect(x=100, y=100, width=200, height=150, fill=Color.BLUE)",
+                    detail: "(x, y, width, height, fill=None, outline=None)",
+                    info: "Draw a rectangle"
+                },
+                {
+                    label: "ellipse",
+                    type: "method",
+                    apply: "ellipse(x=200, y=150, width=100, height=60, fill=Color.GREEN)",
+                    detail: "(x, y, width, height, fill=None, outline=None)",
+                    info: "Draw an ellipse"
+                },
+                {
+                    label: "line",
+                    type: "method",
+                    apply: "line(x1=50, y1=50, x2=200, y2=200, color=Color.BLACK, width=2)",
+                    detail: "(x1, y1, x2, y2, color=None, width=1)",
+                    info: "Draw a line between two points"
+                },
+                {
+                    label: "polygon",
+                    type: "method",
+                    apply: "polygon(points=[(100, 100), (200, 100), (150, 200)], fill=Color.PURPLE)",
+                    detail: "(points, fill=None, outline=None)",
+                    info: "Draw a polygon from a list of points"
+                },
+                {
+                    label: "text",
+                    type: "method",
+                    apply: "text(x=100, y=100, text=\"Hello!\", font_size=24, color=Color.BLACK)",
+                    detail: "(x, y, text, font_size=12, color=None)",
+                    info: "Draw text at position (x, y)"
+                },
+                {
+                    label: "rounded_rect",
+                    type: "method",
+                    apply: "rounded_rect(x=100, y=100, width=200, height=150, radius=15, fill=Color.ORANGE)",
+                    detail: "(x, y, width, height, radius, fill=None, outline=None)",
+                    info: "Draw a rectangle with rounded corners"
+                },
+                {
+                    label: "grid",
+                    type: "method",
+                    apply: "grid(spacing=50, show_coords=True)",
+                    detail: "(spacing=50, color='#E8E8E8', show_coords=False)",
+                    info: "Draw a coordinate grid with optional labels"
+                },
+                {
+                    label: "show_palette",
+                    type: "method",
+                    apply: "show_palette(palette_class=CreativeGardenPalette)",
+                    detail: "(palette_class, columns=4, rect_width=120, rect_height=40, padding=10)",
+                    info: "Display all colors from a palette class"
+                },
+                { label: "to_svg", type: "method", apply: "to_svg()", detail: "()", info: "Return SVG string representation" },
+                { label: "clear", type: "method", apply: "clear()", detail: "()", info: "Clear the canvas" }
+            ];
+
+            // Extract palette colors dynamically from embedded Python code
+            const shapesCode = `{{ shapes_code }}`;
+            let match;
+
+            // Extract Color class constants
+            const colorRegex = /class\s+Color:[\s\S]*?(?=\n(?:class|def|\Z))/;
+            const colorMatch = shapesCode.match(colorRegex);
+            if (colorMatch) {
+                const colorCode = colorMatch[0];
+                const colorConstRegex = /(\w+)\s*=\s*["']#[0-9A-Fa-f]{6}["']/g;
+                const colors = [];
+                while ((match = colorConstRegex.exec(colorCode)) !== null) {
+                    colors.push({
+                        label: match[1],
+                        type: "constant",
+                        apply: match[1],
+                        info: `Color constant`
+                    });
+                }
+                api['Color'] = colors;
+            }
+
+            // Extract CreativeGardenPalette constants
+            const gardenRegex = /class\s+CreativeGardenPalette:[\s\S]*?(?=\n(?:class|def|\Z))/;
+            const gardenMatch = shapesCode.match(gardenRegex);
+            if (gardenMatch) {
+                const gardenCode = gardenMatch[0];
+                const gardenConstRegex = /(\w+)\s*=\s*["']#[0-9A-Fa-f]{6}["']/g;
+                const gardenColors = [];
+                while ((match = gardenConstRegex.exec(gardenCode)) !== null) {
+                    gardenColors.push({
+                        label: match[1],
+                        type: "constant",
+                        apply: match[1],
+                        info: `CreativeGardenPalette color`
+                    });
+                }
+                api['CreativeGardenPalette'] = gardenColors;
+            }
+
+            // Extract CalmOasisPalette constants
+            const oasisRegex = /class\s+CalmOasisPalette:[\s\S]*?(?=\n(?:class|def|\Z))/;
+            const oasisMatch = shapesCode.match(oasisRegex);
+            if (oasisMatch) {
+                const oasisCode = oasisMatch[0];
+                const oasisConstRegex = /(\w+)\s*=\s*["']#[0-9A-Fa-f]{6}["']/g;
+                const oasisColors = [];
+                while ((match = oasisConstRegex.exec(oasisCode)) !== null) {
+                    oasisColors.push({
+                        label: match[1],
+                        type: "constant",
+                        apply: match[1],
+                        info: `CalmOasisPalette color`
+                    });
+                }
+                api['CalmOasisPalette'] = oasisColors;
+            }
+
+            return api;
+        })();
+
+        // General keywords (classes) with working examples
+        const generalKeywords = [
+            {
+                label: "Canvas",
+                type: "class",
+                apply: "Canvas(width=800, height=600)",
+                detail: "(width, height)",
+                info: "Create a new drawing canvas"
+            },
+            {
+                label: "Color",
+                type: "class",
+                apply: "Color.",
+                info: "Basic color palette class"
+            },
+            {
+                label: "CreativeGardenPalette",
+                type: "class",
+                apply: "CreativeGardenPalette.",
+                info: "Pastel color palette for creative projects"
+            },
+            {
+                label: "CalmOasisPalette",
+                type: "class",
+                apply: "CalmOasisPalette.",
+                info: "Calming blues and greens color palette"
+            }
+        ];
+
+        // Smart completion function that detects object.method patterns (CodeMirror 6 API)
+        function smartPythonCompletions(context) {
+            // Get text before cursor
+            let before = context.matchBefore(/\w+\.\w*/);
+
+            // Check if we're typing after a dot (e.g., "can.circle")
+            if (before) {
+                let text = before.text;
+                let dotIndex = text.lastIndexOf('.');
+
+                if (dotIndex > 0) {
+                    // Extract object name and partial method
+                    let objectName = text.substring(0, dotIndex);
+                    let partialMethod = text.substring(dotIndex + 1);
+
+                    // Look up methods for this object
+                    if (API_DEFINITIONS[objectName]) {
+                        let methods = API_DEFINITIONS[objectName];
+
+                        return {
+                            from: before.from + dotIndex + 1,
+                            options: methods,
+                            validFor: /^\w*$/
+                        };
+                    }
+                }
+            }
+
+            // Otherwise, check for regular word completion
+            let word = context.matchBefore(/\w*/);
+            if (!word || (word.from == word.to && !context.explicit))
+                return null;
+
+            return {
+                from: word.from,
+                options: generalKeywords,
+                validFor: /^\w*$/
+            };
+        }
+
+        // Define functions before editor initialization so keymap can reference them
+        // Run user code
+        async function runCode() {
+            // Get code from CodeMirror 6 editor
+            const code = editor.state.doc.toString();
+            const errorDiv = document.getElementById('error');
+            const canvasDiv = document.getElementById('canvas');
+            const statusSpan = document.getElementById('status');
+
+            errorDiv.style.display = 'none';
+            statusSpan.textContent = 'Running...';
+
+            try {
+                // Run the code
+                await pyodide.runPythonAsync(code);
+
+                // Get the canvas result
+                const result = pyodide.globals.get('can');
+
+                if (result && typeof result.to_svg === 'function') {
+                    const svg = result.to_svg();
+                    canvasDiv.innerHTML = svg;
+                    statusSpan.textContent = 'Success! ✓';
+                    statusSpan.style.color = '#4CAF50';
+                } else {
+                    canvasDiv.innerHTML = '<div style="color: #999;">Make sure your code ends with "can" to display the canvas.</div>';
+                    statusSpan.textContent = '';
+                }
+            } catch (err) {
+                errorDiv.textContent = '❌ Error: ' + err.message;
+                errorDiv.style.display = 'block';
+                statusSpan.textContent = 'Error';
+                statusSpan.style.color = '#f44336';
+                console.error(err);
+            }
+        }
+
+        function clearCanvas() {
+            document.getElementById('canvas').innerHTML = '<div style="color: #999;">Canvas cleared. Click "Run Code" to draw.</div>';
+            document.getElementById('error').style.display = 'none';
+        }
+
+        // Make functions global for HTML onclick handlers and testing
+        window.runCode = runCode;
+        window.clearCanvas = clearCanvas;
+
+        // Get initial code from textarea
+        const initialCode = document.getElementById('editor').value;
+
+        // Initialize CodeMirror 6 editor
+        editor = new EditorView({
+            doc: initialCode,
+            extensions: [
+                basicSetup,
+                python(),
+                oneDark,
+
+                // Autocompletion with custom source
+                autocompletion({
+                    override: [smartPythonCompletions],
+                    defaultKeymap: true
+                }),
+
+                EditorView.lineWrapping,
+
+                // Add keyboard shortcuts with highest precedence (Mod-Enter = Cmd-Enter on Mac, Ctrl-Enter on Windows/Linux)
+                Prec.highest(keymap.of([
+                    {
+                        key: 'Mod-Enter',
+                        run: () => {
+                            runCode();
+                            return true;
+                        }
+                    }
+                ]))
+            ],
+            parent: document.querySelector('.editor-container')
+        });
+
+        // Hide the textarea since CodeMirror creates its own DOM
+        document.getElementById('editor').style.display = 'none';
+
+        // Initialize Pyodide
+        async function initPyodide() {
+            pyodide = await loadPyodide();
+
+            // Load the shapes library
+            await pyodide.runPythonAsync(`
+{{ shapes_code }}
+        `);
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('runBtn').disabled = false;
+            document.getElementById('status').textContent = 'Ready! ✓';
+
+            // Auto-run code on load
+            runCode();
+        }
+
+        // Initialize Pyodide (editor is already initialized above)
+        initPyodide();
+        document.getElementById('runBtn').disabled = true;
+    </script>
+
+    <!-- Alpine app state -->
+    <script src="/static/js/app.js"></script>
+
+    <!-- Inject lesson data -->
+    <script>
+        window.CURRENT_LESSON = {{ lesson | tojson }};
+        window.ALL_LESSONS = {{ all_lessons | tojson }};
+    </script>
+    </div>
+</body>
+
+</html>

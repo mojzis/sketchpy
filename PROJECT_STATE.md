@@ -47,12 +47,21 @@ Currently in active development with a functional web-based editor powered by Co
   - Structure: lessons.yaml + lesson.md + starter.py + help.md per lesson
   - All 25 tests still passing, no breaking changes to existing system
 
+- **Multi-Lesson Build System - Phase 1** (2025-10-26)
+  - Enhanced build.py with LessonLoader class for YAML/Markdown processing
+  - Created lesson.html.jinja template with Alpine.js integration
+  - Build generates both old (/) and new (/lessons/{id}.html) versions
+  - Static file copying (app.js) to output directory
+  - Generates lessons.json for client-side use
+  - Alpine.js v3 CDN integration for reactive UI foundation
+  - All 25 tests passing, old version unchanged
+
 ### In Progress
 
-- **Multi-Lesson Support - Phase 1** (Next)
-  - Integrate lesson structure with Alpine.js
-  - Update build process to read from lessons/
-  - See plans/alpine-phase-1.md
+- **Multi-Panel Alpine UI - Phase 2** (Next)
+  - Add lesson selector dropdown
+  - Implement dynamic lesson switching
+  - See plans/alpine-phase-2.md
 
 ### Planned
 
@@ -89,6 +98,11 @@ Currently in active development with a functional web-based editor powered by Co
 - **Rationale**: Enables multiple lessons, easier content authoring, separation of content from code
 - **Date**: 2025-10-26
 
+### Alpine.js for Reactive UI
+- **Decision**: Use Alpine.js v3 for client-side interactivity and state management
+- **Rationale**: Lightweight (~15KB), simple API, perfect for progressive enhancement, no build step needed
+- **Date**: 2025-10-26
+
 ## Code Patterns
 
 ### Jinja2 Template Code Embedding
@@ -105,6 +119,11 @@ Currently in active development with a functional web-based editor powered by Co
 - **Usage**: JavaScript regex extracts class constants from embedded Python code
 - **Example**: Dynamically builds Color/Palette options from shapes_code
 - **Rationale**: Single source of truth, autocomplete stays in sync with Python API
+
+### LessonLoader Pattern
+- **Usage**: Build-time class that loads and processes lesson content from YAML and Markdown
+- **Example**: `LessonLoader` in `scripts/build.py` with `load_lessons_config()` and `load_lesson_content()`
+- **Rationale**: Encapsulates lesson loading logic, supports optional help files, converts Markdown to HTML
 
 ## Known Constraints
 
@@ -147,11 +166,11 @@ Currently in active development with a functional web-based editor powered by Co
 
 ## Next Steps
 
-1. **Phase 1: Multi-Lesson Support with Alpine.js** (Immediate Priority)
-   - Update build process to read lessons from YAML/Markdown files
-   - Integrate Alpine.js for lesson selector UI
-   - Dynamic lesson loading and starter code injection
-   - See plans/alpine-phase-1.md for detailed steps
+1. **Phase 2: Multi-Panel Alpine UI** (Immediate Priority)
+   - Add lesson selector dropdown in UI
+   - Implement dynamic lesson switching without page reload
+   - Update Alpine state to manage current lesson
+   - See plans/alpine-phase-2.md for detailed steps
 
 2. **Implement gradient support**
    - Add linear and radial gradient methods to Canvas
