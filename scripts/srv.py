@@ -281,6 +281,8 @@ def main():
 
     # Change to project root directory first
     project_root = Path(__file__).parent.parent
+    kill_existing_server()
+
     os.chdir(project_root)
 
     # Daemonize if running in background

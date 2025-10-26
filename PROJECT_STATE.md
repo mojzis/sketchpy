@@ -1,6 +1,6 @@
 # Project State
 
-Last Updated: 2025-10-26 (Phase 2 Complete)
+Last Updated: 2025-10-26 (Server Auto-Restart Complete)
 
 ## Overview
 
@@ -31,14 +31,19 @@ Currently in active development with a functional web-based editor powered by Co
   - Test coverage via Playwright
 
 - **Test Suite** (2025-10-26)
-  - Build tests (syntax validation, code generation)
-  - Browser tests with Playwright (9 tests, all passing)
+  - Build tests (syntax validation, code generation, 8 tests)
+  - Browser tests with Playwright (9 tests)
+  - Autocomplete tests (8 tests)
+  - Server tests (2 tests): auto-restart and PID management
   - Keyboard shortcut test for Cmd/Ctrl+Enter functionality
+  - Total: 27 passing tests
 
 - **Development Server** (2025-10-26)
   - Background HTTPS server with auto-rebuild on file changes
   - Watches sketchpy/ and templates/ directories
   - Self-signed SSL certificates for Pyodide compatibility
+  - Automatic server restart: kills existing instance when run again
+  - Test coverage for server lifecycle and auto-restart functionality
 
 - **Lesson Content Structure - Phase 0** (2025-10-26)
   - Created lessons/ directory with YAML metadata and Markdown content

@@ -5,6 +5,73 @@ Each decision includes: Context, Decision, Rationale, Trade-offs, Alternatives C
 
 ---
 
+## Automatic Server Restart via kill_existing_server() (2025-10-26)
+
+**Status**: Accepted
+
+**Context**
+Development server (`srv.py`) runs in background mode by default (daemonized). When developers needed to restart the server (e.g., after changing server code, or to clear state), they had to manually kill the process using `kill $(cat logs/srv.pid)` before running `uv run srv` again. If they forgot to kill the old server first, they'd get "Address already in use" errors. This workflow was error-prone and added friction to development.
+
+**Decision**
+Implemented `kill_existing_server()` function that runs automatically at server startup. The function:
+1. Checks if PID file exists
+2. Reads PID and verifies process is running
+3. Sends SIGTERM for graceful shutdown, waits briefly
+4. Force kills with SIGKILL if process still exists
+5. Removes stale PID file
+6. Logs the restart action
+
+This makes restarting the server as simple as running `uv run srv` again - no manual process management required.
+
+**Rationale**
+- Reduces cognitive load: developers don't need to remember manual kill steps
+- Prevents "Address already in use" errors from forgetting to kill old server
+- Makes restart workflow consistent: same command to start and restart
+- Safer than relying on developers to manually manage PIDs
+- Handles edge cases (stale PID files, crashed processes, non-existent processes)
+- Improves developer experience with clear logging of restart actions
+
+**Trade-offs**
+- **Pros**:
+  - Simple workflow: `uv run srv` works whether server is running or not
+  - Prevents common "port in use" errors
+  - Self-healing: cleans up stale PID files automatically
+  - Clear logging when existing server is killed
+  - Safe implementation with proper error handling
+  - Testable behavior (test_server.py verifies it works)
+
+- **Cons**:
+  - Could accidentally kill a server you wanted to keep running (but PID file makes this explicit)
+  - Adds ~30 lines of code to srv.py
+  - Brief delay (0.5s) for graceful shutdown before starting new server
+
+**Alternatives Considered**
+
+1. **Require manual kill before restart**
+   - Why rejected: Error-prone, adds friction, easy to forget, results in confusing errors
+
+2. **Use a different port for each server instance**
+   - Why rejected: Breaks bookmarks/links, confusing which port is current, doesn't solve the underlying issue
+
+3. **Detect port in use and automatically choose next available port**
+   - Why rejected: Same issues as above - port changes are confusing, doesn't match user intent
+
+4. **Use a process manager (PM2, systemd)**
+   - Why rejected: Adds external dependency, overkill for development server, less portable across platforms
+
+5. **Check port availability and fail with helpful error message**
+   - Why rejected: Still requires manual intervention, doesn't reduce friction, just makes error clearer
+
+6. **Require explicit --force flag to kill existing server**
+   - Why rejected: Adds cognitive overhead (need to remember flag), default behavior should be convenient for development
+
+**Related Decisions**
+- Background server mode by default (already implemented)
+- PID file management for process tracking (already implemented)
+- Test coverage for server lifecycle (implemented alongside this change)
+
+---
+
 ## 2-Column Layout with Vertical Editor/Canvas Split (2025-10-26)
 
 **Status**: Accepted

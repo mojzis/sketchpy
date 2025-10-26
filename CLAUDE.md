@@ -71,6 +71,9 @@ uv run pytest tests/test_build.py
 # Run only browser tests (slower, uses real browser)
 uv run pytest tests/test_browser.py
 
+# Run only server tests
+uv run pytest tests/test_server.py
+
 # Run specific test
 uv run pytest tests/test_build.py::test_generated_python_syntax
 ```
@@ -93,8 +96,14 @@ uv run pytest tests/test_build.py::test_generated_python_syntax
 - Canvas renders SVG output correctly
 - Color class is available and functional
 - Canvas class is available and creates valid SVG
+- Uses Playwright to load the generated HTML in Chromium and verify it works end-to-end
 
-These tests use Playwright to load the generated HTML in Chromium and verify it works end-to-end.
+**Server Tests (`test_server.py`):**
+- Server automatically kills existing instance on restart
+- PID file is properly created and managed
+- Old server process is terminated when new one starts
+- New server process starts with different PID
+- Server cleanup works correctly
 
 ### Building and Running the Web Interface
 
@@ -109,10 +118,12 @@ uv run srv
 # ✓ Server started in background (PID: 12345)
 #   Access: https://localhost:8000/
 #   Logs: tail -f logs/srv.log
+#   Restart: uv run srv (auto-kills existing server)
 #   Stop: kill $(cat logs/srv.pid)
 ```
 
 The `srv` command runs in **background mode by default**, freeing up your terminal:
+- Automatically kills any existing server before starting (safe to run multiple times)
 - Runs initial build on startup
 - Daemonizes automatically (double-fork, detaches from terminal)
 - Serves from `output/` directory (accessible at root URL)
@@ -166,13 +177,19 @@ uv run srv
 # Monitor logs
 tail -f logs/srv.log
 
+# Restart server if needed (automatically kills existing server)
+uv run srv
+
 # Stop server when done
 kill $(cat logs/srv.pid)
 ```
 
-**Stopping the server:**
+**Restarting/Stopping the server:**
 ```bash
-# Using PID file (recommended)
+# Restart server (easiest - automatically kills existing server and starts fresh)
+uv run srv
+
+# Or manually stop without restarting
 kill $(cat logs/srv.pid)
 
 # Or find and kill manually
