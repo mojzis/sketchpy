@@ -10,6 +10,7 @@ from playwright.sync_api import sync_playwright, expect
 
 PROJECT_ROOT = Path(__file__).parent.parent
 OUTPUT_FILE = PROJECT_ROOT / 'output' / 'index.html'
+LESSON_FILE = PROJECT_ROOT / 'output' / 'lessons' / '01-first-flower.html'
 
 
 @pytest.fixture(scope="module")
@@ -364,5 +365,62 @@ def test_keyboard_shortcut_runs_code(build_output):
         # Verify success status
         status_text = page.locator('#status').text_content()
         assert 'Success' in status_text, f"Expected success status after keyboard shortcut, got: {status_text}"
+
+        browser.close()
+
+
+def test_lesson_page_editor_loads(build_output):
+    """Test that the lesson page editor loads and is visible."""
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+
+        # Track console messages
+        errors = []
+        console_messages = []
+
+        def handle_console(msg):
+            console_messages.append(f"{msg.type}: {msg.text}")
+            if msg.type == 'error':
+                errors.append(msg.text)
+
+        page.on('console', handle_console)
+
+        # Track page errors
+        page_errors = []
+        page.on('pageerror', lambda exc: page_errors.append(str(exc)))
+
+        # Verify lesson file exists
+        assert LESSON_FILE.exists(), f"Lesson file not found at {LESSON_FILE}"
+
+        # Load the lesson page
+        page.goto(f'file://{LESSON_FILE.absolute()}')
+
+        # Wait for the page to be ready - check for CodeMirror editor
+        try:
+            page.wait_for_selector('.cm-editor', timeout=5000, state='visible')
+        except Exception as e:
+            # Print console messages to help debug
+            print("\n=== Console messages ===")
+            for msg in console_messages:
+                print(msg)
+            print(f"\n=== Page errors ===")
+            for err in page_errors:
+                print(err)
+            raise AssertionError(f"CodeMirror editor not visible: {e}")
+
+        # Verify the editor is visible
+        editor = page.locator('.cm-editor')
+        expect(editor).to_be_visible()
+
+        # Verify the editor has content (starter code)
+        editor_content = page.locator('.cm-editor').inner_text()
+        assert len(editor_content) > 0, "Editor should have starter code"
+        assert 'Canvas' in editor_content, "Editor should contain Canvas code"
+
+        # Check for critical errors
+        assert len(page_errors) == 0, f"Page errors on lesson page: {page_errors}"
+        critical_errors = [e for e in errors if 'Cross-Origin' not in e]
+        assert len(critical_errors) == 0, f"Console errors on lesson page: {critical_errors}"
 
         browser.close()
