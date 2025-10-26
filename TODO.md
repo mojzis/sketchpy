@@ -1,10 +1,12 @@
 
 
 ## features
-- nicer homepage
+- nicer homepage 🚧
  - add usual stuff like favicon ...
+ - add social links
 - link to home ?
 - theme switching
+  - create lessons per theme though ?
 - canvas higher, allow user to move
 - save code to github ☮️
 - lessons 🚧
