@@ -88,6 +88,45 @@ def write_pid():
     with open(PID_FILE, 'w') as f:
         f.write(str(os.getpid()))
 
+def kill_existing_server():
+    """Kill existing server if running."""
+    if not PID_FILE.exists():
+        return
+    
+    try:
+        with open(PID_FILE, 'r') as f:
+            pid = int(f.read().strip())
+        
+        # Check if process exists
+        try:
+            os.kill(pid, 0)  # Signal 0 checks if process exists
+        except OSError:
+            # Process doesn't exist, just remove stale PID file
+            PID_FILE.unlink()
+            return
+        
+        # Process exists, kill it
+        logger.info(f"⚠️  Killing existing server (PID: {pid})")
+        os.kill(pid, 15)  # SIGTERM
+        
+        # Wait briefly for graceful shutdown
+        time.sleep(0.5)
+        
+        # Force kill if still running
+        try:
+            os.kill(pid, 0)
+            os.kill(pid, 9)  # SIGKILL
+            time.sleep(0.2)
+        except OSError:
+            pass
+        
+        PID_FILE.unlink()
+        logger.info("✓ Previous server stopped")
+        
+    except (ValueError, FileNotFoundError) as e:
+        logger.warning(f"Could not read PID file: {e}")
+        PID_FILE.unlink()
+
 
 def remove_pid():
     """Remove PID file on shutdown."""

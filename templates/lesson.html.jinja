@@ -5,30 +5,13 @@
     <meta charset="utf-8">
     <title>Python Graphics Learning</title>
 
-    <!-- Alpine app state (must load before Alpine.js) -->
+    <!-- Inject shapes code for app.js to use -->
     <script>
-        /**
-         * Alpine.js app state for sketchpy learning platform
-         */
-        function appState() {
-            return {
-                // Execution state
-                isRunning: false,
-
-                // Current lesson
-                lesson: window.CURRENT_LESSON || null,
-
-                // Initialization
-                init() {
-                    console.log('Alpine initialized');
-                    console.log('Current lesson:', this.lesson?.id);
-                }
-            }
-        }
-
-        // Make globally available
-        window.appState = appState;
+        window.SHAPES_CODE = `{{ shapes_code }}`;
     </script>
+
+    <!-- Alpine app state (must load before Alpine.js) -->
+    <script src="/static/js/app.js"></script>
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -44,102 +27,279 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
             height: 100vh;
             overflow: hidden;
         }
 
+        /* App Container */
         .app-container {
             display: flex;
-            width: 100%;
-            height: 100%;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        /* Left panel - instructions */
-        .instructions {
-            width: 350px;
+        /* Error Banner */
+        .error {
+            background: #f44336;
+            color: white;
+            padding: 10px 20px;
+            display: none;
+        }
+
+        /* Main Layout: 2 Columns */
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Left Sidebar (20% width) */
+        .left-sidebar {
+            width: 20%;
+            min-width: 250px;
+            max-width: 350px;
             background: #f5f5f5;
+            border-right: 2px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .sidebar-collapse {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #666;
+            padding: 5px 10px;
+            border-radius: 4px;
+            z-index: 10;
+        }
+
+        .sidebar-collapse:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .sidebar-expand {
+            position: absolute;
+            left: 0;
+            top: 10px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 0 4px 4px 0;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        .sidebar-expand:hover {
+            background: #45a049;
+        }
+
+        /* Sidebar Content */
+        .sidebar-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
             padding: 20px;
             overflow-y: auto;
-            border-right: 2px solid #ddd;
         }
 
-        .instructions h2 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 20px;
+        /* Lesson Selector */
+        .lesson-selector {
+            margin-bottom: 20px;
         }
 
-        .instructions h3 {
-            color: #555;
-            margin: 15px 0 10px 0;
-            font-size: 16px;
+        .lesson-selector label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
         }
 
-        .instructions code {
+        .lesson-dropdown {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .lesson-dropdown:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .lesson-meta {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .difficulty {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        .duration {
+            background: #f3e5f5;
+            color: #7b1fa2;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        /* Sidebar Instructions */
+        .sidebar-instructions {
+            flex: 1;
+            margin-bottom: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar-instructions h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .sidebar-instructions h3:not(:first-child) {
+            margin-top: 15px;
+        }
+
+        .sidebar-instructions code {
             background: #fff;
             padding: 2px 6px;
             border-radius: 3px;
             font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .sidebar-instructions ul {
+            margin-left: 18px;
+            line-height: 1.5;
             font-size: 13px;
         }
 
-        .instructions ul {
-            margin-left: 20px;
-            line-height: 1.6;
+        .sidebar-instructions li {
+            margin: 6px 0;
         }
 
-        .instructions li {
+        .sidebar-instructions p {
+            font-size: 13px;
+            line-height: 1.5;
             margin: 8px 0;
         }
 
         .hint {
-            background: #fff3cd;
-            padding: 10px;
-            border-left: 4px solid #ffc107;
-            margin: 10px 0;
-            border-radius: 4px;
+            background: #fff8dc;
+            padding: 8px;
+            border-left: 3px solid #ffa500;
+            margin: 8px 0;
+            border-radius: 3px;
+            font-size: 12px;
         }
 
-        /* Right panel - editor + canvas */
-        .workspace {
-            flex: 1;
+        .btn-text {
+            background: transparent;
+            border: none;
+            color: #4CAF50;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 8px;
+            padding: 4px 0;
+        }
+
+        .btn-text:hover {
+            text-decoration: underline;
+        }
+
+        /* Sidebar Actions (at bottom) */
+        .sidebar-actions {
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
             display: flex;
             flex-direction: column;
+            gap: 8px;
         }
 
-        .toolbar {
-            background: #2d2d2d;
-            padding: 10px 20px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .toolbar button {
+        .btn-run {
             background: #4CAF50;
             color: white;
             border: none;
-            padding: 8px 20px;
+            padding: 10px 16px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
             font-weight: 500;
         }
 
-        .toolbar button:hover {
+        .btn-run:hover {
             background: #45a049;
         }
 
-        .toolbar button:disabled {
-            background: #666;
+        .btn-run:disabled {
+            background: #999;
             cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #666;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .btn-secondary:hover {
+            background: #777;
+        }
+
+        .status-text {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            padding: 4px 0;
+            min-height: 20px;
+        }
+
+        /* Right Area: Editor + Output (80% width) */
+        .right-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Editor Panel (top 50%) */
+        .editor-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-bottom: 2px solid #ddd;
         }
 
         .editor-container {
             flex: 1;
             position: relative;
             background: #282a36;
+            overflow: hidden;
         }
 
         .editor-container .cm-editor {
@@ -156,11 +316,53 @@
             display: none;
         }
 
-        .canvas-container {
-            height: 400px;
-            background: white;
-            border-top: 2px solid #ddd;
+        /* Output Panel (bottom 50%) */
+        .output-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Output Tabs */
+        .output-tabs {
+            display: flex;
+            background: #2d2d2d;
+            border-bottom: 2px solid #444;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: transparent;
+            color: #aaa;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .tab-btn:hover {
+            background: #3d3d3d;
+            color: #fff;
+        }
+
+        .tab-btn.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .output-content {
+            flex: 1;
             overflow: auto;
+            background: white;
+        }
+
+        .output-content > div {
+            height: 100%;
+        }
+
+        .canvas-container {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -169,16 +371,41 @@
 
         .canvas-container svg {
             max-width: 100%;
+            max-height: 100%;
             height: auto;
         }
 
-        .error {
-            background: #f44336;
-            color: white;
-            padding: 10px 20px;
-            display: none;
+        .output-text {
+            padding: 20px;
         }
 
+        .output-text pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .error-message {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .error-message pre {
+            background: transparent;
+            color: #c62828;
+        }
+
+        .help-content {
+            padding: 20px;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        /* Loading Overlay */
         .loading {
             position: fixed;
             top: 50%;
@@ -189,31 +416,79 @@
             padding: 20px 40px;
             border-radius: 8px;
             font-size: 16px;
+            z-index: 1000;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .left-sidebar {
+                width: 250px;
+                min-width: 250px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .left-sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 280px;
+                z-index: 100;
+                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+            }
+
+            .right-area {
+                width: 100%;
+            }
         }
     </style>
 </head>
 
 <body>
     <div x-data="appState()" class="app-container">
-    <div class="instructions">
-        {{ lesson.instructions_html | safe }}
-    </div>
-
-    <div class="workspace">
-        <div class="toolbar">
-            <button id="runBtn" onclick="runCode()">▶ Run Code</button>
-            <button onclick="clearCanvas()">🗑️ Clear</button>
-            <span id="status" style="color: #aaa; margin-left: 10px;"></span>
-        </div>
 
         <div class="error" id="error"></div>
 
-        <div class="editor-container">
-            <textarea id="editor" spellcheck="false">{{ lesson.starter_code }}</textarea>
-        </div>
+        <!-- Main Layout: 2 Columns -->
+        <div class="main-layout">
 
-        <div class="canvas-container" id="canvas">
-            <div style="color: #999;">Your drawing will appear here. Click "Run Code" ▶</div>
+            <!-- Left Sidebar (20%) -->
+            <aside x-show="showSidebar"
+                   x-transition
+                   class="left-sidebar">
+                <!-- Collapse button -->
+                <button @click="showSidebar = false; localStorage.setItem('showSidebar', 'false')" class="sidebar-collapse" title="Hide sidebar">
+                    ◀
+                </button>
+                {% include 'components/sidebar.html' %}
+            </aside>
+
+            <!-- Expand button (when sidebar hidden) -->
+            <button x-show="!showSidebar"
+                    @click="showSidebar = true; localStorage.setItem('showSidebar', 'true')"
+                    class="sidebar-expand"
+                    title="Show sidebar">
+                ▶
+            </button>
+
+            <!-- Right Area: Editor + Canvas (80%) -->
+            <div class="right-area">
+
+                <!-- Top: Editor (50%) -->
+                <div class="editor-panel">
+                    <div class="editor-container">
+                        <textarea id="editor" spellcheck="false">{{ lesson.starter_code }}</textarea>
+                    </div>
+                </div>
+
+                <!-- Bottom: Canvas/Output/Help Tabs (50%) -->
+                <div class="output-panel">
+                    {% include 'components/output-tabs.html' %}
+                </div>
+
+            </div>
+
         </div>
     </div>
 

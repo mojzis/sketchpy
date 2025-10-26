@@ -1,6 +1,6 @@
 # Project State
 
-Last Updated: 2025-10-26
+Last Updated: 2025-10-26 (Phase 2 Complete)
 
 ## Overview
 
@@ -56,12 +56,20 @@ Currently in active development with a functional web-based editor powered by Co
   - Alpine.js v3 CDN integration for reactive UI foundation
   - All 25 tests passing, old version unchanged
 
+- **2-Column Responsive Layout - Phase 2** (2025-10-26)
+  - Redesigned from 3-panel to 2-column layout (left sidebar 20%, right editor/canvas 80%)
+  - Left sidebar: lesson dropdown, instructions, run/clear buttons
+  - Right area: vertical split (editor top 50%, canvas/output/help tabs bottom 50%)
+  - Collapsible sidebar with state persistence (localStorage)
+  - Removed top toolbar to maximize canvas space
+  - Alpine.js state management for UI interactions
+  - Component-based templates (sidebar.html, output-tabs.html)
+  - Mobile responsive with fixed sidebar overlay
+  - All 8 build tests passing
+
 ### In Progress
 
-- **Multi-Panel Alpine UI - Phase 2** (Next)
-  - Add lesson selector dropdown
-  - Implement dynamic lesson switching
-  - See plans/alpine-phase-2.md
+None currently
 
 ### Planned
 
@@ -101,6 +109,11 @@ Currently in active development with a functional web-based editor powered by Co
 ### Alpine.js for Reactive UI
 - **Decision**: Use Alpine.js v3 for client-side interactivity and state management
 - **Rationale**: Lightweight (~15KB), simple API, perfect for progressive enhancement, no build step needed
+- **Date**: 2025-10-26
+
+### 2-Column Layout with Vertical Canvas/Editor Split
+- **Decision**: Use 2-column layout (left sidebar 20%, right 80%) with vertical split on right (editor top, canvas bottom)
+- **Rationale**: Maximizes canvas space (80% width), keeps controls accessible in sidebar, better than 3-column which cramped canvas
 - **Date**: 2025-10-26
 
 ## Code Patterns
@@ -166,11 +179,11 @@ Currently in active development with a functional web-based editor powered by Co
 
 ## Next Steps
 
-1. **Phase 2: Multi-Panel Alpine UI** (Immediate Priority)
-   - Add lesson selector dropdown in UI
+1. **Phase 3: Multi-Lesson Switching** (Immediate Priority)
+   - Make lesson dropdown functional with Alpine.js
    - Implement dynamic lesson switching without page reload
-   - Update Alpine state to manage current lesson
-   - See plans/alpine-phase-2.md for detailed steps
+   - Update editor content and instructions when lesson changes
+   - See plans/alpine-phase-3.md for detailed steps
 
 2. **Implement gradient support**
    - Add linear and radial gradient methods to Canvas

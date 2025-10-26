@@ -1,0 +1,42 @@
+<div class="output-tabs">
+    <button @click="activeTab = 'canvas'"
+            :class="{ active: activeTab === 'canvas' }"
+            class="tab-btn">
+        Canvas
+    </button>
+    <button @click="activeTab = 'output'"
+            :class="{ active: activeTab === 'output' }"
+            class="tab-btn">
+        Output
+    </button>
+    <button @click="activeTab = 'help'"
+            :class="{ active: activeTab === 'help' }"
+            class="tab-btn">
+        Help
+    </button>
+</div>
+
+<div class="output-content">
+    <!-- Canvas Tab -->
+    <div x-show="activeTab === 'canvas'"
+         class="canvas-container"
+         id="canvas">
+        <div style="color: #999;">Your drawing will appear here. Click "Run Code" ▶</div>
+    </div>
+
+    <!-- Output Tab -->
+    <div x-show="activeTab === 'output'"
+         class="output-text">
+        <pre x-text="output || 'No output yet'"></pre>
+        <div x-show="error" class="error-message">
+            <strong>Error:</strong>
+            <pre x-text="error"></pre>
+        </div>
+    </div>
+
+    <!-- Help Tab -->
+    <div x-show="activeTab === 'help'"
+         class="help-content">
+        {{ lesson.help_html | safe }}
+    </div>
+</div>

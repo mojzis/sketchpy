@@ -5,6 +5,68 @@ Each decision includes: Context, Decision, Rationale, Trade-offs, Alternatives C
 
 ---
 
+## 2-Column Layout with Vertical Editor/Canvas Split (2025-10-26)
+
+**Status**: Accepted
+
+**Context**
+After implementing Alpine.js foundation (Phase 1), started Phase 2 with a 3-panel layout (left sidebar for lessons, center for editor, right sidebar for canvas/output). User testing revealed the canvas had insufficient space - the lesson list took 20% width, editor 40%, and canvas only 40%. For an educational graphics tool, the canvas needs maximum space to clearly show drawing results.
+
+**Decision**
+Redesigned to 2-column layout:
+- **Left sidebar (20%)**: Lesson dropdown, instructions (short version), run/clear buttons at bottom
+- **Right area (80%)**: Vertical split with editor (top 50%) and canvas/output/help tabs (bottom 50%)
+- Removed top toolbar to maximize vertical space
+- Made sidebar collapsible (when hidden, canvas gets 100% width)
+- Moved all controls from toolbar to sidebar bottom
+
+**Rationale**
+- Canvas needs width more than height for typical graphics (800x600, landscape orientation)
+- Lesson list with one item wasteful - dropdown is sufficient
+- Instructions can be short in sidebar (full help in Help tab)
+- Run/Clear buttons logically grouped with lesson controls
+- Collapsible sidebar gives full-screen canvas when needed
+- 80% width for canvas much better than 40%
+- Vertical split works well for code editor (readable) and canvas (can scroll if needed)
+
+**Trade-offs**
+- **Pros**:
+  - Canvas gets 80% width (or 100% with sidebar collapsed)
+  - Clean, focused UI with less clutter
+  - Lesson dropdown scales to many lessons
+  - Instructions always visible but unobtrusive
+  - Mobile-friendly (sidebar becomes overlay)
+  - State persists across reloads
+
+- **Cons**:
+  - Instructions limited to short version in sidebar (but full Help tab available)
+  - Vertical split means less editor height (but CodeMirror scrolls well)
+  - Can't see lesson list at a glance (but dropdown works fine)
+
+**Alternatives Considered**
+
+1. **Keep 3-panel layout (left lessons, center editor, right canvas)**
+   - Why rejected: Canvas cramped at 40% width, lesson list wasteful with one item, top toolbar takes vertical space
+
+2. **Horizontal split (editor left, canvas right) with no sidebar**
+   - Why rejected: Where do instructions go? Where do controls go? No lesson switching UI
+
+3. **Bottom canvas like browser DevTools (instructions/editor top, canvas full-width bottom)**
+   - Why rejected: Canvas needs width more than height for typical graphics, wastes space on wide screens
+
+4. **Tabs instead of split (switch between editor and canvas)**
+   - Why rejected: Can't see code and output simultaneously - critical for learning
+
+5. **Three equal columns (33% each)**
+   - Why rejected: Still cramps canvas, doesn't solve the fundamental space problem
+
+**Related Decisions**
+- Alpine.js for reactive UI (Phase 1)
+- Component-based templates (sidebar.html, output-tabs.html)
+- LocalStorage for state persistence
+
+---
+
 ## YAML + Markdown for Lesson Content Structure (2025-10-26)
 
 **Status**: Accepted

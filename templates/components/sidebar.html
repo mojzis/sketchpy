@@ -1,0 +1,35 @@
+<div class="sidebar-content">
+    <!-- Lesson Selector -->
+    <div class="lesson-selector">
+        <label>📚 Lesson</label>
+        <select class="lesson-dropdown">
+            <option selected>01: Draw Your First Flower</option>
+            <!-- Phase 3: Dynamic lessons with x-for -->
+        </select>
+        <div class="lesson-meta">
+            <span class="difficulty">beginner</span>
+            <span class="duration">15min</span>
+        </div>
+    </div>
+
+    <!-- Instructions (short version) -->
+    <div class="sidebar-instructions">
+        <h3>📖 Instructions</h3>
+        <div x-show="showInstructions" x-transition>
+            {{ lesson.instructions_html | safe }}
+        </div>
+        <button @click="showInstructions = !showInstructions" class="btn-text">
+            <span x-text="showInstructions ? 'Hide ▲' : 'Show ▼'"></span>
+        </button>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="sidebar-actions">
+        <button id="runBtn" @click="runCode()" :disabled="isRunning" class="btn-run">
+            <span x-show="!isRunning">▶ Run Code</span>
+            <span x-show="isRunning">⏳ Running...</span>
+        </button>
+        <button @click="clearCanvas()" class="btn-secondary">🗑️ Clear</button>
+        <div id="status" class="status-text"></div>
+    </div>
+</div>
