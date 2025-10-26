@@ -1,0 +1,44 @@
+name: Sync Docs to Google Drive
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'PROJECT_STATE.md'
+      - 'DECISIONS.md'
+      - 'CLAUDE.md'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Upload to Google Drive
+        uses: adityak74/google-drive-upload-git-action@main
+        with:
+          credentials: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
+          filename: "PROJECT_STATE.md"
+          folderId: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          name: "PROJECT_STATE.md"
+          overwrite: "true"
+
+      - name: Upload DECISIONS.md
+        uses: adityak74/google-drive-upload-git-action@main
+        with:
+          credentials: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
+          filename: "DECISIONS.md"
+          folderId: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          name: "DECISIONS.md"
+          overwrite: "true"
+
+      - name: Upload CLAUDE.md (if exists)
+        uses: adityak74/google-drive-upload-git-action@main
+        continue-on-error: true
+        with:
+          credentials: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
+          filename: "CLAUDE.md"
+          folderId: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
+          name: "CLAUDE.md"
+          overwrite: "true"
