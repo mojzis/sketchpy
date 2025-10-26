@@ -193,15 +193,27 @@ def main():
     # Setup Jinja2 environment
     env = Environment(loader=FileSystemLoader(templates_dir))
 
-    # Build old single-page version (keep as fallback)
-    template = env.get_template('index.html.jinja')
-    html_content = template.render(shapes_code=shapes_code)
-    output_file = output_dir / 'index.html'
-    output_file.write_text(html_content)
-    logger.info(f"🔨 Built output/index.html ({len(html_content)} bytes)")
+    # Build old single-page version (keep as fallback for now)
+    # template = env.get_template('index.html.jinja')
+    # html_content = template.render(shapes_code=shapes_code)
+    # output_file = output_dir / 'index.html'
+    # output_file.write_text(html_content)
+    # logger.info(f"🔨 Built output/index.html ({len(html_content)} bytes)")
 
     # Build new multi-lesson version
+    loader = LessonLoader(project_root)
+    lessons_config = loader.load_lessons_config()
     build_lessons(project_root, shapes_code)
+
+    # Build landing page
+    logger.info("Building landing page...")
+    index_template = env.get_template('index.html')
+    index_html = index_template.render(
+        all_lessons=lessons_config['lessons']
+    )
+    index_path = output_dir / 'index.html'
+    index_path.write_text(index_html)
+    logger.info(f"  → index.html ({len(index_html)} bytes)")
 
     logger.info("✅ Build complete!")
 

@@ -1,12 +1,19 @@
 
 
 ## features
+- nicer homepage
+ - add usual stuff like favicon ...
+- link to home ?
+- theme switching
+- canvas higher, allow user to move
+- save code to github ☮️
 - lessons 🚧
+- safe execution - errors, potential exhaustion
 - sharing
  - security though ?
 - help panel
  - for this lib
- - basic python help
+ - basic python help ☮️
 - palletes
   - add a function to show the current pallete, ✅
   - pick palletes, 
@@ -18,6 +25,7 @@
 
  - ai
   - document sketch lib
+  - llm.txt file
 
 ## drawing improvements
 - gradients 

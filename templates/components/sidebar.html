@@ -2,13 +2,18 @@
     <!-- Lesson Selector -->
     <div class="lesson-selector">
         <label>📚 Lesson</label>
-        <select class="lesson-dropdown">
-            <option selected>01: Draw Your First Flower</option>
-            <!-- Phase 3: Dynamic lessons with x-for -->
+        <select class="lesson-dropdown"
+                @change="window.location.href = `/lessons/${$event.target.value}.html`">
+            <template x-for="(lessonItem, index) in lessons" :key="lessonItem.id">
+                <option :value="lessonItem.id"
+                        :selected="currentLessonId === lessonItem.id"
+                        x-text="`${isCompleted(lessonItem.id) ? '✓ ' : ''}${index + 1}. ${lessonItem.title}`">
+                </option>
+            </template>
         </select>
-        <div class="lesson-meta">
-            <span class="difficulty">beginner</span>
-            <span class="duration">15min</span>
+        <div class="lesson-meta" x-show="lesson">
+            <span class="difficulty" x-text="lesson?.difficulty"></span>
+            <span class="duration" x-text="`${lesson?.duration}min`"></span>
         </div>
     </div>
 
