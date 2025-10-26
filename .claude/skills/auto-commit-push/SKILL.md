@@ -40,6 +40,8 @@ Follow the project's existing style (check recent commits). General guidelines:
 - Be specific but concise
 - Focus on the change's purpose, not implementation details
 - Keep first line under 72 characters
+- **Avoid meta information**: Don't mention that tests pass, builds succeed, or other process details (these are implicit in the act of committing)
+- Focus on WHAT changed and WHY, not process/verification steps
 
 Example:
 ```
@@ -49,22 +51,32 @@ Helps beginners understand positioning by displaying coordinate grid
 with configurable spacing and optional labels.
 ```
 
+**Bad examples** (too meta):
+- ❌ "All tests passing after fixing bug"
+- ❌ "Update code and verify it works"
+- ❌ "Changes complete and tested"
+
+**Good examples** (focus on substance):
+- ✅ "Fix off-by-one error in grid coordinate labels"
+- ✅ "Update grid() to support custom label formatting"
+- ✅ "Add optional axis labels to coordinate grid"
+
 ## Instructions
 
-When invoked, run the git automation script that handles the full workflow:
+When invoked, use the Task tool to launch a general-purpose agent that will handle the complete commit and push workflow:
 
-```bash
-bash .claude/skills/auto-commit-push/scripts/commit_and_push.sh
-```
+1. Review changes with `git status` and `git diff`
+2. Analyze recent commits to match project style
+3. Create a concise, focused commit message that:
+   - Describes WHAT changed and WHY
+   - Avoids meta information (test status, verification steps)
+   - Follows conventional commit format
+   - Includes the standard footer with Claude Code attribution
+4. Stage all relevant files
+5. Create the commit
+6. Push to remote (with safety checks)
 
-The script will:
-1. Check for uncommitted changes
-2. Display current status and diff
-3. Analyze recent commits for style patterns
-4. Generate an appropriate commit message
-5. Stage relevant files
-6. Create the commit
-7. Push to remote (with safety checks)
+The agent will autonomously handle all git operations and ensure the commit message follows best practices without meta information.
 
 ## Safety Features
 
