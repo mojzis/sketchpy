@@ -365,6 +365,8 @@ dependencies = [
     { name = "colabturtleplus" },
     { name = "jinja2" },
     { name = "marimo" },
+    { name = "markdown" },
+    { name = "pyyaml" },
     { name = "watchdog" },
 ]
 
@@ -379,6 +381,8 @@ requires-dist = [
     { name = "colabturtleplus", specifier = ">=2.0.1" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "marimo", specifier = ">=0.17.2" },
+    { name = "markdown", specifier = ">=3.9" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "watchdog", specifier = ">=6.0.0" },
 ]
 

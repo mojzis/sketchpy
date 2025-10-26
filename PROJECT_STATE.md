@@ -40,9 +40,19 @@ Currently in active development with a functional web-based editor powered by Co
   - Watches sketchpy/ and templates/ directories
   - Self-signed SSL certificates for Pyodide compatibility
 
+- **Lesson Content Structure - Phase 0** (2025-10-26)
+  - Created lessons/ directory with YAML metadata and Markdown content
+  - Added dependencies: pyyaml, markdown
+  - Implemented first lesson: "Draw Your First Flower"
+  - Structure: lessons.yaml + lesson.md + starter.py + help.md per lesson
+  - All 25 tests still passing, no breaking changes to existing system
+
 ### In Progress
 
-- None currently
+- **Multi-Lesson Support - Phase 1** (Next)
+  - Integrate lesson structure with Alpine.js
+  - Update build process to read from lessons/
+  - See plans/alpine-phase-1.md
 
 ### Planned
 
@@ -72,6 +82,11 @@ Currently in active development with a functional web-based editor powered by Co
 ### Method Chaining Pattern
 - **Decision**: All drawing methods return self for fluent API
 - **Rationale**: Enables concise code like `Canvas(800,600).rect(...).circle(...)`
+- **Date**: 2025-10-26
+
+### YAML + Markdown Lesson Structure
+- **Decision**: Store lessons as YAML metadata + Markdown files, not hardcoded in HTML
+- **Rationale**: Enables multiple lessons, easier content authoring, separation of content from code
 - **Date**: 2025-10-26
 
 ## Code Patterns
@@ -125,21 +140,32 @@ Currently in active development with a functional web-based editor powered by Co
   - Browser testing framework
   - One-time install: `uv run playwright install chromium`
 
+- **PyYAML + Markdown**
+  - YAML parsing for lesson metadata (lessons.yaml)
+  - Markdown conversion for lesson content (lesson.md files)
+  - Added in Phase 0 for multi-lesson support
+
 ## Next Steps
 
-1. **Implement gradient support** (High Priority)
+1. **Phase 1: Multi-Lesson Support with Alpine.js** (Immediate Priority)
+   - Update build process to read lessons from YAML/Markdown files
+   - Integrate Alpine.js for lesson selector UI
+   - Dynamic lesson loading and starter code injection
+   - See plans/alpine-phase-1.md for detailed steps
+
+2. **Implement gradient support**
    - Add linear and radial gradient methods to Canvas
    - Update autocomplete with gradient examples
    - See plans/gradients.md for specification
 
-2. **Improve autocomplete context awareness**
+3. **Improve autocomplete context awareness**
    - Detect when inside method calls for parameter hints
    - Show relevant palette when typing fill= or color=
 
-3. **Add more example projects**
-   - Update instructions panel with varied tutorials
-   - Create gallery of example drawings
+4. **Add more example lessons**
+   - Leverage new lesson structure to create varied tutorials
+   - Build lesson library (cars, landscapes, patterns, etc.)
 
-4. **Performance profiling**
+5. **Performance profiling**
    - Test with complex drawings (many shapes)
    - Optimize SVG generation if needed

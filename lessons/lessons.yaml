@@ -1,0 +1,6 @@
+lessons:
+  - id: 01-first-flower
+    title: "Draw Your First Flower"
+    description: "Learn circles, ellipses, and the CreativeGardenPalette"
+    difficulty: beginner
+    duration: 15

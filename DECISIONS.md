@@ -5,6 +5,72 @@ Each decision includes: Context, Decision, Rationale, Trade-offs, Alternatives C
 
 ---
 
+## YAML + Markdown for Lesson Content Structure (2025-10-26)
+
+**Status**: Accepted
+
+**Context**
+The web editor had a single hardcoded lesson embedded in the HTML template. To support multiple lessons and enable easier content authoring, needed a scalable way to store and manage lesson content (instructions, starter code, metadata) outside the HTML template.
+
+**Decision**
+Create a `lessons/` directory structure with:
+- `lessons.yaml` - YAML file with lesson metadata (id, title, description, difficulty, duration)
+- `lessons/{lesson-id}/lesson.md` - Markdown file with lesson instructions
+- `lessons/{lesson-id}/starter.py` - Python starter code for the lesson
+- `lessons/{lesson-id}/help.md` - Optional additional help/troubleshooting content
+
+Add dependencies: `pyyaml` for YAML parsing, `markdown` for Markdown-to-HTML conversion.
+
+**Rationale**
+- Separation of concerns: content separate from code and templates
+- Easy authoring: Markdown is simpler than HTML for educational content
+- Structured metadata: YAML provides clean structure for lesson properties
+- Version control friendly: Separate files show clear diffs
+- Scalable: Easy to add new lessons without modifying build process
+- Future-proof: Can add fields to YAML without breaking existing lessons
+- Standard formats: YAML and Markdown are widely understood
+
+**Trade-offs**
+- **Pros**:
+  - Content authors don't need to edit HTML/templates
+  - Markdown is easier to write and read than HTML
+  - YAML metadata enables lesson filtering, sorting, selection UI
+  - Each lesson is self-contained in its own directory
+  - Can version control lessons independently
+  - Non-technical educators can author lessons
+
+- **Cons**:
+  - Adds build-time processing (YAML parsing, Markdown conversion)
+  - Two new dependencies (pyyaml, markdown)
+  - More complex directory structure
+  - Build process needs to read multiple files per lesson
+
+**Alternatives Considered**
+
+1. **Continue hardcoding lessons in HTML template**
+   - Why rejected: Not scalable, requires HTML knowledge, mixing content with code, version control diffs messy
+
+2. **JSON instead of YAML for metadata**
+   - Why rejected: Less human-readable, requires quotes everywhere, harder to hand-edit, no comment support
+
+3. **HTML instead of Markdown for lesson content**
+   - Why rejected: More verbose, harder to write, requires HTML knowledge, less accessible to educators
+
+4. **Single monolithic lessons.json with all content**
+   - Why rejected: Large file becomes unwieldy, poor version control (entire file changes), no file organization
+
+5. **Database for lesson storage**
+   - Why rejected: Overkill for static content, adds runtime dependency, complicates deployment, not version controllable
+
+6. **Python modules with lesson data**
+   - Why rejected: Requires Python knowledge for content authors, mixing code with content, awkward for long text
+
+**Related Decisions**
+- Build process integration (Phase 1)
+- Alpine.js for lesson selector UI (Phase 1)
+
+---
+
 ## CodeMirror 6 Keymap Precedence for Custom Shortcuts (2025-10-26)
 
 **Status**: Accepted
