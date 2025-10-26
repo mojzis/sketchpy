@@ -321,3 +321,48 @@ def test_show_palette_method_works(build_output):
         assert result['result'] == 'OK'
 
         browser.close()
+
+
+def test_keyboard_shortcut_runs_code(build_output):
+    """Test that Ctrl-Enter (or Cmd-Enter on Mac) runs the code."""
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+
+        # Load the page
+        page.goto(f'file://{build_output.absolute()}')
+
+        # Wait for Pyodide to load
+        page.wait_for_selector('#loading', state='hidden', timeout=30000)
+
+        # Wait for initial auto-run to complete
+        page.wait_for_selector('#canvas svg', timeout=10000)
+
+        # Clear the canvas first
+        page.click('button:has-text("Clear")')
+
+        # Wait a moment for clear to take effect
+        page.wait_for_timeout(100)
+
+        # Verify canvas is cleared
+        canvas_content = page.locator('#canvas').inner_text()
+        assert 'cleared' in canvas_content.lower() or 'click' in canvas_content.lower(), "Canvas should be cleared"
+
+        # Focus the editor by clicking on it
+        page.locator('.cm-editor').click()
+
+        # Press Ctrl-Enter (Playwright automatically uses Cmd on Mac)
+        page.keyboard.press('Control+Enter')
+
+        # Wait for SVG to appear (code should run)
+        page.wait_for_selector('#canvas svg', timeout=5000)
+
+        # Verify SVG content is present
+        svg_content = page.locator('#canvas svg').inner_html()
+        assert '<circle' in svg_content or '<rect' in svg_content, "Canvas should contain shapes after keyboard shortcut"
+
+        # Verify success status
+        status_text = page.locator('#status').text_content()
+        assert 'Success' in status_text, f"Expected success status after keyboard shortcut, got: {status_text}"
+
+        browser.close()

@@ -287,13 +287,11 @@ can</textarea>
         import { python } from "@codemirror/lang-python";
         import { oneDark } from "@codemirror/theme-one-dark";
         import { autocompletion } from "@codemirror/autocomplete";
+        import { keymap } from "@codemirror/view";
+        import { Prec } from "@codemirror/state";
 
         let pyodide;
         let editor;
-
-        // Make functions and pyodide global for testing
-        window.runCode = runCode;
-        window.clearCanvas = clearCanvas;
 
         // Expose pyodide to window for test access (will be set after initialization)
         Object.defineProperty(window, 'pyodide', {
@@ -504,60 +502,7 @@ can</textarea>
             };
         }
 
-        // Get initial code from textarea
-        const initialCode = document.getElementById('editor').value;
-
-        // Initialize CodeMirror 6 editor
-        editor = new EditorView({
-            doc: initialCode,
-            extensions: [
-                basicSetup,
-                python(),
-                oneDark,
-
-                // Autocompletion with custom source
-                autocompletion({
-                    override: [smartPythonCompletions],
-                    defaultKeymap: true
-                }),
-
-                EditorView.lineWrapping,
-
-                // Add keyboard shortcuts
-                EditorView.domEventHandlers({
-                    keydown(event, view) {
-                        // Ctrl-Enter or Cmd-Enter to run code
-                        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
-                            runCode();
-                            return true;
-                        }
-                        return false;
-                    }
-                })
-            ],
-            parent: document.querySelector('.editor-container')
-        });
-
-        // Hide the textarea since CodeMirror creates its own DOM
-        document.getElementById('editor').style.display = 'none';
-
-        // Initialize Pyodide
-        async function initPyodide() {
-            pyodide = await loadPyodide();
-
-            // Load the shapes library
-            await pyodide.runPythonAsync(`
-{{ shapes_code }}
-        `);
-
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('runBtn').disabled = false;
-            document.getElementById('status').textContent = 'Ready! ✓';
-
-            // Auto-run code on load
-            runCode();
-        }
-
+        // Define functions before editor initialization so keymap can reference them
         // Run user code
         async function runCode() {
             // Get code from CodeMirror 6 editor
@@ -597,6 +542,63 @@ can</textarea>
         function clearCanvas() {
             document.getElementById('canvas').innerHTML = '<div style="color: #999;">Canvas cleared. Click "Run Code" to draw.</div>';
             document.getElementById('error').style.display = 'none';
+        }
+
+        // Make functions global for HTML onclick handlers and testing
+        window.runCode = runCode;
+        window.clearCanvas = clearCanvas;
+
+        // Get initial code from textarea
+        const initialCode = document.getElementById('editor').value;
+
+        // Initialize CodeMirror 6 editor
+        editor = new EditorView({
+            doc: initialCode,
+            extensions: [
+                basicSetup,
+                python(),
+                oneDark,
+
+                // Autocompletion with custom source
+                autocompletion({
+                    override: [smartPythonCompletions],
+                    defaultKeymap: true
+                }),
+
+                EditorView.lineWrapping,
+
+                // Add keyboard shortcuts with highest precedence (Mod-Enter = Cmd-Enter on Mac, Ctrl-Enter on Windows/Linux)
+                Prec.highest(keymap.of([
+                    {
+                        key: 'Mod-Enter',
+                        run: () => {
+                            runCode();
+                            return true;
+                        }
+                    }
+                ]))
+            ],
+            parent: document.querySelector('.editor-container')
+        });
+
+        // Hide the textarea since CodeMirror creates its own DOM
+        document.getElementById('editor').style.display = 'none';
+
+        // Initialize Pyodide
+        async function initPyodide() {
+            pyodide = await loadPyodide();
+
+            // Load the shapes library
+            await pyodide.runPythonAsync(`
+{{ shapes_code }}
+        `);
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('runBtn').disabled = false;
+            document.getElementById('status').textContent = 'Ready! ✓';
+
+            // Auto-run code on load
+            runCode();
         }
 
         // Initialize Pyodide (editor is already initialized above)
