@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Python Graphics Learning</title>
+
+    <!-- CodeMirror Core CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+
+    <!-- Dracula Theme -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+
+    <!-- Show Hint CSS for autocomplete -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Left panel - instructions */
+        .instructions {
+            width: 350px;
+            background: #f5f5f5;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 2px solid #ddd;
+        }
+
+        .instructions h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .instructions h3 {
+            color: #555;
+            margin: 15px 0 10px 0;
+            font-size: 16px;
+        }
+
+        .instructions code {
+            background: #fff;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+            line-height: 1.6;
+        }
+
+        .instructions li {
+            margin: 8px 0;
+        }
+
+        .hint {
+            background: #fff3cd;
+            padding: 10px;
+            border-left: 4px solid #ffc107;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        /* Right panel - editor + canvas */
+        .workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .toolbar {
+            background: #2d2d2d;
+            padding: 10px 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .toolbar button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .toolbar button:hover {
+            background: #45a049;
+        }
+
+        .toolbar button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        .editor-container {
+            flex: 1;
+            position: relative;
+            background: #282a36;
+        }
+
+        .CodeMirror {
+            height: 100%;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        #editor {
+            display: none;
+        }
+
+        .canvas-container {
+            height: 400px;
+            background: white;
+            border-top: 2px solid #ddd;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .canvas-container svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .error {
+            background: #f44336;
+            color: white;
+            padding: 10px 20px;
+            display: none;
+        }
+
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="instructions">
+        <h2>🌸 Project 1: Draw Your First Flower</h2>
+
+        <h3>Goal:</h3>
+        <p>Draw a simple stylized flower using circles and ellipses.</p>
+
+        <h3>What you'll learn:</h3>
+        <ul>
+            <li>Creating a canvas</li>
+            <li>Drawing circles and ellipses</li>
+            <li>Using the CreativeGardenPalette</li>
+            <li>Positioning shapes with coordinates</li>
+        </ul>
+
+        <div class="hint">
+            <strong>✨ Autocomplete:</strong> Type <code>can.</code> to see all Canvas methods!
+            Press Ctrl+Space for suggestions, or just keep typing.
+        </div>
+
+        <h3>Steps:</h3>
+        <ol>
+            <li>Create a canvas: <code>can = Canvas(800, 600)</code></li>
+            <li>Draw petals using circles or ellipses</li>
+            <li>Add a center circle for the flower</li>
+            <li>Draw a stem and leaves</li>
+        </ol>
+
+        <div class="hint">
+            <strong>💡 Hint:</strong> The canvas coordinates start at the top-left (0, 0).
+            X increases to the right, Y increases downward.
+        </div>
+
+        <h3>Available Methods:</h3>
+        <ul>
+            <li><code>can.circle(x, y, radius, fill=...)</code></li>
+            <li><code>can.ellipse(x, y, rx, ry, fill=...)</code></li>
+            <li><code>can.rect(x, y, width, height, fill=...)</code></li>
+            <li><code>can.line(x1, y1, x2, y2, stroke=...)</code></li>
+            <li><code>can.grid(spacing=50)</code> - Show coordinate grid</li>
+            <li><code>can.show_palette(PaletteClass)</code> - Display palette colors</li>
+        </ul>
+
+        <h3>Creative Garden Palette:</h3>
+        <p><code>CreativeGardenPalette.ROSE_QUARTZ</code>, <code>BUTTER_YELLOW</code>, <code>MINT_CREAM</code>,
+            <code>SKY_BREEZE</code>, <code>LILAC_DREAM</code>, <code>CORAL_BLUSH</code>
+        </p>
+
+        <div class="hint">
+            <strong>💡 Tip:</strong> Try <code>can.show_palette(CreativeGardenPalette)</code> to see all available colors!
+            Also available: <code>CalmOasisPalette</code> and <code>Color</code> (basic colors).
+        </div>
+
+        <div class="hint">
+            <strong>🎨 Challenge:</strong> Can you add more petals or change colors?
+            Try experimenting with different positions and sizes!
+        </div>
+    </div>
+
+    <div class="workspace">
+        <div class="toolbar">
+            <button id="runBtn" onclick="runCode()">▶ Run Code</button>
+            <button onclick="clearCanvas()">🗑️ Clear</button>
+            <span id="status" style="color: #aaa; margin-left: 10px;"></span>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="editor-container">
+            <textarea id="editor" spellcheck="false"># Draw your flower here!
+
+can = Canvas(800, 600)
+
+# Draw a coordinate grid to help with positioning
+can.grid(spacing=50, show_coords=True)
+
+# Flower center position
+cx, cy = 400, 250
+
+# Draw 5 petals around the center (like a simple flower)
+petal_radius = 50
+can.circle(cx, cy - 60, petal_radius, fill=CreativeGardenPalette.ROSE_QUARTZ)  # Top
+can.circle(cx + 50, cy - 30, petal_radius, fill=CreativeGardenPalette.CORAL_BLUSH)  # Top right
+can.circle(cx + 50, cy + 30, petal_radius, fill=CreativeGardenPalette.LILAC_DREAM)  # Bottom right
+can.circle(cx - 50, cy + 30, petal_radius, fill=CreativeGardenPalette.SKY_BREEZE)  # Bottom left
+can.circle(cx - 50, cy - 30, petal_radius, fill=CreativeGardenPalette.PEACH_WHISPER)  # Top left
+
+# Flower center
+can.circle(cx, cy, 35, fill=CreativeGardenPalette.BUTTER_YELLOW)
+
+# Stem
+can.rect(cx - 5, cy + 35, 10, 200, fill=CreativeGardenPalette.MINT_CREAM)
+
+# Left leaf (ellipse)
+can.ellipse(cx - 40, cy + 120, 30, 15, fill=CreativeGardenPalette.HONEYDEW)
+
+# Right leaf (ellipse)
+can.ellipse(cx + 40, cy + 180, 30, 15, fill=CreativeGardenPalette.MINT_CREAM)
+
+# Your turn! Add more petals, change colors, or create your own garden!
+
+can</textarea>
+        </div>
+
+        <div class="canvas-container" id="canvas">
+            <div style="color: #999;">Your drawing will appear here. Click "Run Code" ▶</div>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">Loading Python... ⏳</div>
+
+    <!-- CodeMirror Core JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+
+    <!-- Python Mode -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+
+    <!-- Addons for enhanced functionality -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+
+    <!-- Autocomplete addons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/anyword-hint.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+    <script>
+        let pyodide;
+        let editor;
+
+        // Make functions global
+        window.runCode = runCode;
+        window.clearCanvas = clearCanvas;
+
+        // ===== AUTO-GENERATED API DEFINITIONS =====
+        // Extract Canvas methods and palette colors from embedded Python code
+        var API_DEFINITIONS = (function() {
+            var shapesCode = `{{ shapes_code }}`;
+            var api = {};
+
+            // Extract Canvas methods
+            var canvasMethods = [];
+            var methodRegex = /def\s+(\w+)\s*\(self(?:,\s*([^)]*))?\)/gs;
+            var match;
+            while ((match = methodRegex.exec(shapesCode)) !== null) {
+                var methodName = match[1];
+                var params = match[2] || '';
+                // Skip private methods and _repr_html_
+                if (!methodName.startsWith('_')) {
+                    // Clean up params: normalize whitespace to single line
+                    var cleanParams = params.replace(/\s+/g, ' ').trim();
+                    canvasMethods.push(methodName + '(' + cleanParams + ')');
+                }
+            }
+            api['can'] = canvasMethods;
+
+            // Extract Color class constants
+            var colorRegex = /class\s+Color:[\s\S]*?(?=\n(?:class|def|\Z))/;
+            var colorMatch = shapesCode.match(colorRegex);
+            if (colorMatch) {
+                var colorCode = colorMatch[0];
+                var colorConstRegex = /(\w+)\s*=\s*["']#[0-9A-Fa-f]{6}["']/g;
+                var colors = [];
+                while ((match = colorConstRegex.exec(colorCode)) !== null) {
+                    colors.push(match[1]);
+                }
+                api['Color'] = colors;
+            }
+
+            // Extract CreativeGardenPalette constants
+            var gardenRegex = /class\s+CreativeGardenPalette:[\s\S]*?(?=\n(?:class|def|\Z))/;
+            var gardenMatch = shapesCode.match(gardenRegex);
+            if (gardenMatch) {
+                var gardenCode = gardenMatch[0];
+                var gardenConstRegex = /(\w+)\s*=\s*["']#[0-9A-Fa-f]{6}["']/g;
+                var gardenColors = [];
+                while ((match = gardenConstRegex.exec(gardenCode)) !== null) {
+                    gardenColors.push(match[1]);
+                }
+                api['CreativeGardenPalette'] = gardenColors;
+            }
+
+            // Extract CalmOasisPalette constants
+            var oasisRegex = /class\s+CalmOasisPalette:[\s\S]*?(?=\n(?:class|def|\Z))/;
+            var oasisMatch = shapesCode.match(oasisRegex);
+            if (oasisMatch) {
+                var oasisCode = oasisMatch[0];
+                var oasisConstRegex = /(\w+)\s*=\s*["']#[0-9A-Fa-f]{6}["']/g;
+                var oasisColors = [];
+                while ((match = oasisConstRegex.exec(oasisCode)) !== null) {
+                    oasisColors.push(match[1]);
+                }
+                api['CalmOasisPalette'] = oasisColors;
+            }
+
+            return api;
+        })();
+
+        // Smart hint function that detects object.method patterns
+        CodeMirror.hint.smartPython = function(editor) {
+            var cursor = editor.getCursor();
+            var token = editor.getTokenAt(cursor);
+            var line = cursor.line;
+            var lineText = editor.getLine(line);
+            var end = cursor.ch;
+
+            // Check if we're after a dot (e.g., "can.")
+            var dotMatch = lineText.substring(0, end).match(/(\w+)\.([\w]*)$/);
+
+            if (dotMatch) {
+                // We're typing after a dot!
+                var objectName = dotMatch[1];  // e.g., "can"
+                var partialMethod = dotMatch[2];  // e.g., "cir" if typing "can.cir"
+                var start = end - partialMethod.length;
+
+                // Look up methods for this object
+                if (API_DEFINITIONS[objectName]) {
+                    var methods = API_DEFINITIONS[objectName];
+
+                    // Filter methods based on what's been typed
+                    var filteredMethods = methods.filter(function(method) {
+                        return method.toLowerCase().indexOf(partialMethod.toLowerCase()) === 0;
+                    });
+
+                    if (filteredMethods.length > 0) {
+                        return {
+                            list: filteredMethods,
+                            from: CodeMirror.Pos(line, start),
+                            to: CodeMirror.Pos(line, end)
+                        };
+                    }
+                }
+            }
+
+            // Otherwise, fall back to general keywords + anyword
+            var start = token.start;
+            var currentWord = token.string;
+
+            // Get words from document
+            var anywordResult = CodeMirror.hint.anyword(editor);
+            var anywordList = anywordResult ? anywordResult.list : [];
+
+            // General keywords
+            var generalKeywords = ['Canvas', 'Color', 'CreativeGardenPalette', 'CalmOasisPalette'];
+            var keywordList = generalKeywords.filter(function(keyword) {
+                return keyword.toLowerCase().indexOf(currentWord.toLowerCase()) === 0;
+            });
+
+            // Combine and deduplicate
+            var combinedList = keywordList.concat(anywordList);
+            var uniqueList = combinedList.filter(function(item, pos) {
+                return combinedList.indexOf(item) === pos;
+            });
+
+            return {
+                list: uniqueList,
+                from: CodeMirror.Pos(line, start),
+                to: CodeMirror.Pos(line, end)
+            };
+        };
+
+        // Initialize CodeMirror
+        function initCodeMirror() {
+            editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
+                mode: 'python',
+                theme: 'dracula',
+                lineNumbers: true,
+                tabSize: 4,
+                indentUnit: 4,
+                lineWrapping: true,
+                autoCloseBrackets: true,
+                matchBrackets: true,
+                indentWithTabs: false,
+                extraKeys: {
+                    "Ctrl-Enter": function(cm) {
+                        runCode();
+                    },
+                    "Cmd-Enter": function(cm) {
+                        runCode();
+                    },
+                    "Ctrl-Space": "autocomplete"
+                }
+            });
+
+            // Trigger autocomplete automatically when typing
+            editor.on("inputRead", function(editor, change) {
+                // Trigger on any word character or dot
+                if (change.text[0] && /[\w.]/.test(change.text[0])) {
+                    editor.showHint({
+                        completeSingle: false,
+                        hint: CodeMirror.hint.smartPython
+                    });
+                }
+            });
+        }
+
+        // Initialize Pyodide
+        async function initPyodide() {
+            pyodide = await loadPyodide();
+
+            // Load the shapes library
+            await pyodide.runPythonAsync(`
+{{ shapes_code }}
+        `);
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('runBtn').disabled = false;
+            document.getElementById('status').textContent = 'Ready! ✓';
+
+            // Auto-run code on load
+            runCode();
+        }
+
+        // Run user code
+        async function runCode() {
+            const code = editor.getValue();
+            const errorDiv = document.getElementById('error');
+            const canvasDiv = document.getElementById('canvas');
+            const statusSpan = document.getElementById('status');
+
+            errorDiv.style.display = 'none';
+            statusSpan.textContent = 'Running...';
+
+            try {
+                // Run the code
+                await pyodide.runPythonAsync(code);
+
+                // Get the canvas result
+                const result = pyodide.globals.get('can');
+
+                if (result && typeof result.to_svg === 'function') {
+                    const svg = result.to_svg();
+                    canvasDiv.innerHTML = svg;
+                    statusSpan.textContent = 'Success! ✓';
+                    statusSpan.style.color = '#4CAF50';
+                } else {
+                    canvasDiv.innerHTML = '<div style="color: #999;">Make sure your code ends with "can" to display the canvas.</div>';
+                    statusSpan.textContent = '';
+                }
+            } catch (err) {
+                errorDiv.textContent = '❌ Error: ' + err.message;
+                errorDiv.style.display = 'block';
+                statusSpan.textContent = 'Error';
+                statusSpan.style.color = '#f44336';
+                console.error(err);
+            }
+        }
+
+        function clearCanvas() {
+            document.getElementById('canvas').innerHTML = '<div style="color: #999;">Canvas cleared. Click "Run Code" to draw.</div>';
+            document.getElementById('error').style.display = 'none';
+        }
+
+        // Initialize
+        initCodeMirror();
+        initPyodide();
+        document.getElementById('runBtn').disabled = true;
+    </script>
+</body>
+
+</html>

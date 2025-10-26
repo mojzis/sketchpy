@@ -23,6 +23,41 @@ class Color:
     BROWN = "#8B4513"
     SILVER = "#C0C0C0"
 
+class CalmOasisPalette:
+    """
+    Calming palette focused on therapeutic blues, greens, and lavenders.
+    Best for: Focus, relaxation, reducing anxiety, promoting peaceful work.
+    """
+    SKY_BLUE = "#A5C8E4"        # Soft, calming blue - promotes tranquility
+    MINT_FRESH = "#B0E0A8"      # Gentle green - reduces stress, aids focus
+    LAVENDER_MIST = "#E5DAFF"   # Soft purple - encourages creativity & calm
+    POWDER_BLUE = "#BFEFFF"     # Light blue - soothing, spacious feeling
+    SAGE_GREEN = "#C0ECCC"      # Tea green - natural, peaceful, clarity
+    PERIWINKLE = "#CCCCFF"      # Blue-purple - thoughtful, gentle
+    CREAM = "#FFF7D4"           # Warm neutral - safe, comfortable
+    SOFT_AQUA = "#AFDFE5"       # Aqua - refreshing, balanced
+    PALE_LILAC = "#E6D5FF"      # Lilac - imaginative, serene
+    CLOUD_WHITE = "#F5F5F5"     # Off-white - spacious, clean
+    MIST_GRAY = "#D3D3D3"       # Light gray - neutral, grounding
+    SEAFOAM = "#C8FFE1"         # Mint-aqua - healing, optimistic
+
+class CreativeGardenPalette:
+    """
+    Broader pastel palette for creative expression while staying calm.
+    Best for: Variety, self-expression, encouraging creativity, balanced energy.
+    """
+    PEACH_WHISPER = "#FFDAC1"   # Soft peach - warm, friendly, gentle
+    ROSE_QUARTZ = "#F6A8A6"     # Muted pink - nurturing, empathetic
+    BUTTER_YELLOW = "#FFF0A3"   # Soft yellow - optimistic, clear thinking
+    MINT_CREAM = "#C0ECCC"      # Mint green - fresh, balanced, growth
+    SKY_BREEZE = "#A5C8E4"      # Powder blue - peaceful, trustworthy
+    LILAC_DREAM = "#D5C3E0"     # Soft lilac - creative, sophisticated
+    CORAL_BLUSH = "#FFB3B3"     # Gentle coral - energetic but not overwhelming
+    LEMON_CHIFFON = "#F9F0C1"   # Pale yellow - joyful, light
+    MISTY_MAUVE = "#E8D4E8"     # Soft mauve - elegant, calming
+    HONEYDEW = "#E8F5E3"        # Very pale green - restful, natural
+    VANILLA_CREAM = "#FAF0E6"   # Warm white - cozy, safe
+    DOVE_GRAY = "#D5D5D5"       # Soft gray - stable, grounding
 
 @dataclass
 class Point:
@@ -40,23 +75,23 @@ class Canvas:
         self.background = background
         self.shapes: List[str] = []
     
-    def rect(self, x: float, y: float, width: float, height: float, 
-             fill: str = Color.BLACK, stroke: str = Color.BLACK, 
+    def rect(self, x: float = 0, y: float = 0, width: float = 100, height: float = 100,
+             fill: str = Color.BLACK, stroke: str = Color.BLACK,
              stroke_width: float = 1) -> 'Canvas':
         """Draw a rectangle. Returns self for chaining."""
         svg = f'<rect x="{x}" y="{y}" width="{width}" height="{height}" fill="{fill}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
         self.shapes.append(svg)
         return self
     
-    def circle(self, x: float, y: float, radius: float, 
-               fill: str = Color.BLACK, stroke: str = Color.BLACK, 
+    def circle(self, x: float = 50, y: float = 50, radius: float = 25,
+               fill: str = Color.BLACK, stroke: str = Color.BLACK,
                stroke_width: float = 1) -> 'Canvas':
         """Draw a circle at center (x, y). Returns self for chaining."""
         svg = f'<circle cx="{x}" cy="{y}" r="{radius}" fill="{fill}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
         self.shapes.append(svg)
         return self
     
-    def ellipse(self, x: float, y: float, rx: float, ry: float,
+    def ellipse(self, x: float = 50, y: float = 50, rx: float = 40, ry: float = 25,
                 fill: str = Color.BLACK, stroke: str = Color.BLACK,
                 stroke_width: float = 1) -> 'Canvas':
         """Draw an ellipse. rx = horizontal radius, ry = vertical radius."""
@@ -64,23 +99,25 @@ class Canvas:
         self.shapes.append(svg)
         return self
     
-    def line(self, x1: float, y1: float, x2: float, y2: float,
+    def line(self, x1: float = 0, y1: float = 0, x2: float = 100, y2: float = 100,
              stroke: str = Color.BLACK, stroke_width: float = 2) -> 'Canvas':
         """Draw a line from (x1, y1) to (x2, y2)."""
         svg = f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
         self.shapes.append(svg)
         return self
     
-    def polygon(self, points: List[Tuple[float, float]], 
+    def polygon(self, points: List[Tuple[float, float]] = None,
                 fill: str = Color.BLACK, stroke: str = Color.BLACK,
                 stroke_width: float = 1) -> 'Canvas':
         """Draw a polygon from a list of (x, y) points."""
+        if points is None:
+            points = [(50, 0), (100, 100), (0, 100)]  # Default triangle
         points_str = " ".join(f"{x},{y}" for x, y in points)
         svg = f'<polygon points="{points_str}" fill="{fill}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
         self.shapes.append(svg)
         return self
     
-    def text(self, x: float, y: float, text: str, 
+    def text(self, x: float = 0, y: float = 20, text: str = "Hello",
              size: int = 16, fill: str = Color.BLACK,
              font: str = "Arial") -> 'Canvas':
         """Draw text at (x, y). Note: y is the baseline."""
@@ -88,7 +125,7 @@ class Canvas:
         self.shapes.append(svg)
         return self
     
-    def rounded_rect(self, x: float, y: float, width: float, height: float,
+    def rounded_rect(self, x: float = 0, y: float = 0, width: float = 100, height: float = 100,
                      rx: float = 5, ry: float = 5,
                      fill: str = Color.BLACK, stroke: str = Color.BLACK,
                      stroke_width: float = 1) -> 'Canvas':
@@ -97,6 +134,79 @@ class Canvas:
         self.shapes.append(svg)
         return self
     
+    def grid(self, spacing: int = 50, color: str = "#E8E8E8",
+             show_coords: bool = True) -> 'Canvas':
+        """
+        Draw a coordinate grid on the canvas with subtle grey lines.
+
+        Args:
+            spacing: Distance between grid lines in pixels (default: 50)
+            color: Color of grid lines (default: very light grey)
+            show_coords: Whether to show coordinate labels (default: True)
+        """
+        # Draw vertical lines
+        x = spacing
+        while x < self.width:
+            self.line(x, 0, x, self.height, stroke=color, stroke_width=0.5)
+            if show_coords and x % (spacing * 2) == 0:  # Show coords every 2nd line
+                self.text(x + 2, 12, str(x), size=10, fill="#AAAAAA")
+            x += spacing
+
+        # Draw horizontal lines
+        y = spacing
+        while y < self.height:
+            self.line(0, y, self.width, y, stroke=color, stroke_width=0.5)
+            if show_coords and y % (spacing * 2) == 0:  # Show coords every 2nd line
+                self.text(2, y - 2, str(y), size=10, fill="#AAAAAA")
+            y += spacing
+
+        # Draw origin marker (0,0) at top-left
+        if show_coords:
+            self.text(2, 12, "(0,0)", size=10, fill="#888888")
+
+        return self
+
+    def show_palette(self, palette_class, rect_width: float = 120, rect_height: float = 60,
+                     columns: int = 4, padding: float = 10, start_x: float = 20,
+                     start_y: float = 20) -> 'Canvas':
+        """
+        Display all colors from a palette class as colored rectangles with labels.
+
+        Args:
+            palette_class: A palette class (e.g., CreativeGardenPalette, CalmOasisPalette)
+            rect_width: Width of each color rectangle (default: 120)
+            rect_height: Height of each color rectangle (default: 60)
+            columns: Number of columns in the grid (default: 4)
+            padding: Padding between rectangles (default: 10)
+            start_x: Starting x position (default: 20)
+            start_y: Starting y position (default: 20)
+        """
+        # Get all color attributes from the palette class
+        colors = [(name, value) for name, value in vars(palette_class).items()
+                  if not name.startswith('_') and isinstance(value, str)]
+
+        # Draw each color as a rectangle with label
+        for i, (name, color_value) in enumerate(colors):
+            row = i // columns
+            col = i % columns
+
+            x = start_x + col * (rect_width + padding)
+            y = start_y + row * (rect_height + padding)
+
+            # Draw colored rectangle
+            self.rounded_rect(x, y, rect_width, rect_height, rx=5,
+                            fill=color_value, stroke=Color.GRAY, stroke_width=1)
+
+            # Draw color name
+            self.text(x + rect_width / 2 - len(name) * 3, y + rect_height / 2 + 5,
+                     name, size=11, fill=Color.BLACK, font="monospace")
+
+            # Draw hex value
+            self.text(x + rect_width / 2 - len(color_value) * 3, y + rect_height - 10,
+                     color_value, size=9, fill=Color.GRAY, font="monospace")
+
+        return self
+
     def clear(self) -> 'Canvas':
         """Clear all shapes from the canvas."""
         self.shapes = []
@@ -116,16 +226,6 @@ class Canvas:
             f.write(self.to_svg())
         print(f"Saved to {filename}")
     
-    def show(self) -> str:
-        """Display in Jupyter/marimo. Returns SVG string."""
-        from IPython.display import SVG, display
-        display(SVG(self.to_svg()))
-        return self.to_svg()
-    
-    def _repr_svg_(self):
-        """Automatic display in Jupyter notebooks."""
-        return self.to_svg()
-
     def _repr_html_(self):
         """Automatic display in marimo."""
         return self.to_svg()

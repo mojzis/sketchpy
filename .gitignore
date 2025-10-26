@@ -8,3 +8,19 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Logs and runtime files
+logs/
+*.log
+*.pid
+
+# SSL certificates
+localhost.pem
+
+# Generated files
+output/
+temp/
+# Test artifacts
+.pytest_cache/
+htmlcov/
+.coverage
