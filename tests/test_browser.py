@@ -45,8 +45,8 @@ def test_page_loads_without_errors(build_output):
         # Load the page
         page.goto(f'file://{build_output.absolute()}')
 
-        # Wait for the page to be ready (CodeMirror replaces the textarea)
-        page.wait_for_selector('.CodeMirror', timeout=5000)
+        # Wait for the page to be ready (CodeMirror 6 editor)
+        page.wait_for_selector('.cm-editor', timeout=5000)
 
         # Check for critical errors
         assert len(page_errors) == 0, f"Page errors: {page_errors}"

@@ -5,14 +5,7 @@
     <meta charset="utf-8">
     <title>Python Graphics Learning</title>
 
-    <!-- CodeMirror Core CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-
-    <!-- Dracula Theme -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
-
-    <!-- Show Hint CSS for autocomplete -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.css">
+    <!-- CodeMirror 6 styles are included in the library -->
 
     <style>
         * {
@@ -115,10 +108,14 @@
             background: #282a36;
         }
 
-        .CodeMirror {
+        .editor-container .cm-editor {
             height: 100%;
             font-family: 'Monaco', 'Courier New', monospace;
             font-size: 14px;
+        }
+
+        .editor-container .cm-scroller {
+            overflow: auto;
         }
 
         #editor {
@@ -273,86 +270,111 @@ can</textarea>
 
     <div class="loading" id="loading">Loading Python... ⏳</div>
 
-    <!-- CodeMirror Core JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-
-    <!-- Python Mode -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
-
-    <!-- Addons for enhanced functionality -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
-
-    <!-- Autocomplete addons -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/show-hint.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/hint/anyword-hint.min.js"></script>
+    <!-- Import Map for CodeMirror 6 -->
+    <script type="importmap">
+    {
+        "imports": {
+            "@codemirror/": "https://esm.sh/@codemirror/",
+            "@lezer/": "https://esm.sh/@lezer/",
+            "codemirror": "https://esm.sh/codemirror@6.0.1"
+        }
+    }
+    </script>
 
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
-    <script>
+    <script type="module">
+        import { EditorView, basicSetup } from "codemirror";
+        import { python } from "@codemirror/lang-python";
+        import { oneDark } from "@codemirror/theme-one-dark";
+        import { autocompletion } from "@codemirror/autocomplete";
+
         let pyodide;
         let editor;
 
-        // Make functions global
+        // Make functions and pyodide global for testing
         window.runCode = runCode;
         window.clearCanvas = clearCanvas;
 
+        // Expose pyodide to window for test access (will be set after initialization)
+        Object.defineProperty(window, 'pyodide', {
+            get() { return pyodide; },
+            set(value) { pyodide = value; }
+        });
+
         // ===== AUTO-GENERATED API DEFINITIONS =====
         // Extract Canvas methods and palette colors from embedded Python code
-        var API_DEFINITIONS = (function() {
-            var shapesCode = `{{ shapes_code }}`;
-            var api = {};
+        const API_DEFINITIONS = window.API_DEFINITIONS = (function() {
+            const shapesCode = `{{ shapes_code }}`;
+            const api = {};
 
-            // Extract Canvas methods
-            var canvasMethods = [];
-            var methodRegex = /def\s+(\w+)\s*\(self(?:,\s*([^)]*))?\)/gs;
-            var match;
+            // Extract Canvas methods with signatures
+            const canvasMethods = [];
+            const methodRegex = /def\s+(\w+)\s*\(self(?:,\s*([^)]*))?\)/gs;
+            let match;
             while ((match = methodRegex.exec(shapesCode)) !== null) {
-                var methodName = match[1];
-                var params = match[2] || '';
+                const methodName = match[1];
+                const params = match[2] || '';
                 // Skip private methods and _repr_html_
                 if (!methodName.startsWith('_')) {
                     // Clean up params: normalize whitespace to single line
-                    var cleanParams = params.replace(/\s+/g, ' ').trim();
-                    canvasMethods.push(methodName + '(' + cleanParams + ')');
+                    const cleanParams = params.replace(/\s+/g, ' ').trim();
+                    canvasMethods.push({
+                        label: methodName,
+                        type: "method",
+                        detail: cleanParams ? `(${cleanParams})` : "()",
+                        info: `Canvas method: ${methodName}`
+                    });
                 }
             }
             api['can'] = canvasMethods;
 
             // Extract Color class constants
-            var colorRegex = /class\s+Color:[\s\S]*?(?=\n(?:class|def|\Z))/;
-            var colorMatch = shapesCode.match(colorRegex);
+            const colorRegex = /class\s+Color:[\s\S]*?(?=\n(?:class|def|\Z))/;
+            const colorMatch = shapesCode.match(colorRegex);
             if (colorMatch) {
-                var colorCode = colorMatch[0];
-                var colorConstRegex = /(\w+)\s*=\s*["']#[0-9A-Fa-f]{6}["']/g;
-                var colors = [];
+                const colorCode = colorMatch[0];
+                const colorConstRegex = /(\w+)\s*=\s*["']#[0-9A-Fa-f]{6}["']/g;
+                const colors = [];
                 while ((match = colorConstRegex.exec(colorCode)) !== null) {
-                    colors.push(match[1]);
+                    colors.push({
+                        label: match[1],
+                        type: "constant",
+                        info: `Color constant`
+                    });
                 }
                 api['Color'] = colors;
             }
 
             // Extract CreativeGardenPalette constants
-            var gardenRegex = /class\s+CreativeGardenPalette:[\s\S]*?(?=\n(?:class|def|\Z))/;
-            var gardenMatch = shapesCode.match(gardenRegex);
+            const gardenRegex = /class\s+CreativeGardenPalette:[\s\S]*?(?=\n(?:class|def|\Z))/;
+            const gardenMatch = shapesCode.match(gardenRegex);
             if (gardenMatch) {
-                var gardenCode = gardenMatch[0];
-                var gardenConstRegex = /(\w+)\s*=\s*["']#[0-9A-Fa-f]{6}["']/g;
-                var gardenColors = [];
+                const gardenCode = gardenMatch[0];
+                const gardenConstRegex = /(\w+)\s*=\s*["']#[0-9A-Fa-f]{6}["']/g;
+                const gardenColors = [];
                 while ((match = gardenConstRegex.exec(gardenCode)) !== null) {
-                    gardenColors.push(match[1]);
+                    gardenColors.push({
+                        label: match[1],
+                        type: "constant",
+                        info: `CreativeGardenPalette color`
+                    });
                 }
                 api['CreativeGardenPalette'] = gardenColors;
             }
 
             // Extract CalmOasisPalette constants
-            var oasisRegex = /class\s+CalmOasisPalette:[\s\S]*?(?=\n(?:class|def|\Z))/;
-            var oasisMatch = shapesCode.match(oasisRegex);
+            const oasisRegex = /class\s+CalmOasisPalette:[\s\S]*?(?=\n(?:class|def|\Z))/;
+            const oasisMatch = shapesCode.match(oasisRegex);
             if (oasisMatch) {
-                var oasisCode = oasisMatch[0];
-                var oasisConstRegex = /(\w+)\s*=\s*["']#[0-9A-Fa-f]{6}["']/g;
-                var oasisColors = [];
+                const oasisCode = oasisMatch[0];
+                const oasisConstRegex = /(\w+)\s*=\s*["']#[0-9A-Fa-f]{6}["']/g;
+                const oasisColors = [];
                 while ((match = oasisConstRegex.exec(oasisCode)) !== null) {
-                    oasisColors.push(match[1]);
+                    oasisColors.push({
+                        label: match[1],
+                        type: "constant",
+                        info: `CalmOasisPalette color`
+                    });
                 }
                 api['CalmOasisPalette'] = oasisColors;
             }
@@ -360,103 +382,87 @@ can</textarea>
             return api;
         })();
 
-        // Smart hint function that detects object.method patterns
-        CodeMirror.hint.smartPython = function(editor) {
-            var cursor = editor.getCursor();
-            var token = editor.getTokenAt(cursor);
-            var line = cursor.line;
-            var lineText = editor.getLine(line);
-            var end = cursor.ch;
+        // General keywords (classes)
+        const generalKeywords = [
+            { label: "Canvas", type: "class", detail: "(width, height)", info: "Create a new drawing canvas" },
+            { label: "Color", type: "class", info: "Basic color palette class" },
+            { label: "CreativeGardenPalette", type: "class", info: "Pastel color palette for creative projects" },
+            { label: "CalmOasisPalette", type: "class", info: "Calming blues and greens color palette" }
+        ];
 
-            // Check if we're after a dot (e.g., "can.")
-            var dotMatch = lineText.substring(0, end).match(/(\w+)\.([\w]*)$/);
+        // Smart completion function that detects object.method patterns (CodeMirror 6 API)
+        function smartPythonCompletions(context) {
+            // Get text before cursor
+            let before = context.matchBefore(/\w+\.\w*/);
 
-            if (dotMatch) {
-                // We're typing after a dot!
-                var objectName = dotMatch[1];  // e.g., "can"
-                var partialMethod = dotMatch[2];  // e.g., "cir" if typing "can.cir"
-                var start = end - partialMethod.length;
+            // Check if we're typing after a dot (e.g., "can.circle")
+            if (before) {
+                let text = before.text;
+                let dotIndex = text.lastIndexOf('.');
 
-                // Look up methods for this object
-                if (API_DEFINITIONS[objectName]) {
-                    var methods = API_DEFINITIONS[objectName];
+                if (dotIndex > 0) {
+                    // Extract object name and partial method
+                    let objectName = text.substring(0, dotIndex);
+                    let partialMethod = text.substring(dotIndex + 1);
 
-                    // Filter methods based on what's been typed
-                    var filteredMethods = methods.filter(function(method) {
-                        return method.toLowerCase().indexOf(partialMethod.toLowerCase()) === 0;
-                    });
+                    // Look up methods for this object
+                    if (API_DEFINITIONS[objectName]) {
+                        let methods = API_DEFINITIONS[objectName];
 
-                    if (filteredMethods.length > 0) {
                         return {
-                            list: filteredMethods,
-                            from: CodeMirror.Pos(line, start),
-                            to: CodeMirror.Pos(line, end)
+                            from: before.from + dotIndex + 1,
+                            options: methods,
+                            validFor: /^\w*$/
                         };
                     }
                 }
             }
 
-            // Otherwise, fall back to general keywords + anyword
-            var start = token.start;
-            var currentWord = token.string;
-
-            // Get words from document
-            var anywordResult = CodeMirror.hint.anyword(editor);
-            var anywordList = anywordResult ? anywordResult.list : [];
-
-            // General keywords
-            var generalKeywords = ['Canvas', 'Color', 'CreativeGardenPalette', 'CalmOasisPalette'];
-            var keywordList = generalKeywords.filter(function(keyword) {
-                return keyword.toLowerCase().indexOf(currentWord.toLowerCase()) === 0;
-            });
-
-            // Combine and deduplicate
-            var combinedList = keywordList.concat(anywordList);
-            var uniqueList = combinedList.filter(function(item, pos) {
-                return combinedList.indexOf(item) === pos;
-            });
+            // Otherwise, check for regular word completion
+            let word = context.matchBefore(/\w*/);
+            if (!word || (word.from == word.to && !context.explicit))
+                return null;
 
             return {
-                list: uniqueList,
-                from: CodeMirror.Pos(line, start),
-                to: CodeMirror.Pos(line, end)
+                from: word.from,
+                options: generalKeywords,
+                validFor: /^\w*$/
             };
-        };
-
-        // Initialize CodeMirror
-        function initCodeMirror() {
-            editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
-                mode: 'python',
-                theme: 'dracula',
-                lineNumbers: true,
-                tabSize: 4,
-                indentUnit: 4,
-                lineWrapping: true,
-                autoCloseBrackets: true,
-                matchBrackets: true,
-                indentWithTabs: false,
-                extraKeys: {
-                    "Ctrl-Enter": function(cm) {
-                        runCode();
-                    },
-                    "Cmd-Enter": function(cm) {
-                        runCode();
-                    },
-                    "Ctrl-Space": "autocomplete"
-                }
-            });
-
-            // Trigger autocomplete automatically when typing
-            editor.on("inputRead", function(editor, change) {
-                // Trigger on any word character or dot
-                if (change.text[0] && /[\w.]/.test(change.text[0])) {
-                    editor.showHint({
-                        completeSingle: false,
-                        hint: CodeMirror.hint.smartPython
-                    });
-                }
-            });
         }
+
+        // Get initial code from textarea
+        const initialCode = document.getElementById('editor').value;
+
+        // Initialize CodeMirror 6 editor
+        editor = new EditorView({
+            doc: initialCode,
+            extensions: [
+                basicSetup,
+                python(),
+                oneDark,
+                autocompletion({
+                    override: [smartPythonCompletions],
+                    activateOnTyping: true,  // Auto-trigger on typing
+                    defaultKeymap: true      // Enable Ctrl-Space shortcut
+                }),
+                EditorView.lineWrapping,
+                // Add keyboard shortcuts
+                EditorView.domEventHandlers({
+                    keydown(event, view) {
+                        // Ctrl-Enter or Cmd-Enter to run code
+                        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                            runCode();
+                            return true;
+                        }
+                        return false;
+                    }
+                })
+            ],
+            parent: document.querySelector('.editor-container')
+        });
+
+        // Hide the textarea since CodeMirror creates its own DOM
+        document.getElementById('editor').style.display = 'none';
 
         // Initialize Pyodide
         async function initPyodide() {
@@ -477,7 +483,8 @@ can</textarea>
 
         // Run user code
         async function runCode() {
-            const code = editor.getValue();
+            // Get code from CodeMirror 6 editor
+            const code = editor.state.doc.toString();
             const errorDiv = document.getElementById('error');
             const canvasDiv = document.getElementById('canvas');
             const statusSpan = document.getElementById('status');
@@ -515,8 +522,7 @@ can</textarea>
             document.getElementById('error').style.display = 'none';
         }
 
-        // Initialize
-        initCodeMirror();
+        // Initialize Pyodide (editor is already initialized above)
         initPyodide();
         document.getElementById('runBtn').disabled = true;
     </script>
