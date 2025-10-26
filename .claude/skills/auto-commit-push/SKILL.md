@@ -73,8 +73,20 @@ When invoked, use the Task tool to launch a general-purpose agent that will hand
    - Follows conventional commit format
    - Includes the standard footer with Claude Code attribution
 4. Stage all relevant files
-5. Create the commit
+5. Create the commit using a command that starts with a space (` git commit`) to avoid cluttering shell history
 6. Push to remote (with safety checks)
+
+**Important**: Always prefix the git commit command with a space to prevent it from being saved in shell history. This keeps the command line history clean and focused on interactive commands.
+
+Example:
+```bash
+git add file.py
+ git commit -m "$(cat <<'EOF'
+Your commit message here
+EOF
+)"
+git push
+```
 
 The agent will autonomously handle all git operations and ensure the commit message follows best practices without meta information.
 
