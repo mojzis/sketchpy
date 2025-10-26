@@ -1,6 +1,6 @@
 # Project State
 
-Last Updated: 2025-10-26 (Server Auto-Restart Complete)
+Last Updated: 2025-10-26 (Phase 4: Web Worker Complete)
 
 ## Overview
 
@@ -36,7 +36,8 @@ Currently in active development with a functional web-based editor powered by Co
   - Autocomplete tests (8 tests)
   - Server tests (2 tests): auto-restart and PID management
   - Keyboard shortcut test for Cmd/Ctrl+Enter functionality
-  - Total: 27 passing tests
+  - Lesson tests (12 tests): validates all lesson starter.py files execute, create canvas, draw shapes, generate valid SVG
+  - Total: 39 passing tests (lessons: 12, build: 8, browser: 9, autocomplete: 8, server: 2)
 
 - **Development Server** (2025-10-26)
   - Background HTTPS server with auto-rebuild on file changes
@@ -71,6 +72,23 @@ Currently in active development with a functional web-based editor powered by Co
   - Component-based templates (sidebar.html, output-tabs.html)
   - Mobile responsive with fixed sidebar overlay
   - All 8 build tests passing
+
+- **Lesson Starter File Tests** (2025-10-26)
+  - Created tests/test_lessons.py with parameterized tests for all lesson starter.py files
+  - Tests verify: code execution without errors, canvas creation, shape drawing, SVG generation
+  - Fixed bug in lesson 03-geometric-patterns: replaced non-existent OCEAN_DEEP with POWDER_BLUE
+  - Automatically discovers new lessons via glob pattern (scalable to future lessons)
+  - 12 tests total (4 test types × 3 lessons)
+
+- **Pyodide Web Worker - Phase 4** (2025-10-26)
+  - Moved Python execution from main thread to Web Worker for non-blocking UI
+  - Created static/js/pyodide-worker.js with Pyodide loading and code execution
+  - Updated app.js to communicate with worker via postMessage API
+  - Removed direct Pyodide loading from template (now loaded in worker)
+  - Auto-run code on page load when worker ready
+  - UI stays responsive during Python execution
+  - All 8 build tests passing with updated regex for window.SHAPES_CODE
+  - Test file path updated to point to lessons/01-first-flower.html (multi-lesson structure)
 
 ### In Progress
 
@@ -121,6 +139,11 @@ None currently
 - **Rationale**: Maximizes canvas space (80% width), keeps controls accessible in sidebar, better than 3-column which cramped canvas
 - **Date**: 2025-10-26
 
+### Pyodide Web Worker for Non-Blocking Execution
+- **Decision**: Run Pyodide in a Web Worker instead of main thread
+- **Rationale**: Keeps UI responsive during Python code execution, prevents UI freezing on long-running code, better performance on slower devices
+- **Date**: 2025-10-26
+
 ## Code Patterns
 
 ### Jinja2 Template Code Embedding
@@ -142,6 +165,16 @@ None currently
 - **Usage**: Build-time class that loads and processes lesson content from YAML and Markdown
 - **Example**: `LessonLoader` in `scripts/build.py` with `load_lessons_config()` and `load_lesson_content()`
 - **Rationale**: Encapsulates lesson loading logic, supports optional help files, converts Markdown to HTML
+
+### Parameterized Lesson Tests
+- **Usage**: Pytest's `@pytest.mark.parametrize` with dynamic lesson file discovery
+- **Example**: `tests/test_lessons.py` uses `get_lesson_starter_files()` to find all `lessons/*/starter.py` files
+- **Rationale**: Automatically scales to new lessons without modifying test code, ensures consistent validation across all lessons
+
+### Web Worker Communication for Pyodide
+- **Usage**: Worker handles Pyodide loading and Python execution, main thread stays responsive
+- **Example**: `static/js/pyodide-worker.js` receives code via postMessage, executes in Pyodide, sends results back
+- **Rationale**: Non-blocking UI prevents freezing during code execution, better UX for long-running code, allows panel toggling during execution
 
 ## Known Constraints
 
@@ -184,25 +217,19 @@ None currently
 
 ## Next Steps
 
-1. **Phase 3: Multi-Lesson Switching** (Immediate Priority)
-   - Make lesson dropdown functional with Alpine.js
-   - Implement dynamic lesson switching without page reload
-   - Update editor content and instructions when lesson changes
-   - See plans/alpine-phase-3.md for detailed steps
-
-2. **Implement gradient support**
+1. **Implement gradient support** (Next Priority)
    - Add linear and radial gradient methods to Canvas
    - Update autocomplete with gradient examples
    - See plans/gradients.md for specification
 
-3. **Improve autocomplete context awareness**
+2. **Improve autocomplete context awareness**
    - Detect when inside method calls for parameter hints
    - Show relevant palette when typing fill= or color=
 
-4. **Add more example lessons**
+3. **Add more example lessons**
    - Leverage new lesson structure to create varied tutorials
    - Build lesson library (cars, landscapes, patterns, etc.)
 
-5. **Performance profiling**
+4. **Performance profiling**
    - Test with complex drawings (many shapes)
    - Optimize SVG generation if needed

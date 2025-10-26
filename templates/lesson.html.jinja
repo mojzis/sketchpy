@@ -114,7 +114,107 @@
             overflow-y: auto;
         }
 
-        /* Lesson Selector */
+        /* Lesson List */
+        .lesson-list {
+            margin-bottom: 20px;
+        }
+
+        .lesson-list h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .lesson-item {
+            margin: 10px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+            transition: all 0.2s;
+        }
+
+        .lesson-item:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .lesson-item.active {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+        }
+
+        .lesson-item.completed {
+            border-left: 4px solid #4CAF50;
+        }
+
+        .lesson-link {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .lesson-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .lesson-item.completed .lesson-icon {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .lesson-item.active .lesson-icon {
+            background: #2196F3;
+            color: white;
+        }
+
+        .lesson-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .lesson-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .lesson-meta {
+            display: flex;
+            gap: 8px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .difficulty {
+            background: #e0e0e0;
+            padding: 2px 8px;
+            border-radius: 3px;
+        }
+
+        .duration {
+            background: #e0e0e0;
+            padding: 2px 8px;
+            border-radius: 3px;
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        /* Lesson Selector (legacy - keep for backward compat) */
         .lesson-selector {
             margin-bottom: 20px;
         }
@@ -139,28 +239,6 @@
         .lesson-dropdown:focus {
             outline: none;
             border-color: #4CAF50;
-        }
-
-        .lesson-meta {
-            display: flex;
-            gap: 8px;
-            margin-top: 8px;
-        }
-
-        .difficulty {
-            background: #e3f2fd;
-            color: #1976d2;
-            padding: 2px 8px;
-            border-radius: 3px;
-            font-size: 11px;
-        }
-
-        .duration {
-            background: #f3e5f5;
-            color: #7b1fa2;
-            padding: 2px 8px;
-            border-radius: 3px;
-            font-size: 11px;
         }
 
         /* Sidebar Instructions */
@@ -505,7 +583,6 @@
     }
     </script>
 
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
     <script type="module">
         import { EditorView, basicSetup } from "codemirror";
         import { python } from "@codemirror/lang-python";
@@ -514,14 +591,7 @@
         import { keymap } from "@codemirror/view";
         import { Prec } from "@codemirror/state";
 
-        let pyodide;
         let editor;
-
-        // Expose pyodide to window for test access (will be set after initialization)
-        Object.defineProperty(window, 'pyodide', {
-            get() { return pyodide; },
-            set(value) { pyodide = value; }
-        });
 
         // ===== API DEFINITIONS WITH DEFAULT PARAMETERS =====
         const API_DEFINITIONS = window.API_DEFINITIONS = (function() {
@@ -726,51 +796,8 @@
             };
         }
 
-        // Define functions before editor initialization so keymap can reference them
-        // Run user code
-        async function runCode() {
-            // Get code from CodeMirror 6 editor
-            const code = editor.state.doc.toString();
-            const errorDiv = document.getElementById('error');
-            const canvasDiv = document.getElementById('canvas');
-            const statusSpan = document.getElementById('status');
-
-            errorDiv.style.display = 'none';
-            statusSpan.textContent = 'Running...';
-
-            try {
-                // Run the code
-                await pyodide.runPythonAsync(code);
-
-                // Get the canvas result
-                const result = pyodide.globals.get('can');
-
-                if (result && typeof result.to_svg === 'function') {
-                    const svg = result.to_svg();
-                    canvasDiv.innerHTML = svg;
-                    statusSpan.textContent = 'Success! ✓';
-                    statusSpan.style.color = '#4CAF50';
-                } else {
-                    canvasDiv.innerHTML = '<div style="color: #999;">Make sure your code ends with "can" to display the canvas.</div>';
-                    statusSpan.textContent = '';
-                }
-            } catch (err) {
-                errorDiv.textContent = '❌ Error: ' + err.message;
-                errorDiv.style.display = 'block';
-                statusSpan.textContent = 'Error';
-                statusSpan.style.color = '#f44336';
-                console.error(err);
-            }
-        }
-
-        function clearCanvas() {
-            document.getElementById('canvas').innerHTML = '<div style="color: #999;">Canvas cleared. Click "Run Code" to draw.</div>';
-            document.getElementById('error').style.display = 'none';
-        }
-
-        // Make functions global for HTML onclick handlers and testing
-        window.runCode = runCode;
-        window.clearCanvas = clearCanvas;
+        // Note: runCode and clearCanvas are defined in app.js and exposed via window
+        // They're already available for the keyboard shortcuts and onclick handlers
 
         // Get initial code from textarea
         const initialCode = document.getElementById('editor').value;
@@ -796,7 +823,7 @@
                     {
                         key: 'Mod-Enter',
                         run: () => {
-                            runCode();
+                            window.runCode();
                             return true;
                         }
                     }
@@ -808,25 +835,11 @@
         // Hide the textarea since CodeMirror creates its own DOM
         document.getElementById('editor').style.display = 'none';
 
-        // Initialize Pyodide
-        async function initPyodide() {
-            pyodide = await loadPyodide();
+        // Expose editor to window for app.js to access
+        window.editorView = editor;
 
-            // Load the shapes library
-            await pyodide.runPythonAsync(`
-{{ shapes_code }}
-        `);
-
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('runBtn').disabled = false;
-            document.getElementById('status').textContent = 'Ready! ✓';
-
-            // Auto-run code on load
-            runCode();
-        }
-
-        // Initialize Pyodide (editor is already initialized above)
-        initPyodide();
+        // Note: Pyodide initialization is handled by the worker (via app.js)
+        // Run button will be enabled when worker is ready
         document.getElementById('runBtn').disabled = true;
     </script>
 

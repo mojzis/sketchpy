@@ -8,7 +8,8 @@ import pytest
 
 
 PROJECT_ROOT = Path(__file__).parent.parent
-OUTPUT_FILE = PROJECT_ROOT / 'output' / 'index.html'
+# Use first lesson file for testing (multi-lesson structure)
+OUTPUT_FILE = PROJECT_ROOT / 'output' / 'lessons' / '01-first-flower.html'
 
 
 def test_build_command_runs_successfully():
@@ -42,13 +43,13 @@ def test_generated_python_syntax():
     # Read the output file
     content = OUTPUT_FILE.read_text()
 
-    # Extract Python code from the template
+    # Extract Python code from the template (now in window.SHAPES_CODE)
     match = re.search(
-        r'await pyodide\.runPythonAsync\(\`\s*(.*?)\s*\`\);',
+        r'window\.SHAPES_CODE = `(.*?)`;',
         content,
         re.DOTALL
     )
-    assert match is not None, "Could not find Python code in generated HTML"
+    assert match is not None, "Could not find Python code in generated HTML (window.SHAPES_CODE)"
 
     python_code = match.group(1)
 
@@ -66,7 +67,7 @@ def test_generated_code_has_required_classes():
 
     content = OUTPUT_FILE.read_text()
     match = re.search(
-        r'await pyodide\.runPythonAsync\(\`\s*(.*?)\s*\`\);',
+        r'window\.SHAPES_CODE = `(.*?)`;',
         content,
         re.DOTALL
     )
@@ -87,7 +88,7 @@ def test_generated_code_excludes_browser_incompatible():
 
     content = OUTPUT_FILE.read_text()
     match = re.search(
-        r'await pyodide\.runPythonAsync\(\`\s*(.*?)\s*\`\);',
+        r'window\.SHAPES_CODE = `(.*?)`;',
         content,
         re.DOTALL
     )
@@ -107,7 +108,7 @@ def test_generated_code_has_required_imports():
 
     content = OUTPUT_FILE.read_text()
     match = re.search(
-        r'await pyodide\.runPythonAsync\(\`\s*(.*?)\s*\`\);',
+        r'window\.SHAPES_CODE = `(.*?)`;',
         content,
         re.DOTALL
     )
@@ -128,7 +129,7 @@ def test_generated_code_has_repr_html():
 
     content = OUTPUT_FILE.read_text()
     match = re.search(
-        r'await pyodide\.runPythonAsync\(\`\s*(.*?)\s*\`\);',
+        r'window\.SHAPES_CODE = `(.*?)`;',
         content,
         re.DOTALL
     )
@@ -145,7 +146,7 @@ def test_generated_code_size():
 
     content = OUTPUT_FILE.read_text()
     match = re.search(
-        r'await pyodide\.runPythonAsync\(\`\s*(.*?)\s*\`\);',
+        r'window\.SHAPES_CODE = `(.*?)`;',
         content,
         re.DOTALL
     )

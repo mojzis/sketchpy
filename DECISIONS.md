@@ -5,6 +5,171 @@ Each decision includes: Context, Decision, Rationale, Trade-offs, Alternatives C
 
 ---
 
+## Pyodide Web Worker for Non-Blocking Execution (2025-10-26)
+
+**Status**: Accepted
+
+**Context**
+After implementing the Alpine.js-based UI with Pyodide running directly in the main thread, user testing revealed that running Python code would freeze the UI during execution. Users couldn't toggle panels, click buttons, or interact with the interface while code was running. For educational purposes, this is problematic - students may want to check instructions or adjust the canvas size while long-running code executes. Additionally, complex drawings with many shapes could take several seconds, creating a poor user experience.
+
+**Decision**
+Move Pyodide execution to a Web Worker running in a background thread. Created `static/js/pyodide-worker.js` that:
+- Loads Pyodide in the worker thread
+- Receives Python code from main thread via `postMessage`
+- Executes code and captures output/SVG
+- Sends results back to main thread via `postMessage`
+
+Updated `app.js` to:
+- Initialize worker instead of loading Pyodide directly
+- Communicate with worker using message passing
+- Handle async results from worker
+- Auto-run code when worker is ready
+
+**Rationale**
+- Main thread stays responsive during Python execution
+- Users can interact with UI (toggle panels, switch tabs) while code runs
+- Better performance perception - UI never freezes
+- Follows web best practices for CPU-intensive operations
+- Prevents "Page Unresponsive" warnings on slower devices
+- Enables future enhancements like progress reporting or cancellation
+
+**Trade-offs**
+- **Pros**:
+  - UI always responsive (can toggle panels, click buttons during execution)
+  - No UI freezing on long-running code
+  - Better user experience overall
+  - Follows modern web architecture patterns
+  - Pyodide loading doesn't block main thread
+  - Can add progress indicators or cancellation in future
+  - Smoother experience on slower devices
+
+- **Cons**:
+  - Additional complexity (worker file, message passing protocol)
+  - Slightly harder to debug (worker console separate from main)
+  - Cannot directly access DOM from Python code (already wasn't doing this)
+  - Small overhead from message serialization (~negligible for our use case)
+  - Requires understanding of Web Worker API for future modifications
+
+**Alternatives Considered**
+
+1. **Keep Pyodide on main thread with setTimeout chunking**
+   ```javascript
+   // Break execution into chunks with setTimeout
+   for (let i = 0; i < shapes.length; i++) {
+       setTimeout(() => drawShape(shapes[i]), 0);
+   }
+   ```
+   - Why rejected: Doesn't work with Pyodide's synchronous Python execution model, would require rewriting entire execution flow, still blocks during each chunk
+
+2. **Use requestAnimationFrame for yielding**
+   - Why rejected: Same issue as setTimeout - can't interrupt Pyodide's synchronous execution without major restructuring
+
+3. **Add "Cancel" button and force-reload page**
+   - Why rejected: Loses user's code and state, terrible UX, doesn't solve the freezing problem, nuclear option
+
+4. **Show modal overlay saying "Please wait..." during execution**
+   - Why rejected: Doesn't solve the actual problem (UI still frozen), just makes it more obvious
+
+5. **Warn users not to write long-running code**
+   - Why rejected: Defeats the purpose of a learning tool, students will experiment with loops/iterations naturally
+
+6. **Use SharedArrayBuffer for shared memory between threads**
+   - Why rejected: More complex than needed, requires additional CORS headers, message passing is simpler and sufficient
+
+**Related Decisions**
+- Browser-first development with Pyodide (provides the runtime being moved)
+- Alpine.js for reactive UI (handles worker messages and updates DOM)
+- Auto-run on load (implemented in worker ready handler)
+
+**Implementation Details**
+- Worker file: `static/js/pyodide-worker.js` (76 lines)
+- Updated files: `static/js/app.js`, `templates/lesson.html.jinja`, `tests/test_build.py`
+- Build system automatically copies worker to output directory
+- Tests updated to look for `window.SHAPES_CODE` instead of inline Pyodide execution
+- Auto-run feature: worker ready handler automatically executes starter code
+
+---
+
+## Parameterized Tests for Lesson Validation (2025-10-26)
+
+**Status**: Accepted
+
+**Context**
+The project has multiple lesson directories (`lessons/01-first-flower/`, `lessons/02-colorful-garden/`, etc.), each containing a `starter.py` file with Python code that students will run. These starter files need to be validated to ensure they execute without errors, create a Canvas, draw shapes, and generate valid SVG. As more lessons are added, manually writing separate test functions for each lesson would become unmaintainable and error-prone.
+
+**Decision**
+Use pytest's `@pytest.mark.parametrize` decorator with dynamic file discovery to create parameterized tests that automatically validate all lesson starter files. Implemented in `tests/test_lessons.py`:
+- `get_lesson_starter_files()` function uses glob to find all `lessons/*/starter.py` files
+- Four test functions (execution, canvas creation, shape drawing, SVG validation) each parameterized with all discovered lessons
+- Tests execute starter code in isolated namespace with required imports (Canvas, Color, palettes)
+
+**Rationale**
+- Scalability: New lessons automatically included without modifying test code
+- Consistency: All lessons validated against same quality standards
+- Maintainability: Single source of truth for validation logic
+- Clarity: Pytest output shows which specific lesson failed (e.g., `test_lesson_starter_executes[starter_file2]`)
+- Early detection: Tests caught bug in lesson 03 (non-existent `OCEAN_DEEP` color) immediately
+- DRY principle: Avoid duplicating test logic for each lesson
+
+**Trade-offs**
+- **Pros**:
+  - Automatically scales to new lessons (no test updates needed)
+  - Clear test failure messages with lesson identification
+  - 12 tests (4 types × 3 lessons) with minimal code (~100 lines)
+  - Validates all critical aspects: execution, canvas, shapes, SVG
+  - Caught real bug immediately on first run
+  - Easy to add new validation criteria (just add one parameterized test)
+
+- **Cons**:
+  - Slightly harder to debug than named tests (need to map `starter_file2` to lesson ID)
+  - All lessons must follow same structure (create `can` variable, import from sketchpy.shapes)
+  - Test runs all validations even if one fails (could use `--maxfail=1` to stop early)
+  - Glob pattern assumes consistent directory structure
+
+**Alternatives Considered**
+
+1. **Individual test function per lesson**
+   ```python
+   def test_lesson_01_first_flower():
+       # Test lesson 01
+
+   def test_lesson_02_colorful_garden():
+       # Test lesson 02
+   ```
+   - Why rejected: Doesn't scale - need to add new test function for each lesson, lots of code duplication
+
+2. **Single test with manual loop over lessons**
+   ```python
+   def test_all_lessons():
+       for lesson in ['01-first-flower', '02-colorful-garden']:
+           # Test each lesson
+   ```
+   - Why rejected: Single test failure means entire test fails, no granularity in test results, pytest output doesn't show which lesson failed
+
+3. **Pytest test generation via metaprogramming**
+   ```python
+   for lesson_file in get_lesson_files():
+       globals()[f'test_{lesson_file.stem}'] = create_test(lesson_file)
+   ```
+   - Why rejected: More complex than parameterize, harder to understand, pytest discovery issues, less maintainable
+
+4. **Separate test files per lesson** (`tests/lessons/test_01_first_flower.py`, etc.)
+   - Why rejected: File explosion, still requires creating new file for each lesson, harder to ensure consistency
+
+5. **JSON/YAML-driven test data**
+   ```python
+   @pytest.mark.parametrize("lesson_data", load_lesson_test_data())
+   def test_lesson(lesson_data):
+       ...
+   ```
+   - Why rejected: Over-engineered - we don't need lesson-specific test data, just need to run the code
+
+**Related Decisions**
+- YAML + Markdown lesson structure (provides the files being tested)
+- Lesson content structure (Phase 0)
+
+---
+
 ## Automatic Server Restart via kill_existing_server() (2025-10-26)
 
 **Status**: Accepted
