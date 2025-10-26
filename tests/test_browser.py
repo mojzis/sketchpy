@@ -396,10 +396,17 @@ def test_lesson_page_editor_loads(build_output):
         # Load the lesson page
         page.goto(f'file://{LESSON_FILE.absolute()}')
 
+        # Take screenshot before waiting for anything
+        screenshot_dir = PROJECT_ROOT / 'test-screenshots'
+        screenshot_dir.mkdir(exist_ok=True)
+        page.screenshot(path=str(screenshot_dir / 'lesson-page-initial.png'))
+
         # Wait for the page to be ready - check for CodeMirror editor
         try:
             page.wait_for_selector('.cm-editor', timeout=5000, state='visible')
         except Exception as e:
+            # Take screenshot on failure
+            page.screenshot(path=str(screenshot_dir / 'lesson-page-editor-failure.png'))
             # Print console messages to help debug
             print("\n=== Console messages ===")
             for msg in console_messages:
@@ -407,7 +414,11 @@ def test_lesson_page_editor_loads(build_output):
             print(f"\n=== Page errors ===")
             for err in page_errors:
                 print(err)
+            print(f"\n=== Screenshot saved to {screenshot_dir / 'lesson-page-editor-failure.png'} ===")
             raise AssertionError(f"CodeMirror editor not visible: {e}")
+
+        # Take screenshot after editor loads
+        page.screenshot(path=str(screenshot_dir / 'lesson-page-editor-loaded.png'))
 
         # Verify the editor is visible
         editor = page.locator('.cm-editor')
@@ -422,5 +433,54 @@ def test_lesson_page_editor_loads(build_output):
         assert len(page_errors) == 0, f"Page errors on lesson page: {page_errors}"
         critical_errors = [e for e in errors if 'Cross-Origin' not in e]
         assert len(critical_errors) == 0, f"Console errors on lesson page: {critical_errors}"
+
+        browser.close()
+
+
+def test_lesson_page_run_button_visible(build_output):
+    """Test that the Run button is visible on the lesson page."""
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+
+        # Verify lesson file exists
+        assert LESSON_FILE.exists(), f"Lesson file not found at {LESSON_FILE}"
+
+        # Load the lesson page
+        page.goto(f'file://{LESSON_FILE.absolute()}')
+
+        # Take screenshot
+        screenshot_dir = PROJECT_ROOT / 'test-screenshots'
+        screenshot_dir.mkdir(exist_ok=True)
+        page.screenshot(path=str(screenshot_dir / 'lesson-page-run-button.png'))
+
+        # Check if run button exists and is visible
+        run_button = page.locator('#runBtn')
+
+        try:
+            expect(run_button).to_be_visible(timeout=2000)
+        except Exception as e:
+            # Get computed styles to debug visibility
+            is_displayed = page.evaluate('''() => {
+                const btn = document.getElementById('runBtn');
+                if (!btn) return 'button not found';
+                const style = window.getComputedStyle(btn);
+                const parentStyle = window.getComputedStyle(btn.parentElement);
+                return {
+                    button_display: style.display,
+                    button_visibility: style.visibility,
+                    button_opacity: style.opacity,
+                    parent_display: parentStyle.display,
+                    parent_visibility: parentStyle.visibility,
+                    button_exists: !!btn,
+                    button_offsetParent: !!btn.offsetParent
+                };
+            }''')
+            page.screenshot(path=str(screenshot_dir / 'lesson-page-run-button-hidden.png'))
+            raise AssertionError(f"Run button not visible. Styles: {is_displayed}. Screenshot saved.")
+
+        # Verify button text
+        button_text = run_button.text_content()
+        assert '▶' in button_text or 'Run' in button_text, f"Expected 'Run' button text, got: {button_text}"
 
         browser.close()
