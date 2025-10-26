@@ -7,6 +7,7 @@ import yaml
 import markdown
 import json
 import shutil
+import sys
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
@@ -78,6 +79,74 @@ def process_shapes_code(shapes_path: Path) -> str:
     processed_code = re.sub(r' -> (str|None)', '', processed_code)
 
     return processed_code.strip()
+
+
+def execute_snippet(snippet_path: Path, project_root: Path):
+    """
+    Execute a Python snippet and capture the SVG output.
+
+    Returns a dict with:
+    - name: snippet name (without .py extension)
+    - code: the Python code as a string
+    - svg: the generated SVG output
+    """
+    # Read the snippet code
+    code = snippet_path.read_text()
+
+    # Temporarily add sketchpy to the path
+    sys.path.insert(0, str(project_root))
+
+    try:
+        # Create a namespace for execution
+        namespace = {}
+
+        # Execute the code
+        exec(code, namespace)
+
+        # The snippet should have created a Canvas object assigned to 'can'
+        # and the last line is 'can', which returns the canvas
+        canvas = namespace.get('can')
+
+        if canvas is None:
+            logger.warning(f"Snippet {snippet_path.name} did not create a 'can' variable")
+            return None
+
+        # Get the SVG output
+        svg = canvas.to_svg()
+
+        # Extract just the filename without extension for the name
+        name = snippet_path.stem
+
+        return {
+            'name': name,
+            'code': code,
+            'svg': svg
+        }
+
+    except Exception as e:
+        logger.error(f"Error executing snippet {snippet_path.name}: {e}")
+        return None
+    finally:
+        # Remove from path
+        sys.path.pop(0)
+
+
+def load_snippets(project_root: Path):
+    """Load and execute all snippets from the snippets/ directory."""
+    snippets_dir = project_root / 'snippets'
+
+    if not snippets_dir.exists():
+        logger.warning("No snippets directory found")
+        return []
+
+    snippets = []
+    for snippet_file in sorted(snippets_dir.glob('*.py')):
+        logger.info(f"  Executing snippet: {snippet_file.name}")
+        result = execute_snippet(snippet_file, project_root)
+        if result:
+            snippets.append(result)
+
+    return snippets
 
 
 class LessonLoader:
@@ -205,11 +274,17 @@ def main():
     lessons_config = loader.load_lessons_config()
     build_lessons(project_root, shapes_code)
 
+    # Load and execute snippets
+    logger.info("Loading snippets...")
+    snippets = load_snippets(project_root)
+    logger.info(f"  Loaded {len(snippets)} snippets")
+
     # Build landing page
     logger.info("Building landing page...")
-    index_template = env.get_template('index.html')
+    index_template = env.get_template('index.html.jinja')
     index_html = index_template.render(
-        all_lessons=lessons_config['lessons']
+        all_lessons=lessons_config['lessons'],
+        snippets=snippets
     )
     index_path = output_dir / 'index.html'
     index_path.write_text(index_html)

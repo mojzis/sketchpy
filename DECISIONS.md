@@ -5,6 +5,86 @@ Each decision includes: Context, Decision, Rationale, Trade-offs, Alternatives C
 
 ---
 
+## Server-Side Snippet Execution for Landing Page (2025-10-27)
+
+**Status**: Accepted
+
+**Context**
+The landing page (index.html) needed to showcase the library's capabilities with visual examples. The previous approach used JavaScript canvas drawing with hardcoded examples that didn't use the actual sketchpy library. We wanted to demonstrate real Python code using the CreativeGardenPalette and CalmOasisPalette colors to make the landing page more appealing and showcase the library's visual capabilities.
+
+**Decision**
+Implement server-side snippet execution during the build process:
+- Create `snippets/` directory with Python files that create visual examples
+- Add `execute_snippet()` and `load_snippets()` functions to `build.py`
+- Execute snippets during build, capturing both code and SVG output
+- Embed snippets in landing page template (index.html.jinja) as JSON
+- Use JavaScript to rotate through snippets every 5 seconds
+- Convert index.html to index.html.jinja template
+
+Created three example snippets:
+- `sunset_garden.py` - Layered landscape with gradient sky and scattered flowers
+- `calm_waves.py` - Ocean pattern with wave layers using sine curves
+- `geometric_harmony.py` - Concentric squares with corner accents
+
+**Rationale**
+- Landing page loads instantly (no Pyodide initialization needed)
+- Showcases actual library code, not fake examples
+- Demonstrates new color palettes (CreativeGardenPalette, CalmOasisPalette)
+- Pre-rendered SVG ensures consistent visual quality
+- Snippets can be easily updated by adding new Python files
+- Provides interesting, rotating visual examples for visitors
+- Build-time execution catches snippet errors early
+
+**Trade-offs**
+- **Pros**:
+  - No Pyodide loading delay on landing page
+  - Shows real Python code from the library
+  - Easy to add new snippets (just add .py files to snippets/)
+  - Rotating examples keep landing page dynamic
+  - Demonstrates advanced color palette usage
+  - Snippets tested automatically (tests/test_snippets.py)
+  - Clean separation between static landing page and interactive lessons
+
+- **Cons**:
+  - Adds complexity to build process
+  - Snippets must avoid features not supported by Canvas (e.g., opacity parameter)
+  - Build time slightly increased (executes 3 Python files)
+  - Landing page HTML size increased with embedded SVG (~73KB total)
+  - Snippets can't be interactive (pre-rendered)
+
+**Alternatives Considered**
+
+1. **Load Pyodide on landing page and execute snippets client-side**
+   - Why rejected: 5-10 second Pyodide load time on landing page, bad first impression, unnecessary for static examples
+
+2. **Use JavaScript canvas to draw examples (existing approach)**
+   - Why rejected: Not using actual library code, doesn't showcase Python API, hardcoded examples, not maintainable
+
+3. **Static screenshot images of example code**
+   - Why rejected: Not as crisp as SVG, harder to update, larger file sizes, can't rotate through examples easily
+
+4. **Iframe embedding Pyodide examples from lesson pages**
+   - Why rejected: Still requires Pyodide load in iframe, complex iframe communication, over-engineered
+
+5. **Single static example instead of rotating**
+   - Why rejected: Less engaging, doesn't showcase variety of what library can do, missed opportunity to show multiple palettes
+
+6. **Execute snippets in browser using Web Worker**
+   - Why rejected: Still requires Pyodide load on landing page, defeats purpose of fast loading
+
+**Related Decisions**
+- CreativeGardenPalette and CalmOasisPalette color classes (provides the colors used in snippets)
+- Jinja2 template build system (enables snippet embedding)
+- Browser-first approach with Pyodide (used in lessons, avoided on landing page)
+
+**Implementation Details**
+- Snippet execution: `scripts/build.py` lines 84-149
+- Test coverage: `tests/test_snippets.py` (5 tests), `tests/test_build.py` (3 new tests)
+- Template updates: `templates/index.html.jinja` (converted from .html)
+- Total passing tests: 30 core tests (build 11, snippet 5, lesson 12, server 2)
+
+---
+
 ## Pyodide Web Worker for Non-Blocking Execution (2025-10-26)
 
 **Status**: Accepted

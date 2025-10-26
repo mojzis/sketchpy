@@ -156,3 +156,48 @@ def test_generated_code_size():
     code_size = len(python_code)
     assert code_size < 10000, f"Generated code is too large: {code_size} bytes (expected < 10KB)"
     assert code_size > 1000, f"Generated code seems too small: {code_size} bytes (expected > 1KB)"
+
+
+def test_index_page_has_snippets():
+    """Test that the index.html landing page includes snippet data."""
+    # Run build first
+    subprocess.run(['uv', 'run', 'build'], cwd=PROJECT_ROOT, check=True)
+
+    index_file = PROJECT_ROOT / 'output' / 'index.html'
+    assert index_file.exists(), "index.html should exist"
+
+    content = index_file.read_text()
+
+    # Check that snippets are embedded
+    assert 'const snippets' in content, "index.html should contain snippets data"
+    assert '"name":' in content, "Snippets should have name property"
+    assert '"code":' in content, "Snippets should have code property"
+    assert '"svg":' in content, "Snippets should have svg property"
+
+
+def test_index_page_has_svg_output():
+    """Test that the index.html has SVG output embedded."""
+    # Run build first
+    subprocess.run(['uv', 'run', 'build'], cwd=PROJECT_ROOT, check=True)
+
+    index_file = PROJECT_ROOT / 'output' / 'index.html'
+    content = index_file.read_text()
+
+    # Check that SVG is present in the initial render
+    assert '<svg' in content, "index.html should have SVG elements"
+    assert 'width=' in content, "SVG should have width attribute"
+    assert 'height=' in content, "SVG should have height attribute"
+
+
+def test_index_page_snippet_rotation():
+    """Test that the index.html includes snippet rotation JavaScript."""
+    # Run build first
+    subprocess.run(['uv', 'run', 'build'], cwd=PROJECT_ROOT, check=True)
+
+    index_file = PROJECT_ROOT / 'output' / 'index.html'
+    content = index_file.read_text()
+
+    # Check that the rotation logic is present
+    assert 'setInterval' in content, "Should have interval for rotation"
+    assert 'currentSnippet' in content, "Should track current snippet index"
+    assert 'svgOutput' in content, "Should reference SVG output element"

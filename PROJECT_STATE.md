@@ -1,6 +1,6 @@
 # Project State
 
-Last Updated: 2025-10-26 (Phase 4: Web Worker Complete)
+Last Updated: 2025-10-27 (Landing Page Snippets)
 
 ## Overview
 
@@ -30,14 +30,15 @@ Currently in active development with a functional web-based editor powered by Co
   - Fixed keymap precedence issue using Prec.highest()
   - Test coverage via Playwright
 
-- **Test Suite** (2025-10-26)
-  - Build tests (syntax validation, code generation, 8 tests)
+- **Test Suite** (2025-10-27)
+  - Build tests (11 tests): syntax validation, code generation, snippet integration
   - Browser tests with Playwright (9 tests)
   - Autocomplete tests (8 tests)
   - Server tests (2 tests): auto-restart and PID management
   - Keyboard shortcut test for Cmd/Ctrl+Enter functionality
   - Lesson tests (12 tests): validates all lesson starter.py files execute, create canvas, draw shapes, generate valid SVG
-  - Total: 39 passing tests (lessons: 12, build: 8, browser: 9, autocomplete: 8, server: 2)
+  - Snippet tests (5 tests): validates snippet execution, SVG generation, palette usage
+  - Total: 49 tests (30 passing for core: build 11, snippet 5, lesson 12, server 2)
 
 - **Development Server** (2025-10-26)
   - Background HTTPS server with auto-rebuild on file changes
@@ -89,6 +90,15 @@ Currently in active development with a functional web-based editor powered by Co
   - UI stays responsive during Python execution
   - All 8 build tests passing with updated regex for window.SHAPES_CODE
   - Test file path updated to point to lessons/01-first-flower.html (multi-lesson structure)
+
+- **Landing Page with Server-Side Snippet Execution** (2025-10-27)
+  - Converted index.html to index.html.jinja template
+  - Created snippets/ directory with 3 visual examples using CreativeGardenPalette and CalmOasisPalette
+  - Enhanced build.py to execute snippets server-side and capture SVG output
+  - Snippets embedded in landing page with rotating display (5-second intervals)
+  - Added snippet execution tests (5 tests) and build validation tests (3 tests)
+  - Total test count: 49 tests (30 passing for core functionality: build, snippet, lesson, server)
+  - Snippets: sunset_garden.py, calm_waves.py, geometric_harmony.py
 
 ### In Progress
 
@@ -175,6 +185,11 @@ None currently
 - **Usage**: Worker handles Pyodide loading and Python execution, main thread stays responsive
 - **Example**: `static/js/pyodide-worker.js` receives code via postMessage, executes in Pyodide, sends results back
 - **Rationale**: Non-blocking UI prevents freezing during code execution, better UX for long-running code, allows panel toggling during execution
+
+### Server-Side Snippet Execution Pattern
+- **Usage**: Build process executes Python snippets and captures SVG output for embedding
+- **Example**: `scripts/build.py` has `execute_snippet()` and `load_snippets()` functions that run code in snippets/ directory
+- **Rationale**: Pre-rendered SVG avoids Pyodide loading on landing page, showcases library capabilities immediately, enables snippet rotation without runtime execution
 
 ## Known Constraints
 

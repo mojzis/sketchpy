@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Python Graphics Learning</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Graphics Learning - Learn to Code Through Art</title>
 
-    <!-- CodeMirror 6 styles are included in the library -->
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <style>
         * {
@@ -14,597 +15,536 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary: #2C5F7C;
+            --primary-light: #4A8BA8;
+            --accent: #FF6B6B;
+            --accent-light: #FFE66D;
+            --bg-light: #F8F9FA;
+            --bg-white: #FFFFFF;
+            --text-dark: #2D3748;
+            --text-medium: #4A5568;
+            --text-light: #718096;
+            --success: #48BB78;
+            --border: #E2E8F0;
+        }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Left panel - instructions */
-        .instructions {
-            width: 350px;
-            background: #f5f5f5;
-            padding: 20px;
-            overflow-y: auto;
-            border-right: 2px solid #ddd;
-        }
-
-        .instructions h2 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 20px;
-        }
-
-        .instructions h3 {
-            color: #555;
-            margin: 15px 0 10px 0;
-            font-size: 16px;
-        }
-
-        .instructions code {
-            background: #fff;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: 'Monaco', 'Courier New', monospace;
-            font-size: 13px;
-        }
-
-        .instructions ul {
-            margin-left: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: var(--text-dark);
             line-height: 1.6;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         }
 
-        .instructions li {
-            margin: 8px 0;
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
         }
 
-        .hint {
-            background: #fff3cd;
-            padding: 10px;
-            border-left: 4px solid #ffc107;
-            margin: 10px 0;
-            border-radius: 4px;
+        /* Header */
+        header {
+            background: var(--bg-white);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        /* Right panel - editor + canvas */
-        .workspace {
-            flex: 1;
+        .header-content {
             display: flex;
-            flex-direction: column;
-        }
-
-        .toolbar {
-            background: #2d2d2d;
-            padding: 10px 20px;
-            display: flex;
-            gap: 10px;
+            justify-content: space-between;
             align-items: center;
         }
 
-        .toolbar button {
-            background: #4CAF50;
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .logo svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 4rem 0;
+            background: var(--bg-white);
+        }
+
+        .hero-content {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+
+        .hero-top {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero-text h1 {
+            font-size: 3rem;
+            line-height: 1.2;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .hero-text .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-medium);
+            margin-bottom: 2rem;
+        }
+
+        .hero-text .description {
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: var(--accent);
             color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(255, 107, 107, 0.2);
         }
 
-        .toolbar button:hover {
-            background: #45a049;
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(255, 107, 107, 0.3);
         }
 
-        .toolbar button:disabled {
-            background: #666;
-            cursor: not-allowed;
+        .cta-section {
+            text-align: center;
+            padding: 3rem 0;
         }
 
-        .editor-container {
-            flex: 1;
-            position: relative;
-            background: #282a36;
+        /* Code Preview */
+        .code-preview {
+            background: var(--bg-light);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
-        .editor-container .cm-editor {
-            height: 100%;
-            font-family: 'Monaco', 'Courier New', monospace;
-            font-size: 14px;
+        .preview-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: var(--border);
         }
 
-        .editor-container .cm-scroller {
-            overflow: auto;
+        .preview-label {
+            background: var(--text-dark);
+            color: var(--text-light);
+            font-size: 0.85rem;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        #editor {
-            display: none;
+        .preview-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px;
+            background: var(--border);
         }
 
-        .canvas-container {
-            height: 400px;
+        .code-editor {
+            background: var(--text-dark);
+            padding: 0.75rem 1.5rem 1.5rem 1.5rem;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #e2e8f0;
+            overflow-x: auto;
+            white-space: pre;
+            height: 350px;
+            overflow-y: auto;
+        }
+
+        .code-line {
+            display: block;
+        }
+
+        .keyword { color: #ff79c6; }
+        .function { color: #8be9fd; }
+        .string { color: #f1fa8c; }
+        .number { color: #bd93f9; }
+        .comment { color: #6272a4; }
+
+        .canvas-output {
             background: white;
-            border-top: 2px solid #ddd;
-            overflow: auto;
+            padding: 1.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
         }
 
-        .canvas-container svg {
+        .canvas-output svg {
+            border: 2px solid var(--border);
+            border-radius: 4px;
             max-width: 100%;
-            height: auto;
+            max-height: 350px;
         }
 
-        .error {
-            background: #f44336;
-            color: white;
-            padding: 10px 20px;
-            display: none;
+        .canvas-output canvas {
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            max-width: 100%;
         }
 
-        .loading {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.8);
+        /* Value Props */
+        .value-props {
+            padding: 4rem 0;
+        }
+
+        .value-props h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .value-props .subtitle {
+            text-align: center;
+            color: var(--text-medium);
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+        }
+
+        .props-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .prop-card {
+            background: var(--bg-white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .prop-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.1);
+        }
+
+        .prop-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
-            padding: 20px 40px;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .prop-card h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+        }
+
+        .prop-card p {
+            color: var(--text-medium);
+            line-height: 1.6;
+        }
+
+        /* Lessons Section */
+        .lessons {
+            padding: 4rem 0;
+            background: var(--bg-white);
+        }
+
+        .lessons h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 3rem;
+        }
+
+        .lessons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+
+        .lesson-card {
+            background: var(--bg-white);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .lesson-card:hover {
+            border-color: var(--primary-light);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .lesson-checkmark {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 32px;
+            height: 32px;
+            background: var(--success);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .lesson-card h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.4rem;
+        }
+
+        .lesson-card p {
+            color: var(--text-medium);
+            margin-bottom: 1.5rem;
+        }
+
+        .lesson-meta {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .lesson-badge {
+            background: var(--bg-light);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--text-medium);
+        }
+
+        .lesson-button {
+            display: block;
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            padding: 0.8rem;
+            border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .lesson-button:hover {
+            background: var(--primary-light);
+        }
+
+        .lesson-button.completed {
+            background: var(--success);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text-dark);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 4rem;
+            text-align: center;
+        }
+
+        .reset-button {
+            background: transparent;
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            margin-top: 1rem;
+        }
+
+        .reset-button:hover {
+            border-color: rgba(255,255,255,0.6);
+            background: rgba(255,255,255,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .preview-content {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-text h1 {
+                font-size: 2rem;
+            }
+
+            .props-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
-
-<body>
-    <div class="instructions">
-        <h2>🌸 Project 1: Draw Your First Flower</h2>
-
-        <h3>Goal:</h3>
-        <p>Draw a simple stylized flower using circles and ellipses.</p>
-
-        <h3>What you'll learn:</h3>
-        <ul>
-            <li>Creating a canvas</li>
-            <li>Drawing circles and ellipses</li>
-            <li>Using the CreativeGardenPalette</li>
-            <li>Positioning shapes with coordinates</li>
-        </ul>
-
-        <div class="hint">
-            <strong>✨ Autocomplete:</strong> Type <code>can.</code> to see Canvas methods!
-            Press <strong>Tab</strong> or <strong>Enter</strong> to insert working example code with all parameters. Then customize the values!
+<body x-data="landingState()">
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/>
+                    </svg>
+                    Python Graphics Learning
+                </div>
+            </div>
         </div>
+    </header>
 
-        <h3>Steps:</h3>
-        <ol>
-            <li>Create a canvas: <code>can = Canvas(800, 600)</code></li>
-            <li>Draw petals using circles or ellipses</li>
-            <li>Add a center circle for the flower</li>
-            <li>Draw a stem and leaves</li>
-        </ol>
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-top">
+                    <div class="hero-text">
+                        <h1>Create Art<br>With Code</h1>
+                        <p class="subtitle">Learn Python by making beautiful drawings you can share</p>
+                        <p class="description">
+                            Turn your ideas into visual art with just a few lines of code.
+                            Draw patterns, create animations, and build interactive graphics.
+                            It's creative, it's fun, and you'll learn programming along the way.
+                        </p>
+                        <a href="/lessons/01-first-flower.html" class="cta-button">Start Creating →</a>
+                    </div>
+                </div>
 
-        <div class="hint">
-            <strong>💡 Hint:</strong> The canvas coordinates start at the top-left (0, 0).
-            X increases to the right, Y increases downward.
+                <div class="code-preview">
+                    <div class="preview-header">
+                        <div class="preview-label">Code</div>
+                        <div class="preview-label">Output</div>
+                    </div>
+                    <div class="preview-content">
+                        <div class="code-editor" id="codeEditor">
+                            <pre><code>{% if snippets and snippets|length > 0 %}{{ snippets[0].code }}{% else %}# No snippets loaded{% endif %}</code></pre>
+                        </div>
+                        <div class="canvas-output" id="svgOutput">
+                            {% if snippets and snippets|length > 0 %}{{ snippets[0].svg|safe }}{% else %}<p>No preview available</p>{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+    </section>
 
-        <h3>Available Methods:</h3>
-        <ul>
-            <li><code>can.circle(x, y, radius, fill=...)</code></li>
-            <li><code>can.ellipse(x, y, rx, ry, fill=...)</code></li>
-            <li><code>can.rect(x, y, width, height, fill=...)</code></li>
-            <li><code>can.line(x1, y1, x2, y2, stroke=...)</code></li>
-            <li><code>can.grid(spacing=50)</code> - Show coordinate grid</li>
-            <li><code>can.show_palette(PaletteClass)</code> - Display palette colors</li>
-        </ul>
-
-        <h3>Creative Garden Palette:</h3>
-        <p><code>CreativeGardenPalette.ROSE_QUARTZ</code>, <code>BUTTER_YELLOW</code>, <code>MINT_CREAM</code>,
-            <code>SKY_BREEZE</code>, <code>LILAC_DREAM</code>, <code>CORAL_BLUSH</code>
-        </p>
-
-        <div class="hint">
-            <strong>💡 Tip:</strong> Try <code>can.show_palette(CreativeGardenPalette)</code> to see all available colors!
-            Also available: <code>CalmOasisPalette</code> and <code>Color</code> (basic colors).
-        </div>
-
-        <div class="hint">
-            <strong>🎨 Challenge:</strong> Can you add more petals or change colors?
-            Try experimenting with different positions and sizes!
+    <div class="cta-section">
+        <div class="container">
+            <a href="/lessons/01-first-flower.html" class="cta-button">Start Your First Lesson →</a>
         </div>
     </div>
 
-    <div class="workspace">
-        <div class="toolbar">
-            <button id="runBtn" onclick="runCode()">▶ Run Code</button>
-            <button onclick="clearCanvas()">🗑️ Clear</button>
-            <span id="status" style="color: #aaa; margin-left: 10px;"></span>
+    <section class="value-props">
+        <div class="container">
+            <h2>Why Code?</h2>
+            <p class="subtitle">Express yourself, solve puzzles, and build cool stuff</p>
+
+            <div class="props-grid">
+                <div class="prop-card">
+                    <div class="prop-icon">🎨</div>
+                    <h3>Express Your Creativity</h3>
+                    <p>Turn your imagination into reality. Draw art, make animations, design patterns—your code becomes your canvas. Share what you create with friends!</p>
+                </div>
+
+                <div class="prop-card">
+                    <div class="prop-icon">🎮</div>
+                    <h3>Build Cool Stuff</h3>
+                    <p>From interactive graphics to games and simulations, you can create things that are actually fun to use. Make something awesome and show it off.</p>
+                </div>
+
+                <div class="prop-card">
+                    <div class="prop-icon">💡</div>
+                    <h3>Solve Puzzles</h3>
+                    <p>Coding is like solving a puzzle where you make the rules. Break down challenges, think creatively, and feel the satisfaction when your code works.</p>
+                </div>
+
+                <div class="prop-card">
+                    <div class="prop-icon">🚀</div>
+                    <h3>Unlock Superpowers</h3>
+                    <p>Understand how apps, games, and websites really work. Once you can code, technology becomes a tool you control instead of something mysterious.</p>
+                </div>
+            </div>
         </div>
+    </section>
 
-        <div class="error" id="error"></div>
-
-        <div class="editor-container">
-            <textarea id="editor" spellcheck="false"># Draw your flower here!
-
-can = Canvas(800, 600)
-
-# Draw a coordinate grid to help with positioning
-can.grid(spacing=50, show_coords=True)
-
-# Flower center position
-cx, cy = 400, 250
-
-# Draw 5 petals around the center (like a simple flower)
-petal_radius = 50
-can.circle(cx, cy - 60, petal_radius, fill=CreativeGardenPalette.ROSE_QUARTZ)  # Top
-can.circle(cx + 50, cy - 30, petal_radius, fill=CreativeGardenPalette.CORAL_BLUSH)  # Top right
-can.circle(cx + 50, cy + 30, petal_radius, fill=CreativeGardenPalette.LILAC_DREAM)  # Bottom right
-can.circle(cx - 50, cy + 30, petal_radius, fill=CreativeGardenPalette.SKY_BREEZE)  # Bottom left
-can.circle(cx - 50, cy - 30, petal_radius, fill=CreativeGardenPalette.PEACH_WHISPER)  # Top left
-
-# Flower center
-can.circle(cx, cy, 35, fill=CreativeGardenPalette.BUTTER_YELLOW)
-
-# Stem
-can.rect(cx - 5, cy + 35, 10, 200, fill=CreativeGardenPalette.MINT_CREAM)
-
-# Left leaf (ellipse)
-can.ellipse(cx - 40, cy + 120, 30, 15, fill=CreativeGardenPalette.HONEYDEW)
-
-# Right leaf (ellipse)
-can.ellipse(cx + 40, cy + 180, 30, 15, fill=CreativeGardenPalette.MINT_CREAM)
-
-# Your turn! Add more petals, change colors, or create your own garden!
-
-can</textarea>
-        </div>
-
-        <div class="canvas-container" id="canvas">
-            <div style="color: #999;">Your drawing will appear here. Click "Run Code" ▶</div>
+    <div class="cta-section">
+        <div class="container">
+            <a href="/lessons/01-first-flower.html" class="cta-button">Ready? Start Creating Now →</a>
         </div>
     </div>
 
-    <div class="loading" id="loading">Loading Python... ⏳</div>
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Python Graphics Learning. Learn to code through creative expression.</p>
+        </div>
+    </footer>
 
-    <!-- Import Map for CodeMirror 6 -->
-    <script type="importmap">
-    {
-        "imports": {
-            "@codemirror/": "https://esm.sh/@codemirror/",
-            "@lezer/": "https://esm.sh/@lezer/",
-            "codemirror": "https://esm.sh/codemirror@6.0.1"
-        }
-    }
-    </script>
+    <script>
+        window.LESSONS = {{ all_lessons | tojson }};
 
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
-    <script type="module">
-        import { EditorView, basicSetup } from "codemirror";
-        import { python } from "@codemirror/lang-python";
-        import { oneDark } from "@codemirror/theme-one-dark";
-        import { autocompletion } from "@codemirror/autocomplete";
-        import { keymap } from "@codemirror/view";
-        import { Prec } from "@codemirror/state";
-
-        let pyodide;
-        let editor;
-
-        // Expose pyodide to window for test access (will be set after initialization)
-        Object.defineProperty(window, 'pyodide', {
-            get() { return pyodide; },
-            set(value) { pyodide = value; }
-        });
-
-        // ===== API DEFINITIONS WITH DEFAULT PARAMETERS =====
-        const API_DEFINITIONS = window.API_DEFINITIONS = (function() {
-            const api = {};
-
-            // Canvas methods with working example code (includes parameter names)
-            api['can'] = [
-                {
-                    label: "circle",
-                    type: "method",
-                    apply: "circle(x=100, y=100, radius=50, fill=Color.RED)",
-                    detail: "(x, y, radius, fill=None, outline=None)",
-                    info: "Draw a circle at position (x, y) with given radius"
-                },
-                {
-                    label: "rect",
-                    type: "method",
-                    apply: "rect(x=100, y=100, width=200, height=150, fill=Color.BLUE)",
-                    detail: "(x, y, width, height, fill=None, outline=None)",
-                    info: "Draw a rectangle"
-                },
-                {
-                    label: "ellipse",
-                    type: "method",
-                    apply: "ellipse(x=200, y=150, width=100, height=60, fill=Color.GREEN)",
-                    detail: "(x, y, width, height, fill=None, outline=None)",
-                    info: "Draw an ellipse"
-                },
-                {
-                    label: "line",
-                    type: "method",
-                    apply: "line(x1=50, y1=50, x2=200, y2=200, color=Color.BLACK, width=2)",
-                    detail: "(x1, y1, x2, y2, color=None, width=1)",
-                    info: "Draw a line between two points"
-                },
-                {
-                    label: "polygon",
-                    type: "method",
-                    apply: "polygon(points=[(100, 100), (200, 100), (150, 200)], fill=Color.PURPLE)",
-                    detail: "(points, fill=None, outline=None)",
-                    info: "Draw a polygon from a list of points"
-                },
-                {
-                    label: "text",
-                    type: "method",
-                    apply: "text(x=100, y=100, text=\"Hello!\", font_size=24, color=Color.BLACK)",
-                    detail: "(x, y, text, font_size=12, color=None)",
-                    info: "Draw text at position (x, y)"
-                },
-                {
-                    label: "rounded_rect",
-                    type: "method",
-                    apply: "rounded_rect(x=100, y=100, width=200, height=150, radius=15, fill=Color.ORANGE)",
-                    detail: "(x, y, width, height, radius, fill=None, outline=None)",
-                    info: "Draw a rectangle with rounded corners"
-                },
-                {
-                    label: "grid",
-                    type: "method",
-                    apply: "grid(spacing=50, show_coords=True)",
-                    detail: "(spacing=50, color='#E8E8E8', show_coords=False)",
-                    info: "Draw a coordinate grid with optional labels"
-                },
-                {
-                    label: "show_palette",
-                    type: "method",
-                    apply: "show_palette(palette_class=CreativeGardenPalette)",
-                    detail: "(palette_class, columns=4, rect_width=120, rect_height=40, padding=10)",
-                    info: "Display all colors from a palette class"
-                },
-                { label: "to_svg", type: "method", apply: "to_svg()", detail: "()", info: "Return SVG string representation" },
-                { label: "clear", type: "method", apply: "clear()", detail: "()", info: "Clear the canvas" }
-            ];
-
-            // Extract palette colors dynamically from embedded Python code
-            const shapesCode = `{{ shapes_code }}`;
-            let match;
-
-            // Extract Color class constants
-            const colorRegex = /class\s+Color:[\s\S]*?(?=\n(?:class|def|\Z))/;
-            const colorMatch = shapesCode.match(colorRegex);
-            if (colorMatch) {
-                const colorCode = colorMatch[0];
-                const colorConstRegex = /(\w+)\s*=\s*["']#[0-9A-Fa-f]{6}["']/g;
-                const colors = [];
-                while ((match = colorConstRegex.exec(colorCode)) !== null) {
-                    colors.push({
-                        label: match[1],
-                        type: "constant",
-                        apply: match[1],
-                        info: `Color constant`
-                    });
-                }
-                api['Color'] = colors;
-            }
-
-            // Extract CreativeGardenPalette constants
-            const gardenRegex = /class\s+CreativeGardenPalette:[\s\S]*?(?=\n(?:class|def|\Z))/;
-            const gardenMatch = shapesCode.match(gardenRegex);
-            if (gardenMatch) {
-                const gardenCode = gardenMatch[0];
-                const gardenConstRegex = /(\w+)\s*=\s*["']#[0-9A-Fa-f]{6}["']/g;
-                const gardenColors = [];
-                while ((match = gardenConstRegex.exec(gardenCode)) !== null) {
-                    gardenColors.push({
-                        label: match[1],
-                        type: "constant",
-                        apply: match[1],
-                        info: `CreativeGardenPalette color`
-                    });
-                }
-                api['CreativeGardenPalette'] = gardenColors;
-            }
-
-            // Extract CalmOasisPalette constants
-            const oasisRegex = /class\s+CalmOasisPalette:[\s\S]*?(?=\n(?:class|def|\Z))/;
-            const oasisMatch = shapesCode.match(oasisRegex);
-            if (oasisMatch) {
-                const oasisCode = oasisMatch[0];
-                const oasisConstRegex = /(\w+)\s*=\s*["']#[0-9A-Fa-f]{6}["']/g;
-                const oasisColors = [];
-                while ((match = oasisConstRegex.exec(oasisCode)) !== null) {
-                    oasisColors.push({
-                        label: match[1],
-                        type: "constant",
-                        apply: match[1],
-                        info: `CalmOasisPalette color`
-                    });
-                }
-                api['CalmOasisPalette'] = oasisColors;
-            }
-
-            return api;
-        })();
-
-        // General keywords (classes) with working examples
-        const generalKeywords = [
-            {
-                label: "Canvas",
-                type: "class",
-                apply: "Canvas(width=800, height=600)",
-                detail: "(width, height)",
-                info: "Create a new drawing canvas"
-            },
-            {
-                label: "Color",
-                type: "class",
-                apply: "Color.",
-                info: "Basic color palette class"
-            },
-            {
-                label: "CreativeGardenPalette",
-                type: "class",
-                apply: "CreativeGardenPalette.",
-                info: "Pastel color palette for creative projects"
-            },
-            {
-                label: "CalmOasisPalette",
-                type: "class",
-                apply: "CalmOasisPalette.",
-                info: "Calming blues and greens color palette"
-            }
-        ];
-
-        // Smart completion function that detects object.method patterns (CodeMirror 6 API)
-        function smartPythonCompletions(context) {
-            // Get text before cursor
-            let before = context.matchBefore(/\w+\.\w*/);
-
-            // Check if we're typing after a dot (e.g., "can.circle")
-            if (before) {
-                let text = before.text;
-                let dotIndex = text.lastIndexOf('.');
-
-                if (dotIndex > 0) {
-                    // Extract object name and partial method
-                    let objectName = text.substring(0, dotIndex);
-                    let partialMethod = text.substring(dotIndex + 1);
-
-                    // Look up methods for this object
-                    if (API_DEFINITIONS[objectName]) {
-                        let methods = API_DEFINITIONS[objectName];
-
-                        return {
-                            from: before.from + dotIndex + 1,
-                            options: methods,
-                            validFor: /^\w*$/
-                        };
-                    }
-                }
-            }
-
-            // Otherwise, check for regular word completion
-            let word = context.matchBefore(/\w*/);
-            if (!word || (word.from == word.to && !context.explicit))
-                return null;
-
+        function landingState() {
             return {
-                from: word.from,
-                options: generalKeywords,
-                validFor: /^\w*$/
-            };
-        }
+                lessons: window.LESSONS || [],
 
-        // Define functions before editor initialization so keymap can reference them
-        // Run user code
-        async function runCode() {
-            // Get code from CodeMirror 6 editor
-            const code = editor.state.doc.toString();
-            const errorDiv = document.getElementById('error');
-            const canvasDiv = document.getElementById('canvas');
-            const statusSpan = document.getElementById('status');
+                isCompleted(lessonId) {
+                    const progress = JSON.parse(localStorage.getItem('lessonProgress') || '{}');
+                    return !!progress[lessonId];
+                },
 
-            errorDiv.style.display = 'none';
-            statusSpan.textContent = 'Running...';
-
-            try {
-                // Run the code
-                await pyodide.runPythonAsync(code);
-
-                // Get the canvas result
-                const result = pyodide.globals.get('can');
-
-                if (result && typeof result.to_svg === 'function') {
-                    const svg = result.to_svg();
-                    canvasDiv.innerHTML = svg;
-                    statusSpan.textContent = 'Success! ✓';
-                    statusSpan.style.color = '#4CAF50';
-                } else {
-                    canvasDiv.innerHTML = '<div style="color: #999;">Make sure your code ends with "can" to display the canvas.</div>';
-                    statusSpan.textContent = '';
+                resetProgress() {
+                    if (confirm('Reset all progress? This cannot be undone.')) {
+                        localStorage.removeItem('lessonProgress');
+                        location.reload();
+                    }
                 }
-            } catch (err) {
-                errorDiv.textContent = '❌ Error: ' + err.message;
-                errorDiv.style.display = 'block';
-                statusSpan.textContent = 'Error';
-                statusSpan.style.color = '#f44336';
-                console.error(err);
             }
         }
 
-        function clearCanvas() {
-            document.getElementById('canvas').innerHTML = '<div style="color: #999;">Canvas cleared. Click "Run Code" to draw.</div>';
-            document.getElementById('error').style.display = 'none';
+        // Snippet rotation - loaded from server-side execution
+        const snippets = {{ snippets | tojson | safe }};
+
+        if (snippets && snippets.length > 0) {
+            let currentSnippet = 0;
+            const codeEditor = document.getElementById('codeEditor');
+            const svgOutput = document.getElementById('svgOutput');
+
+            // Rotate snippets every 5 seconds
+            setInterval(() => {
+                currentSnippet = (currentSnippet + 1) % snippets.length;
+                const snippet = snippets[currentSnippet];
+                codeEditor.querySelector('code').textContent = snippet.code;
+                svgOutput.innerHTML = snippet.svg;
+            }, 5000);
         }
-
-        // Make functions global for HTML onclick handlers and testing
-        window.runCode = runCode;
-        window.clearCanvas = clearCanvas;
-
-        // Get initial code from textarea
-        const initialCode = document.getElementById('editor').value;
-
-        // Initialize CodeMirror 6 editor
-        editor = new EditorView({
-            doc: initialCode,
-            extensions: [
-                basicSetup,
-                python(),
-                oneDark,
-
-                // Autocompletion with custom source
-                autocompletion({
-                    override: [smartPythonCompletions],
-                    defaultKeymap: true
-                }),
-
-                EditorView.lineWrapping,
-
-                // Add keyboard shortcuts with highest precedence (Mod-Enter = Cmd-Enter on Mac, Ctrl-Enter on Windows/Linux)
-                Prec.highest(keymap.of([
-                    {
-                        key: 'Mod-Enter',
-                        run: () => {
-                            runCode();
-                            return true;
-                        }
-                    }
-                ]))
-            ],
-            parent: document.querySelector('.editor-container')
-        });
-
-        // Hide the textarea since CodeMirror creates its own DOM
-        document.getElementById('editor').style.display = 'none';
-
-        // Initialize Pyodide
-        async function initPyodide() {
-            pyodide = await loadPyodide();
-
-            // Load the shapes library
-            await pyodide.runPythonAsync(`
-{{ shapes_code }}
-        `);
-
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('runBtn').disabled = false;
-            document.getElementById('status').textContent = 'Ready! ✓';
-
-            // Auto-run code on load
-            runCode();
-        }
-
-        // Initialize Pyodide (editor is already initialized above)
-        initPyodide();
-        document.getElementById('runBtn').disabled = true;
     </script>
 </body>
-
 </html>
