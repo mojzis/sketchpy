@@ -175,8 +175,8 @@
         </ul>
 
         <div class="hint">
-            <strong>✨ Autocomplete:</strong> Type <code>can.</code> to see all Canvas methods!
-            Press <strong>Tab</strong> or <strong>Enter</strong> to accept, then <strong>Tab</strong> through placeholders. <code>Ctrl+Space</code> for manual suggestions.
+            <strong>✨ Autocomplete:</strong> Type <code>can.</code> to see all Canvas methods with their parameters!
+            Press <strong>Tab</strong> or <strong>Enter</strong> to accept. <code>Ctrl+Space</code> for manual suggestions.
         </div>
 
         <h3>Steps:</h3>
@@ -286,14 +286,7 @@ can</textarea>
         import { EditorView, basicSetup } from "codemirror";
         import { python } from "@codemirror/lang-python";
         import { oneDark } from "@codemirror/theme-one-dark";
-        import {
-            autocompletion,
-            snippetCompletion,
-            acceptCompletion,
-            completionStatus
-        } from "@codemirror/autocomplete";
-        import { keymap } from "@codemirror/view";
-        import { indentMore } from "@codemirror/commands";
+        import { autocompletion } from "@codemirror/autocomplete";
 
         let pyodide;
         let editor;
@@ -308,67 +301,75 @@ can</textarea>
             set(value) { pyodide = value; }
         });
 
-        // ===== SNIPPET-BASED API DEFINITIONS =====
-        // Define method snippets with placeholders for better UX
+        // ===== API DEFINITIONS WITH DEFAULT PARAMETERS =====
         const API_DEFINITIONS = window.API_DEFINITIONS = (function() {
             const api = {};
 
-            // Canvas methods with snippet completions (users can tab through ${placeholders})
+            // Canvas methods showing default parameter values
             api['can'] = [
-                snippetCompletion("circle(${x}, ${y}, ${radius}, fill=${color})", {
+                {
                     label: "circle",
                     type: "method",
+                    apply: "circle(x, y, radius, fill=None, outline=None)",
                     detail: "(x, y, radius, fill=None, outline=None)",
                     info: "Draw a circle at position (x, y) with given radius"
-                }),
-                snippetCompletion("rect(${x}, ${y}, ${width}, ${height}, fill=${color})", {
+                },
+                {
                     label: "rect",
                     type: "method",
+                    apply: "rect(x, y, width, height, fill=None, outline=None)",
                     detail: "(x, y, width, height, fill=None, outline=None)",
                     info: "Draw a rectangle"
-                }),
-                snippetCompletion("ellipse(${x}, ${y}, ${width}, ${height}, fill=${color})", {
+                },
+                {
                     label: "ellipse",
                     type: "method",
+                    apply: "ellipse(x, y, width, height, fill=None, outline=None)",
                     detail: "(x, y, width, height, fill=None, outline=None)",
                     info: "Draw an ellipse"
-                }),
-                snippetCompletion("line(${x1}, ${y1}, ${x2}, ${y2}, color=${color}, width=${width})", {
+                },
+                {
                     label: "line",
                     type: "method",
+                    apply: "line(x1, y1, x2, y2, color=None, width=1)",
                     detail: "(x1, y1, x2, y2, color=None, width=1)",
                     info: "Draw a line between two points"
-                }),
-                snippetCompletion("polygon(${points}, fill=${color})", {
+                },
+                {
                     label: "polygon",
                     type: "method",
+                    apply: "polygon(points, fill=None, outline=None)",
                     detail: "(points, fill=None, outline=None)",
                     info: "Draw a polygon from a list of points"
-                }),
-                snippetCompletion("text(${x}, ${y}, \"${text}\", font_size=${size}, color=${color})", {
+                },
+                {
                     label: "text",
                     type: "method",
+                    apply: "text(x, y, text, font_size=12, color=None)",
                     detail: "(x, y, text, font_size=12, color=None)",
                     info: "Draw text at position (x, y)"
-                }),
-                snippetCompletion("rounded_rect(${x}, ${y}, ${width}, ${height}, ${radius}, fill=${color})", {
+                },
+                {
                     label: "rounded_rect",
                     type: "method",
+                    apply: "rounded_rect(x, y, width, height, radius, fill=None, outline=None)",
                     detail: "(x, y, width, height, radius, fill=None, outline=None)",
                     info: "Draw a rectangle with rounded corners"
-                }),
-                snippetCompletion("grid(spacing=${spacing}, color=\"${color}\", show_coords=${bool})", {
+                },
+                {
                     label: "grid",
                     type: "method",
+                    apply: "grid(spacing=50, color='#E8E8E8', show_coords=False)",
                     detail: "(spacing=50, color='#E8E8E8', show_coords=False)",
                     info: "Draw a coordinate grid with optional labels"
-                }),
-                snippetCompletion("show_palette(${PaletteClass})", {
+                },
+                {
                     label: "show_palette",
                     type: "method",
+                    apply: "show_palette(palette_class)",
                     detail: "(palette_class, columns=4, rect_width=120, rect_height=40, padding=10)",
                     info: "Display all colors from a palette class"
-                }),
+                },
                 { label: "to_svg", type: "method", apply: "to_svg()", detail: "()", info: "Return SVG string representation" },
                 { label: "clear", type: "method", apply: "clear()", detail: "()", info: "Clear the canvas" }
             ];
@@ -434,14 +435,15 @@ can</textarea>
             return api;
         })();
 
-        // General keywords (classes) with snippet support
+        // General keywords (classes)
         const generalKeywords = [
-            snippetCompletion("Canvas(${width}, ${height})", {
+            {
                 label: "Canvas",
                 type: "class",
+                apply: "Canvas(width, height)",
                 detail: "(width, height)",
                 info: "Create a new drawing canvas"
-            }),
+            },
             {
                 label: "Color",
                 type: "class",
@@ -518,19 +520,6 @@ can</textarea>
                     override: [smartPythonCompletions],
                     defaultKeymap: true
                 }),
-
-                // Tab key: accept completion OR indent
-                keymap.of([{
-                    key: "Tab",
-                    run: (view) => {
-                        // If completion is active, accept it
-                        if (completionStatus(view.state) === "active") {
-                            return acceptCompletion(view);
-                        }
-                        // Otherwise, indent
-                        return indentMore(view);
-                    }
-                }]),
 
                 EditorView.lineWrapping,
 
