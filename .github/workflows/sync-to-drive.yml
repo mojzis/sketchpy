@@ -15,30 +15,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Upload to Google Drive
-        uses: adityak74/google-drive-upload-git-action@main
+      - name: Authenticate to Google Drive
+        uses: google-github-actions/auth@v2
         with:
-          credentials: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
-          filename: "PROJECT_STATE.md"
-          folderId: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
-          name: "PROJECT_STATE.md"
-          overwrite: "true"
+          credentials_json: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
 
-      - name: Upload DECISIONS.md
-        uses: adityak74/google-drive-upload-git-action@main
-        with:
-          credentials: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
-          filename: "DECISIONS.md"
-          folderId: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
-          name: "DECISIONS.md"
-          overwrite: "true"
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
 
-      - name: Upload CLAUDE.md (if exists)
-        uses: adityak74/google-drive-upload-git-action@main
-        continue-on-error: true
-        with:
-          credentials: ${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}
-          filename: "CLAUDE.md"
-          folderId: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
-          name: "CLAUDE.md"
-          overwrite: "true"
+      - name: Upload files to Google Drive
+        run: |
+          echo '${{ secrets.GOOGLE_DRIVE_CREDENTIALS }}' > /tmp/credentials.json
+          pip install pydrive2
+          python scripts/sync_to_drive.py
+        env:
+          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
