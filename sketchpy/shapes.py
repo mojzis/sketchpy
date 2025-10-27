@@ -88,8 +88,42 @@ class GroupContext:
 
 class Canvas:
     """Main drawing canvas that collects shapes and renders to SVG."""
-    
+
+    # Class constants for security limits
+    MAX_WIDTH = 2000
+    MAX_HEIGHT = 2000
+    MAX_AREA = 4_000_000  # 2000 * 2000
+    MAX_SHAPES = 10_000
+
     def __init__(self, width: int = 800, height: int = 600, background: str = Color.WHITE):
+        """
+        Create a canvas with specified dimensions.
+
+        Args:
+            width: Canvas width in pixels (max 2000)
+            height: Canvas height in pixels (max 2000)
+            background: Background color (default: white)
+
+        Raises:
+            ValueError: If dimensions exceed limits
+        """
+        # Security: Enforce size limits
+        if width > self.MAX_WIDTH:
+            raise ValueError(
+                f"Canvas width {width} exceeds maximum {self.MAX_WIDTH}"
+            )
+        if height > self.MAX_HEIGHT:
+            raise ValueError(
+                f"Canvas height {height} exceeds maximum {self.MAX_HEIGHT}"
+            )
+        if width * height > self.MAX_AREA:
+            raise ValueError(
+                f"Canvas area {width * height} exceeds maximum {self.MAX_AREA}"
+            )
+
+        if width <= 0 or height <= 0:
+            raise ValueError("Canvas dimensions must be positive")
+
         self.width = width
         self.height = height
         self.background = background
@@ -99,6 +133,18 @@ class Canvas:
         self.current_group: Optional[str] = None  # active group context
         self.group_transforms: Dict[str, str] = {}  # group_name -> transform attribute
         self.group_visibility: Dict[str, bool] = {}  # group_name -> visible
+
+    def _check_shape_limit(self):
+        """Prevent too many shapes (render bomb protection)"""
+        total_shapes = len(self.shapes)
+        for group_shapes in self.groups.values():
+            total_shapes += len(group_shapes)
+
+        if total_shapes >= self.MAX_SHAPES:
+            raise ValueError(
+                f"Shape limit exceeded ({self.MAX_SHAPES}). "
+                "Too many shapes can crash the browser."
+            )
 
 
     def linear_gradient(self, name: str,
@@ -198,6 +244,7 @@ class Canvas:
              fill: str = Color.BLACK, stroke: str = Color.BLACK,
              stroke_width: float = 1) -> 'Canvas':
         """Draw a rectangle. Returns self for chaining."""
+        self._check_shape_limit()
         svg = f'<rect x="{x}" y="{y}" width="{width}" height="{height}" fill="{self._resolve_fill(fill)}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
         if self.current_group:
             self.groups[self.current_group].append(svg)
@@ -209,6 +256,7 @@ class Canvas:
                fill: str = Color.BLACK, stroke: str = Color.BLACK,
                stroke_width: float = 1) -> 'Canvas':
         """Draw a circle at center (x, y). Returns self for chaining."""
+        self._check_shape_limit()
         svg = f'<circle cx="{x}" cy="{y}" r="{radius}" fill="{self._resolve_fill(fill)}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
         if self.current_group:
             self.groups[self.current_group].append(svg)
@@ -220,6 +268,7 @@ class Canvas:
                 fill: str = Color.BLACK, stroke: str = Color.BLACK,
                 stroke_width: float = 1) -> 'Canvas':
         """Draw an ellipse. rx = horizontal radius, ry = vertical radius."""
+        self._check_shape_limit()
         svg = f'<ellipse cx="{x}" cy="{y}" rx="{rx}" ry="{ry}" fill="{self._resolve_fill(fill)}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
         if self.current_group:
             self.groups[self.current_group].append(svg)
@@ -230,6 +279,7 @@ class Canvas:
     def line(self, x1: float = 0, y1: float = 0, x2: float = 100, y2: float = 100,
              stroke: str = Color.BLACK, stroke_width: float = 2) -> 'Canvas':
         """Draw a line from (x1, y1) to (x2, y2)."""
+        self._check_shape_limit()
         svg = f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
         if self.current_group:
             self.groups[self.current_group].append(svg)
@@ -241,6 +291,7 @@ class Canvas:
                 fill: str = Color.BLACK, stroke: str = Color.BLACK,
                 stroke_width: float = 1) -> 'Canvas':
         """Draw a polygon from a list of (x, y) points."""
+        self._check_shape_limit()
         if points is None:
             points = [(50, 0), (100, 100), (0, 100)]  # Default triangle
         points_str = " ".join(f"{x},{y}" for x, y in points)
@@ -255,6 +306,7 @@ class Canvas:
              size: int = 16, fill: str = Color.BLACK,
              font: str = "Arial") -> 'Canvas':
         """Draw text at (x, y). Note: y is the baseline."""
+        self._check_shape_limit()
         svg = f'<text x="{x}" y="{y}" font-size="{size}" fill="{self._resolve_fill(fill)}" font-family="{font}">{text}</text>'
         if self.current_group:
             self.groups[self.current_group].append(svg)
@@ -267,6 +319,7 @@ class Canvas:
                      fill: str = Color.BLACK, stroke: str = Color.BLACK,
                      stroke_width: float = 1) -> 'Canvas':
         """Draw a rectangle with rounded corners."""
+        self._check_shape_limit()
         svg = f'<rect x="{x}" y="{y}" width="{width}" height="{height}" rx="{rx}" ry="{ry}" fill="{self._resolve_fill(fill)}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
         if self.current_group:
             self.groups[self.current_group].append(svg)
