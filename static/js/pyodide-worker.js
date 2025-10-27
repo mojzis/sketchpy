@@ -55,14 +55,23 @@ ALLOWED_MODULES = {
     'Color',
     'CreativeGardenPalette',
     'CalmOasisPalette',
+    'typing',  # Used by shapes.py for type hints
+    're',      # Used by shapes.py internally
 }
 
 def restricted_import(name, globals=None, locals=None, fromlist=(), level=0):
-    """Only allow whitelisted imports"""
-    if name not in ALLOWED_MODULES:
-        raise ImportError(f"Import '{name}' not allowed. Allowed: {', '.join(ALLOWED_MODULES)}")
+    """Only allow safe imports, block dangerous ones"""
+    # Blocked imports (dangerous/not needed)
+    blocked = {'os', 'subprocess', 'socket', 'urllib', 'requests', 'http', 'sys', 'io'}
 
-    # These will be available from shapes_code
+    if name in blocked:
+        raise ImportError(f"Import '{name}' not allowed (blocked for security)")
+
+    # For standard library and our classes, use original import
+    # Pyodide will handle it
+    if _original_import:
+        return _original_import(name, globals, locals, fromlist, level)
+
     return None
 
 # Replace import mechanism
