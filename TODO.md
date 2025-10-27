@@ -4,6 +4,7 @@
 - nicer homepage 🚧
  - add usual stuff like favicon ...
  - add social links
+ - colored code !
 - link to home ?
 - theme switching
   - create lessons per theme though ?
@@ -43,7 +44,7 @@ i18n ? :)
  - testing ?
 - ideas interchange with claude.ai 🚧
 - ci/cd
-- when i run uv srv, it should restart if running
+ - github pages not generating properly ?!
 - brief tests
 
 ## NTH
@@ -53,3 +54,4 @@ auto reload in browser for development ?
 ## DONE
 - canvas: add a posibility to show a grid
 - improve editor experience  (- use a better code editor - like we have in streamlit ?)
+- when i run uv srv, it should restart if running

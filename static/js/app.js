@@ -43,7 +43,14 @@ function appState() {
         initPyodideWorker() {
             console.log('Initializing Pyodide worker...');
 
-            this.pyodideWorker = new Worker('/static/js/pyodide-worker.js');
+            // Use relative path based on current page location
+            // For file:// protocol compatibility
+            const isInLessonsDir = window.location.pathname.includes('/lessons/');
+            const workerPath = isInLessonsDir
+                ? '../static/js/pyodide-worker.js'  // From lessons/ subdirectory
+                : 'static/js/pyodide-worker.js';     // From root
+
+            this.pyodideWorker = new Worker(workerPath);
 
             this.pyodideWorker.onmessage = (event) => {
                 this.handleWorkerMessage(event);

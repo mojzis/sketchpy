@@ -1,6 +1,9 @@
 """Browser tests for the web interface."""
 
+import http.server
+import socketserver
 import subprocess
+import threading
 import time
 from pathlib import Path
 
@@ -9,8 +12,12 @@ from playwright.sync_api import sync_playwright, expect
 
 
 PROJECT_ROOT = Path(__file__).parent.parent
-OUTPUT_FILE = PROJECT_ROOT / 'output' / 'index.html'
-LESSON_FILE = PROJECT_ROOT / 'output' / 'lessons' / '01-first-flower.html'
+OUTPUT_DIR = PROJECT_ROOT / 'output'
+OUTPUT_FILE = OUTPUT_DIR / 'index.html'
+LESSON_FILE = OUTPUT_DIR / 'lessons' / '01-first-flower.html'
+
+# Default port for test server, with fallback
+TEST_PORT = 8765
 
 
 @pytest.fixture(scope="module")
@@ -21,7 +28,56 @@ def build_output():
     return OUTPUT_FILE
 
 
-def test_page_loads_without_errors(build_output):
+@pytest.fixture(scope="module")
+def http_server(build_output):
+    """Start an HTTP server serving the output directory with CORS headers for Pyodide."""
+    # Find an available port
+    port = TEST_PORT
+    for attempt_port in range(TEST_PORT, TEST_PORT + 10):
+        try:
+            # Try to bind to the port
+            with socketserver.TCPServer(("", attempt_port), None) as test_socket:
+                port = attempt_port
+                break
+        except OSError:
+            continue
+
+    # Create a custom handler that serves from OUTPUT_DIR with CORS headers
+    class Handler(http.server.SimpleHTTPRequestHandler):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, directory=str(OUTPUT_DIR), **kwargs)
+
+        def end_headers(self):
+            # Add headers required for Pyodide/SharedArrayBuffer
+            self.send_header('Cross-Origin-Opener-Policy', 'same-origin')
+            self.send_header('Cross-Origin-Embedder-Policy', 'require-corp')
+            super().end_headers()
+
+        def log_message(self, format, *args):
+            # Suppress server logs during tests
+            pass
+
+    # Create the server
+    server = socketserver.TCPServer(("", port), Handler)
+
+    # Run server in background thread
+    server_thread = threading.Thread(target=server.serve_forever, daemon=True)
+    server_thread.start()
+
+    # Wait a moment for server to start
+    time.sleep(0.5)
+
+    # Provide the base URL to tests
+    base_url = f"http://localhost:{port}"
+
+    yield base_url
+
+    # Cleanup: shutdown server
+    server.shutdown()
+    server.server_close()
+
+
+def test_page_loads_without_errors(http_server):
     """Test that the page loads in a browser without errors."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
@@ -44,7 +100,7 @@ def test_page_loads_without_errors(build_output):
         page.on('pageerror', lambda exc: page_errors.append(str(exc)))
 
         # Load the page
-        page.goto(f'file://{build_output.absolute()}')
+        page.goto(f'{http_server}/index.html')
 
         # Wait for the page to be ready (CodeMirror 6 editor)
         page.wait_for_selector('.cm-editor', timeout=5000)
@@ -52,14 +108,13 @@ def test_page_loads_without_errors(build_output):
         # Check for critical errors
         assert len(page_errors) == 0, f"Page errors: {page_errors}"
 
-        # Filter out expected warnings (like CORS warnings from file:// protocol)
-        critical_errors = [e for e in errors if 'Cross-Origin' not in e]
-        assert len(critical_errors) == 0, f"Console errors: {critical_errors}"
+        # Console errors should be minimal now that we're using HTTP
+        assert len(errors) == 0, f"Console errors: {errors}"
 
         browser.close()
 
 
-def test_pyodide_loads_successfully(build_output):
+def test_pyodide_loads_successfully(http_server):
     """Test that Pyodide loads and initializes."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
@@ -72,7 +127,7 @@ def test_pyodide_loads_successfully(build_output):
         page.on('pageerror', lambda exc: page_errors.append(str(exc)))
 
         # Load the page
-        page.goto(f'file://{build_output.absolute()}')
+        page.goto(f'{http_server}/index.html')
 
         # Wait for loading indicator to disappear (Pyodide loaded)
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -87,7 +142,7 @@ def test_pyodide_loads_successfully(build_output):
         browser.close()
 
 
-def test_python_code_executes_without_errors(build_output):
+def test_python_code_executes_without_errors(http_server):
     """Test that the embedded Python code runs without errors."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
@@ -107,7 +162,7 @@ def test_python_code_executes_without_errors(build_output):
         page.on('pageerror', lambda exc: page_errors.append(str(exc)))
 
         # Load the page
-        page.goto(f'file://{build_output.absolute()}')
+        page.goto(f'{http_server}/index.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -125,14 +180,14 @@ def test_python_code_executes_without_errors(build_output):
         browser.close()
 
 
-def test_canvas_renders_svg(build_output):
+def test_canvas_renders_svg(http_server):
     """Test that the Canvas actually renders SVG output."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
         # Load the page
-        page.goto(f'file://{build_output.absolute()}')
+        page.goto(f'{http_server}/index.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -159,14 +214,14 @@ def test_canvas_renders_svg(build_output):
         browser.close()
 
 
-def test_color_class_available(build_output):
+def test_color_class_available(http_server):
     """Test that the Color class is available in the Python environment."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
         # Load the page
-        page.goto(f'file://{build_output.absolute()}')
+        page.goto(f'{http_server}/index.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -195,14 +250,14 @@ def test_color_class_available(build_output):
         browser.close()
 
 
-def test_canvas_class_available(build_output):
+def test_canvas_class_available(http_server):
     """Test that the Canvas class is available and functional."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
         # Load the page
-        page.goto(f'file://{build_output.absolute()}')
+        page.goto(f'{http_server}/index.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -234,14 +289,14 @@ def test_canvas_class_available(build_output):
         browser.close()
 
 
-def test_grid_method_works(build_output):
+def test_grid_method_works(http_server):
     """Test that the grid method works and draws grid lines."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
         # Load the page
-        page.goto(f'file://{build_output.absolute()}')
+        page.goto(f'{http_server}/index.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -279,14 +334,14 @@ def test_grid_method_works(build_output):
         browser.close()
 
 
-def test_show_palette_method_works(build_output):
+def test_show_palette_method_works(http_server):
     """Test that the show_palette method works and displays palette colors."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
         # Load the page
-        page.goto(f'file://{build_output.absolute()}')
+        page.goto(f'{http_server}/index.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -324,14 +379,14 @@ def test_show_palette_method_works(build_output):
         browser.close()
 
 
-def test_keyboard_shortcut_runs_code(build_output):
+def test_keyboard_shortcut_runs_code(http_server):
     """Test that Ctrl-Enter (or Cmd-Enter on Mac) runs the code."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
         # Load the page
-        page.goto(f'file://{build_output.absolute()}')
+        page.goto(f'{http_server}/index.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -369,7 +424,7 @@ def test_keyboard_shortcut_runs_code(build_output):
         browser.close()
 
 
-def test_lesson_page_editor_loads(build_output):
+def test_lesson_page_editor_loads(http_server):
     """Test that the lesson page editor loads and is visible."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
@@ -394,7 +449,7 @@ def test_lesson_page_editor_loads(build_output):
         assert LESSON_FILE.exists(), f"Lesson file not found at {LESSON_FILE}"
 
         # Load the lesson page
-        page.goto(f'file://{LESSON_FILE.absolute()}')
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Take screenshot before waiting for anything
         screenshot_dir = PROJECT_ROOT / 'test-screenshots'
@@ -431,13 +486,12 @@ def test_lesson_page_editor_loads(build_output):
 
         # Check for critical errors
         assert len(page_errors) == 0, f"Page errors on lesson page: {page_errors}"
-        critical_errors = [e for e in errors if 'Cross-Origin' not in e]
-        assert len(critical_errors) == 0, f"Console errors on lesson page: {critical_errors}"
+        assert len(errors) == 0, f"Console errors on lesson page: {errors}"
 
         browser.close()
 
 
-def test_lesson_page_run_button_visible(build_output):
+def test_lesson_page_run_button_visible(http_server):
     """Test that the Run button is visible on the lesson page."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
@@ -447,7 +501,7 @@ def test_lesson_page_run_button_visible(build_output):
         assert LESSON_FILE.exists(), f"Lesson file not found at {LESSON_FILE}"
 
         # Load the lesson page
-        page.goto(f'file://{LESSON_FILE.absolute()}')
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Take screenshot
         screenshot_dir = PROJECT_ROOT / 'test-screenshots'
