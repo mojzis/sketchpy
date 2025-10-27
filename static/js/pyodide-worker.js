@@ -50,13 +50,29 @@ print("✓ Initial security applied")
         console.log('✓ Canvas API loaded');
 
         // Import ast module BEFORE we block imports (needed for validation)
-        // NOW block all imports for user code (after shapes.py loaded successfully)
+        // Pre-import everything ast.walk() needs to avoid blocking stdlib internals
         await pyodide.runPythonAsync(`
 import builtins
-import ast  # Import this BEFORE blocking, needed for validation
+import ast
+import collections  # ast.walk() needs this internally
+import sys
 
-def block_all_imports(name, globals=None, locals=None, fromlist=(), level=0):
-    """Block ALL imports in user code - maximum security"""
+# Store original __import__ for stdlib use
+_original_import = builtins.__import__
+
+# Set of modules that are safe/needed for validation
+_allowed_modules = {
+    'collections', 'collections.abc', '_collections_abc',
+    'ast', 'sys', 'builtins', 'typing', 're'
+}
+
+def block_user_imports(name, globals=None, locals=None, fromlist=(), level=0):
+    """Block user code imports while allowing stdlib internals"""
+    # Allow pre-approved stdlib modules needed for validation
+    if name in _allowed_modules:
+        return _original_import(name, globals, locals, fromlist, level)
+
+    # Block everything else
     raise ImportError(
         f"Import '{name}' is not allowed.\\n\\n"
         f"You have everything you need:\\n"
@@ -65,11 +81,11 @@ def block_all_imports(name, globals=None, locals=None, fromlist=(), level=0):
         f"No imports needed for the lessons!"
     )
 
-# Replace import with blocking function
-builtins.__import__ = block_all_imports
+# Replace import with selective blocking function
+builtins.__import__ = block_user_imports
 
-print("✓ All imports blocked for user code")
-print("✓ ast module pre-loaded for validation")
+print("✓ Imports restricted for user code (stdlib validation modules allowed)")
+print("✓ ast module and dependencies pre-loaded")
         `);
     } else {
         console.warn('No shapes code provided yet, waiting for init message');
@@ -84,7 +100,7 @@ print("✓ ast module pre-loaded for validation")
  */
 async function validateCode(code) {
     const validationScript = `
-import ast
+# ast module already imported globally during initialization - don't import again
 
 def validate_ast(code_string):
     """Deep validation using Python AST"""

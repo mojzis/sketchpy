@@ -185,17 +185,24 @@ kill $(cat logs/srv.pid)
 ```
 
 **Restarting/Stopping the server:**
+
+⚠️ **IMPORTANT: To restart the server, just run `uv run srv` again!** ⚠️
+
+The server **AUTOMATICALLY KILLS ANY EXISTING INSTANCE** before starting.
+You do NOT need to manually kill processes first.
+
 ```bash
-# Restart server (easiest - automatically kills existing server and starts fresh)
+# ✅ CORRECT: Just restart (auto-kills old server)
 uv run srv
 
-# Or manually stop without restarting
-kill $(cat logs/srv.pid)
+# ❌ WRONG: Don't manually kill first (unnecessary)
+kill $(cat logs/srv.pid) && uv run srv
 
-# Or find and kill manually
-ps aux | grep srv
-kill <PID>
+# Manual stop without restarting (rarely needed)
+kill $(cat logs/srv.pid)
 ```
+
+**THE SERVER IS SELF-RESTARTING. JUST RUN `uv run srv` EVERY TIME.**
 
 ### Testing the Library
 

@@ -7,6 +7,7 @@
  - (some) tests ?
 - tests for javascript features ?
 - license ? (not copyright ...)
+- use newest pyodide, test the lib on the python it supports
 
 ## features
 - nicer homepage 🚧
@@ -39,7 +40,7 @@
   - llm.txt file
 
 ## drawing improvements
-- gradients 
+- gradients 🚧
 - splines
 - object manipulation (copy, rotate, change color)
 
