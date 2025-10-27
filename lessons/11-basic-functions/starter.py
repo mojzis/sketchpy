@@ -1,8 +1,6 @@
 # Vehicle Factory - Learn Basic Functions!
 # Concepts: def, function names, calling functions, code reuse
 
-from sketchpy.shapes import Canvas, Color
-
 can = Canvas(800, 600)
 
 # Optional grid for learning coordinates

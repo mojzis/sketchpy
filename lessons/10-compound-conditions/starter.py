@@ -1,8 +1,6 @@
 # Smart Traffic System - Learn Compound Conditions!
 # Concepts: and, or, not operators for complex logic
 
-from sketchpy.shapes import Canvas, Color
-
 # Traffic system variables
 time_of_day = "morning"
 is_weekend = True

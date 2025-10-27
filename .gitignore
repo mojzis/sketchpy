@@ -25,3 +25,6 @@ temp/
 htmlcov/
 .coverage
 test-screenshots/
+
+# js
+node_modules/

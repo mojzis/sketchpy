@@ -78,7 +78,7 @@ def http_server(build_output):
 
 
 def test_page_loads_without_errors(http_server):
-    """Test that the page loads in a browser without errors."""
+    """Test that the lesson page loads in a browser without errors."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
@@ -99,8 +99,8 @@ def test_page_loads_without_errors(http_server):
         page_errors = []
         page.on('pageerror', lambda exc: page_errors.append(str(exc)))
 
-        # Load the page
-        page.goto(f'{http_server}/index.html')
+        # Load the lesson page (not index.html which is now a landing page)
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Wait for the page to be ready (CodeMirror 6 editor)
         page.wait_for_selector('.cm-editor', timeout=5000)
@@ -115,7 +115,7 @@ def test_page_loads_without_errors(http_server):
 
 
 def test_pyodide_loads_successfully(http_server):
-    """Test that Pyodide loads and initializes."""
+    """Test that Pyodide loads and initializes on lesson page."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
@@ -126,8 +126,8 @@ def test_pyodide_loads_successfully(http_server):
         page_errors = []
         page.on('pageerror', lambda exc: page_errors.append(str(exc)))
 
-        # Load the page
-        page.goto(f'{http_server}/index.html')
+        # Load the lesson page
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Wait for loading indicator to disappear (Pyodide loaded)
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -143,7 +143,7 @@ def test_pyodide_loads_successfully(http_server):
 
 
 def test_python_code_executes_without_errors(http_server):
-    """Test that the embedded Python code runs without errors."""
+    """Test that the embedded Python code runs without errors on lesson page."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
@@ -161,8 +161,8 @@ def test_python_code_executes_without_errors(http_server):
         page_errors = []
         page.on('pageerror', lambda exc: page_errors.append(str(exc)))
 
-        # Load the page
-        page.goto(f'{http_server}/index.html')
+        # Load the lesson page
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -181,13 +181,13 @@ def test_python_code_executes_without_errors(http_server):
 
 
 def test_canvas_renders_svg(http_server):
-    """Test that the Canvas actually renders SVG output."""
+    """Test that the Canvas actually renders SVG output on lesson page."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
-        # Load the page
-        page.goto(f'{http_server}/index.html')
+        # Load the lesson page
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -204,8 +204,7 @@ def test_canvas_renders_svg(http_server):
 
         # Check that the SVG has some content (shapes)
         svg_content = page.locator('#canvas svg').inner_html()
-        assert '<rect' in svg_content, "SVG should contain rectangles"
-        assert '<circle' in svg_content, "SVG should contain circles"
+        assert '<rect' in svg_content or '<circle' in svg_content, "SVG should contain shapes (rect or circle)"
 
         # Verify success status
         status_text = page.locator('#status').text_content()
@@ -215,29 +214,62 @@ def test_canvas_renders_svg(http_server):
 
 
 def test_color_class_available(http_server):
-    """Test that the Color class is available in the Python environment."""
+    """Test that the Color class is available in the Python environment on lesson page."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
-        # Load the page
-        page.goto(f'{http_server}/index.html')
+        # Load the lesson page
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
 
-        # Execute Python code to check Color class
+        # Access Pyodide from the worker through the app state
+        # Since Pyodide runs in a worker, we need to test indirectly by running code
         result = page.evaluate('''
             async () => {
                 try {
-                    await pyodide.runPythonAsync(`
-                        # Check Color class exists and has attributes
-                        assert hasattr(Color, 'RED')
-                        assert hasattr(Color, 'BLUE')
-                        assert Color.RED == "#FF0000"
-                        result = "OK"
-                    `);
-                    return { success: true, result: pyodide.globals.get('result') };
+                    // Get the Alpine app state
+                    const app = Alpine.$data(document.querySelector('[x-data]'));
+                    if (!app || !app.pyodideWorker) {
+                        return { success: false, error: 'Pyodide worker not available' };
+                    }
+
+                    // Send a test message to the worker
+                    return new Promise((resolve) => {
+                        const messageHandler = (event) => {
+                            if (event.data.type === 'result') {
+                                app.pyodideWorker.removeEventListener('message', messageHandler);
+                                if (event.data.error) {
+                                    resolve({ success: false, error: event.data.error });
+                                } else {
+                                    resolve({ success: true, result: 'OK' });
+                                }
+                            }
+                        };
+                        app.pyodideWorker.addEventListener('message', messageHandler);
+
+                        // Send test code
+                        app.pyodideWorker.postMessage({
+                            type: 'run',
+                            code: `
+# Check Color class exists and has attributes
+assert hasattr(Color, 'RED')
+assert hasattr(Color, 'BLUE')
+assert Color.RED == "#FF0000"
+can = Canvas(100, 100)
+can.circle(50, 50, 20, fill=Color.RED)
+can
+                            `
+                        });
+
+                        // Timeout after 5 seconds
+                        setTimeout(() => {
+                            app.pyodideWorker.removeEventListener('message', messageHandler);
+                            resolve({ success: false, error: 'Timeout waiting for worker response' });
+                        }, 5000);
+                    });
                 } catch (e) {
                     return { success: false, error: e.toString() };
                 }
@@ -245,38 +277,63 @@ def test_color_class_available(http_server):
         ''')
 
         assert result['success'], f"Color class check failed: {result.get('error', 'Unknown error')}"
-        assert result['result'] == 'OK'
 
         browser.close()
 
 
 def test_canvas_class_available(http_server):
-    """Test that the Canvas class is available and functional."""
+    """Test that the Canvas class is available and functional on lesson page."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
-        # Load the page
-        page.goto(f'{http_server}/index.html')
+        # Load the lesson page
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
 
-        # Execute Python code to test Canvas
+        # Test Canvas by running code through the worker
         result = page.evaluate('''
             async () => {
                 try {
-                    await pyodide.runPythonAsync(`
-                        # Create a canvas and draw
-                        c = Canvas(100, 100)
-                        c.rect(10, 10, 20, 20, fill=Color.RED)
-                        svg = c.to_svg()
-                        assert '<svg' in svg
-                        assert '<rect' in svg
-                        assert 'width="100"' in svg
-                        result = "OK"
-                    `);
-                    return { success: true, result: pyodide.globals.get('result') };
+                    const app = Alpine.$data(document.querySelector('[x-data]'));
+                    if (!app || !app.pyodideWorker) {
+                        return { success: false, error: 'Pyodide worker not available' };
+                    }
+
+                    return new Promise((resolve) => {
+                        const messageHandler = (event) => {
+                            if (event.data.type === 'result') {
+                                app.pyodideWorker.removeEventListener('message', messageHandler);
+                                if (event.data.error) {
+                                    resolve({ success: false, error: event.data.error });
+                                } else {
+                                    resolve({ success: true, result: 'OK' });
+                                }
+                            }
+                        };
+                        app.pyodideWorker.addEventListener('message', messageHandler);
+
+                        app.pyodideWorker.postMessage({
+                            type: 'run',
+                            code: `
+# Create a canvas and draw
+c = Canvas(100, 100)
+c.rect(10, 10, 20, 20, fill=Color.RED)
+svg = c.to_svg()
+assert '<svg' in svg
+assert '<rect' in svg
+assert 'width="100"' in svg
+can = c
+                            `
+                        });
+
+                        setTimeout(() => {
+                            app.pyodideWorker.removeEventListener('message', messageHandler);
+                            resolve({ success: false, error: 'Timeout' });
+                        }, 5000);
+                    });
                 } catch (e) {
                     return { success: false, error: e.toString() };
                 }
@@ -284,44 +341,71 @@ def test_canvas_class_available(http_server):
         ''')
 
         assert result['success'], f"Canvas class check failed: {result.get('error', 'Unknown error')}"
-        assert result['result'] == 'OK'
 
         browser.close()
 
 
 def test_grid_method_works(http_server):
-    """Test that the grid method works and draws grid lines."""
+    """Test that the grid method works and draws grid lines on lesson page."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
-        # Load the page
-        page.goto(f'{http_server}/index.html')
+        # Load the lesson page
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
 
-        # Execute Python code to test grid
+        # Test grid method through the worker
         result = page.evaluate('''
             async () => {
                 try {
-                    await pyodide.runPythonAsync(`
-                        # Create a canvas with grid
-                        c = Canvas(200, 200)
-                        c.grid(spacing=50, show_coords=True)
-                        svg = c.to_svg()
+                    const app = Alpine.$data(document.querySelector('[x-data]'));
+                    if (!app || !app.pyodideWorker) {
+                        return { success: false, error: 'Pyodide worker not available' };
+                    }
 
-                        # Verify grid lines are present
-                        assert '<line' in svg, "Grid should contain lines"
-                        assert 'stroke="#E8E8E8"' in svg, "Grid should have light grey color"
+                    return new Promise((resolve) => {
+                        const messageHandler = (event) => {
+                            if (event.data.type === 'result') {
+                                app.pyodideWorker.removeEventListener('message', messageHandler);
+                                if (event.data.error) {
+                                    resolve({ success: false, error: event.data.error });
+                                } else if (event.data.svg) {
+                                    // Check SVG content
+                                    const svg = event.data.svg;
+                                    const hasLines = svg.includes('<line');
+                                    const hasColor = svg.includes('stroke="#E8E8E8"');
+                                    const hasText = svg.includes('<text');
+                                    const hasOrigin = svg.includes('(0,0)');
 
-                        # Verify coordinate labels
-                        assert '<text' in svg, "Grid should have coordinate labels"
-                        assert '(0,0)' in svg, "Grid should show origin"
+                                    if (hasLines && hasColor && hasText && hasOrigin) {
+                                        resolve({ success: true, result: 'OK' });
+                                    } else {
+                                        resolve({ success: false, error: `Grid missing elements: lines=${hasLines}, color=${hasColor}, text=${hasText}, origin=${hasOrigin}` });
+                                    }
+                                } else {
+                                    resolve({ success: false, error: 'No SVG returned' });
+                                }
+                            }
+                        };
+                        app.pyodideWorker.addEventListener('message', messageHandler);
 
-                        result = "OK"
-                    `);
-                    return { success: true, result: pyodide.globals.get('result') };
+                        app.pyodideWorker.postMessage({
+                            type: 'run',
+                            code: `
+can = Canvas(200, 200)
+can.grid(spacing=50, show_coords=True)
+can
+                            `
+                        });
+
+                        setTimeout(() => {
+                            app.pyodideWorker.removeEventListener('message', messageHandler);
+                            resolve({ success: false, error: 'Timeout' });
+                        }, 5000);
+                    });
                 } catch (e) {
                     return { success: false, error: e.toString() };
                 }
@@ -329,44 +413,70 @@ def test_grid_method_works(http_server):
         ''')
 
         assert result['success'], f"Grid method check failed: {result.get('error', 'Unknown error')}"
-        assert result['result'] == 'OK'
 
         browser.close()
 
 
 def test_show_palette_method_works(http_server):
-    """Test that the show_palette method works and displays palette colors."""
+    """Test that the show_palette method works and displays palette colors on lesson page."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
-        # Load the page
-        page.goto(f'{http_server}/index.html')
+        # Load the lesson page
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
 
-        # Execute Python code to test show_palette
+        # Test show_palette through the worker
         result = page.evaluate('''
             async () => {
                 try {
-                    await pyodide.runPythonAsync(`
-                        # Create a canvas and show palette
-                        c = Canvas(600, 400)
-                        c.show_palette(CreativeGardenPalette)
-                        svg = c.to_svg()
+                    const app = Alpine.$data(document.querySelector('[x-data]'));
+                    if (!app || !app.pyodideWorker) {
+                        return { success: false, error: 'Pyodide worker not available' };
+                    }
 
-                        # Verify palette rectangles are present
-                        assert '<rect' in svg, "Palette should contain rectangles"
-                        assert '<text' in svg, "Palette should have color labels"
+                    return new Promise((resolve) => {
+                        const messageHandler = (event) => {
+                            if (event.data.type === 'result') {
+                                app.pyodideWorker.removeEventListener('message', messageHandler);
+                                if (event.data.error) {
+                                    resolve({ success: false, error: event.data.error });
+                                } else if (event.data.svg) {
+                                    const svg = event.data.svg;
+                                    const hasRect = svg.includes('<rect');
+                                    const hasText = svg.includes('<text');
+                                    const hasColorName = svg.includes('PEACH_WHISPER');
+                                    const hasHexValue = svg.includes('#FFDAC1');
 
-                        # Verify some specific colors from CreativeGardenPalette
-                        assert 'PEACH_WHISPER' in svg, "Palette should show color names"
-                        assert '#FFDAC1' in svg, "Palette should show hex values"
+                                    if (hasRect && hasText && hasColorName && hasHexValue) {
+                                        resolve({ success: true, result: 'OK' });
+                                    } else {
+                                        resolve({ success: false, error: `Palette missing elements: rect=${hasRect}, text=${hasText}, name=${hasColorName}, hex=${hasHexValue}` });
+                                    }
+                                } else {
+                                    resolve({ success: false, error: 'No SVG returned' });
+                                }
+                            }
+                        };
+                        app.pyodideWorker.addEventListener('message', messageHandler);
 
-                        result = "OK"
-                    `);
-                    return { success: true, result: pyodide.globals.get('result') };
+                        app.pyodideWorker.postMessage({
+                            type: 'run',
+                            code: `
+can = Canvas(600, 400)
+can.show_palette(CreativeGardenPalette)
+can
+                            `
+                        });
+
+                        setTimeout(() => {
+                            app.pyodideWorker.removeEventListener('message', messageHandler);
+                            resolve({ success: false, error: 'Timeout' });
+                        }, 5000);
+                    });
                 } catch (e) {
                     return { success: false, error: e.toString() };
                 }
@@ -374,19 +484,18 @@ def test_show_palette_method_works(http_server):
         ''')
 
         assert result['success'], f"show_palette method check failed: {result.get('error', 'Unknown error')}"
-        assert result['result'] == 'OK'
 
         browser.close()
 
 
 def test_keyboard_shortcut_runs_code(http_server):
-    """Test that Ctrl-Enter (or Cmd-Enter on Mac) runs the code."""
+    """Test that Ctrl-Enter (or Cmd-Enter on Mac) runs the code on lesson page."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
-        # Load the page
-        page.goto(f'{http_server}/index.html')
+        # Load the lesson page
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)

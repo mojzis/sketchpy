@@ -1,6 +1,6 @@
 ---
 name: auto-commit-push
-description: Automatically create concise commits and push to remote after completing meaningful chunks of work. Use this when a logical unit of work is complete (feature implemented, bug fixed, refactoring done, tests passing).
+description: Create atomic commits and push after completing discrete work units (feature, bugfix, refactoring). Use when tests pass and work is complete.
 allowed-tools:
   - Bash
   - Read
@@ -9,101 +9,92 @@ allowed-tools:
 
 # Auto-Commit and Push
 
-This skill helps maintain a clean git history by creating atomic commits after completing meaningful work units.
-
 ## When to Use
 
-Invoke this skill after:
-- Implementing a feature or sub-feature
-- Fixing a bug
-- Completing a refactoring
-- Making tests pass
-- Finishing any logical unit of work
+**Trigger after**:
+- Feature or sub-feature complete
+- Bug fixed
+- Refactoring finished
+- Tests passing (implied - don't mention in commit message)
+- Any discrete, complete work unit
 
-**Do NOT use** for:
-- Incomplete work in progress
-- Broken/failing tests
-- Mid-task checkpoint commits
+**Skip when**:
+- Work in progress
+- Tests failing
+- Mid-task checkpoint
 
 ## Process
 
-1. **Review changes**: Check `git status` and `git diff` to understand what changed
-2. **Analyze context**: Read recent commits to match the project's commit message style
-3. **Create concise message**: Write a 1-2 line commit message focusing on "what" and "why"
-4. **Stage and commit**: Add relevant files and create the commit
-5. **Push**: Push to the remote repository
+1. Check changes: `git status` and `git diff`
+2. Review recent commits: `git log --oneline -10` to match project style
+3. Write commit message (see format below)
+4. Stage files: `git add <files>`
+5. Commit: ` git commit -m "message"` (note leading space - keeps shell history clean)
+6. Push: `git push`
 
 ## Commit Message Format
 
-Follow the project's existing style (check recent commits). General guidelines:
-- Start with a verb (Add, Fix, Update, Refactor, Remove)
-- Be specific but concise
-- Focus on the change's purpose, not implementation details
-- Keep first line under 72 characters
-- **Avoid meta information**: Don't mention that tests pass, builds succeed, or other process details (these are implicit in the act of committing)
-- Focus on WHAT changed and WHY, not process/verification steps
+Match project's existing style. If no clear pattern, use:
 
-Example:
 ```
-Add grid() method to Canvas for coordinate visualization
+Verb + what changed (under 72 chars)
 
-Helps beginners understand positioning by displaying coordinate grid
-with configurable spacing and optional labels.
+Optional: Why this change was needed or what problem it solves.
+Wrap at 72 chars.
 ```
 
-**Bad examples** (too meta):
-- ❌ "All tests passing after fixing bug"
-- ❌ "Update code and verify it works"
-- ❌ "Changes complete and tested"
-
-**Good examples** (focus on substance):
+**Focus on WHAT and WHY, not process**:
 - ✅ "Fix off-by-one error in grid coordinate labels"
-- ✅ "Update grid() to support custom label formatting"
 - ✅ "Add optional axis labels to coordinate grid"
+- ❌ "All tests passing after fixing bug" (meta information)
+- ❌ "Update code and verify it works" (process, not substance)
 
-## Handling Documentation Updates
+**Start with verb**: Add, Fix, Update, Refactor, Remove, Implement
 
-When git diff shows changes to PROJECT_STATE.md or DECISIONS.md alongside code changes:
-- Focus the commit message on the PRIMARY change (the code/feature)
-- Don't mention the documentation updates in the message
-- The docs are supporting artifacts, not the main change
+**Docs-only commits**: Use "docs: update project state" or similar
 
-When ONLY documentation files changed:
-- Create a commit message like: "docs: update project state and decisions"
-- List the key updates made
+**Code + docs commits**: Focus message on code change, don't mention docs
 
-## Instructions
+## Example Commands
 
-When invoked, use the Task tool to launch a general-purpose agent that will handle the complete commit and push workflow:
-
-1. Review changes with `git status` and `git diff`
-2. Analyze recent commits to match project style
-3. Create a concise, focused commit message that:
-   - Describes WHAT changed and WHY
-   - Avoids meta information (test status, verification steps)
-   - Follows conventional commit format
-   - Includes the standard footer with Claude Code attribution
-4. Stage all relevant files
-5. Create the commit using a command that starts with a space (` git commit`) to avoid cluttering shell history
-6. Push to remote (with safety checks)
-
-**Important**: Always prefix the git commit command with a space to prevent it from being saved in shell history. This keeps the command line history clean and focused on interactive commands.
-
-Example:
 ```bash
-git add file.py
- git commit -m "$(cat <<'EOF'
-Your commit message here
-EOF
-)"
+# Review changes
+git status
+git diff
+
+# Check recent style
+git log --oneline -10
+
+# Stage and commit
+git add src/file.py tests/test_file.py
+ git commit -m "Add grid() method to Canvas for coordinate visualization"
+
+# Push (check branch first)
+git branch
 git push
 ```
 
-The agent will autonomously handle all git operations and ensure the commit message follows best practices without meta information.
+**Important**: Prefix `git commit` with a space (` git commit`) to prevent saving in shell history. This keeps history clean for the user's workflow.
 
-## Safety Features
+Multi-line commits:
+```bash
+ git commit -m "$(cat <<'EOF'
+First line summary
 
-- Won't commit if there are no changes
-- Won't push if not on a trackable branch
-- Respects `.gitignore` patterns
-- Shows confirmation of what was committed
+Optional longer explanation of why this change
+was needed and what problem it solves.
+EOF
+)"
+```
+
+## Edge Cases
+
+**No changes**: Check `git status` - if clean, report "no changes to commit"
+
+**Detached HEAD**: Report issue, don't push
+
+**Unpushed commits exist**: Safe to push (will push all)
+
+**Multiple files**: Stage all related to this work unit, may skip unrelated files
+
+**Merge conflicts**: Report - requires manual resolution

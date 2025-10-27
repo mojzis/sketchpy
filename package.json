@@ -1,0 +1,35 @@
+{
+  "name": "sketchpy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "lint": "eslint static/js/**/*.js",
+    "lint:fix": "eslint --fix static/js/**/*.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "test:browser": "uv run pytest tests/test_browser.py -v"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mojzis/sketchpy.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/mojzis/sketchpy/issues"
+  },
+  "homepage": "https://github.com/mojzis/sketchpy#readme",
+  "devDependencies": {
+    "eslint": "^9.38.0",
+    "jsdom": "^27.0.1",
+    "vitest": "^4.0.4"
+  }
+}

@@ -63,7 +63,7 @@ export class CodeExecutor {
         this.worker.onerror = (error) => {
             console.error('Worker error:', error);
             // Reject all pending executions
-            for (const [id, pending] of this.pendingExecutions) {
+            for (const [execId, pending] of this.pendingExecutions) {
                 clearTimeout(pending.timeout);
                 pending.reject(new Error('Worker crashed: ' + error.message));
             }
@@ -149,7 +149,7 @@ export class CodeExecutor {
         }
 
         // Reject all pending
-        for (const [id, pending] of this.pendingExecutions) {
+        for (const [_execId, pending] of this.pendingExecutions) {
             clearTimeout(pending.timeout);
             pending.reject(new Error('Executor destroyed'));
         }

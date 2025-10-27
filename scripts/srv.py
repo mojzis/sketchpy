@@ -315,7 +315,7 @@ def main():
         logger.info("Generating SSL certificate...")
         os.system(f'openssl req -new -x509 -keyout {cert_file} -out {cert_file} -days 365 -nodes -subj "/CN=localhost" 2>/dev/null')
 
-    PORT = 8000
+    PORT = 8007
 
     # Get local IP address
     hostname = socket.gethostname()

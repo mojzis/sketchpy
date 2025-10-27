@@ -53,13 +53,14 @@ uv run python main.py
 
 ### Running Tests
 
-The project includes automated tests to verify the build process and generated code:
+The project includes both Python tests (Pytest) and JavaScript tests (Vitest):
 
+**Python Tests:**
 ```bash
 # First time setup: Install Playwright browsers (only needed once)
 uv run playwright install chromium
 
-# Run all tests
+# Run all Python tests
 uv run pytest
 
 # Run tests with verbose output
@@ -76,6 +77,30 @@ uv run pytest tests/test_server.py
 
 # Run specific test
 uv run pytest tests/test_build.py::test_generated_python_syntax
+```
+
+**JavaScript Tests:**
+```bash
+# Run JavaScript unit tests (fast)
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run linter
+npm run lint
+
+# Auto-fix linting issues
+npm run lint:fix
+```
+
+**Full Test Suite:**
+```bash
+# Run both Python and JavaScript tests
+npm test && uv run pytest
 ```
 
 **Build Tests (`test_build.py`):**
@@ -104,6 +129,46 @@ uv run pytest tests/test_build.py::test_generated_python_syntax
 - Old server process is terminated when new one starts
 - New server process starts with different PID
 - Server cleanup works correctly
+
+**JavaScript Unit Tests (`tests/js/`):**
+- **errorHandler.test.js** (26 tests): Error formatting, hints, categorization
+- **apiDefinitions.test.js** (10 tests): Palette extraction, Canvas API generation
+- Total: 36 unit tests verifying core JS logic
+- Run with `npm test` (fast, ~400ms)
+
+### JavaScript Architecture
+
+The web interface uses modular ES6 JavaScript with no bundler (CDN dependencies):
+
+**Core Modules (`static/js/core/`):**
+- **lessonState.js** - Alpine.js reactive state management
+  - Pyodide worker initialization
+  - Code execution handling
+  - Error formatting and display
+  - Progress tracking (localStorage)
+- **editorSetup.js** - CodeMirror 6 editor initialization
+  - Python syntax highlighting
+  - Smart autocomplete (context-aware)
+  - Keyboard shortcuts (Ctrl/Cmd-Enter)
+- **apiDefinitions.js** - Dynamic API extraction from shapes.py
+  - Builds autocomplete definitions for Canvas methods
+  - Extracts Color palette constants
+  - Provides working code examples with parameters
+
+**Supporting Files:**
+- **errorHandler.js** - Beginner-friendly error messages
+- **pyodide-worker.js** - Python execution in Web Worker
+- **security/** - Code validation and timeout handling
+
+**Dependencies (CDN):**
+- Alpine.js 3.x - Reactive UI framework
+- CodeMirror 6 - Code editor
+- Pyodide - Python in the browser
+
+**Code Quality:**
+- ESLint configured (flat config, ES2021)
+- 47 tests total (36 unit + 11 E2E)
+- No bundler (browser-native ES modules)
 
 ### Building and Running the Web Interface
 
@@ -305,35 +370,77 @@ Pre-built educational shapes demonstrate composition:
 - `traffic_light()`: State-based light (red/yellow/green)
 - `road()`: Procedural dashed lane markers
 
-## Claude Code Skills
+## Skills
 
-This project includes custom skills that automate common development workflows. Skills are located in `.claude/skills/`.
+Active skills loaded in Claude's context. Use when trigger conditions match.
 
-### Available Skills
+### auto-commit-push
 
-**auto-commit-push**
-- Automatically creates commits and pushes after completing work
-- Triggered when: feature complete, bug fixed, tests passing, refactoring done
-- Can also manually request: "commit and push these changes"
+**Auto-trigger after**:
+- Feature/bugfix/refactor complete AND tests passing
+- Code review changes implemented
+- Discrete work unit finished (can be described in single commit message)
 
-**project-documentation-tracker**
-- Maintains PROJECT_STATE.md (implementation status, architecture) and DECISIONS.md (decision rationale, trade-offs)
-- Triggered when: completing tasks, making architectural decisions, finishing features
-- Can also manually request: "update project documentation"
+**Manual trigger**:
+- User says: "commit and push", "commit these changes", "push this"
 
-## Project Structure Notes
+**Action**:
+1. Create atomic commit with descriptive message
+2. Push to remote branch
+3. Report commit SHA and push status
+
+**Skip when**:
+- Tests failing
+- Work in progress
+- User says "don't commit yet"
+
+### project-documentation-tracker
+
+**Auto-trigger after**:
+- Completing implementation phase/milestone
+- Making architectural decision (choosing between alternatives)
+- Significant refactoring with rationale
+- Adding/removing major dependencies
+
+**Manual trigger**:
+- User says: "update docs", "document this decision", "update project state"
+
+**Action**:
+1. Update PROJECT_STATE.md: Add to Completed, update test counts, note constraints
+2. Update DECISIONS.md: New entry with decision/why/rejected/implementation (keep under 150 words)
+
+**Skip when**:
+- Minor code changes (typo fixes, formatting)
+- Work still in progress
+- Documentation already up-to-date
+
+**Format rules**:
+- DECISIONS.md: Decision (1 sentence) + Why (1 sentence) + Rejected bullets + Implementation paths
+- PROJECT_STATE.md: Feature name + date + brief description
+- Aim for 70-85% token reduction vs traditional decision logs## Project Structure Notes
 
 - **main.py**: Placeholder entry point (currently just prints hello message)
 - **pyproject.toml**: Defines project metadata, dependencies (marimo, not IPython), and console script entry points (`srv`, `build`, `test`)
+- **package.json**: NPM dependencies for JavaScript tooling (ESLint, Vitest, jsdom)
 - **templates/**: Jinja2 templates for generating web interface
+  - `lesson.html.jinja`: Lesson page template (imports modular JS)
+  - `index.html.jinja`: Landing page template
 - **output/**: Generated files (gitignored, create via `uv run build`)
 - **scripts/**: Python scripts exposed as commands via pyproject.toml
 - **sketchpy/**: Core library package (browser-first, marimo-compatible)
-- **tests/**: Automated tests using pytest (verify build process, code generation)
+- **static/js/**: Modular JavaScript (ES6 modules, no bundler)
+  - `core/`: Main application modules (lessonState, editorSetup, apiDefinitions)
+  - `errorHandler.js`: Beginner-friendly error formatting
+  - `pyodide-worker.js`: Python execution in Web Worker
+  - `security/`: Code validation and sandboxing
+- **tests/**: Automated tests
+  - `test_*.py`: Python tests (pytest + Playwright)
+  - `js/*.test.js`: JavaScript unit tests (Vitest)
 - **logs/**: Runtime logs and PID files (gitignored, created by srv command)
 - **.claude/skills/**: Custom Claude Code skills for workflow automation
 - **Dependencies**:
   - Production: marimo, jinja2, watchdog, colabturtleplus
-  - Dev: pytest (unit tests), playwright (browser tests)
+  - Dev (Python): pytest, playwright
+  - Dev (JavaScript): eslint, vitest, jsdom
   - Removed: IPython/Jupyter (browser-first approach)
 - **sketchpy/** vs **turtles/**: Git history shows migration from turtle-based approach (deleted turtles/) to current SVG approach

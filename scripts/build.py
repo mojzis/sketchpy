@@ -13,7 +13,8 @@ from jinja2 import Environment, FileSystemLoader
 
 # Base path configuration for deployment
 # Use '/sketchpy' for GitHub Pages, '' for local development or custom domain
-BASE_PATH = '/sketchpy'
+# Currently set to '' for local testing - change to '/sketchpy' before deploying to GitHub Pages
+BASE_PATH = ''
 
 # Use parent logger from srv.py when imported, or configure if run standalone
 logger = logging.getLogger(__name__)
