@@ -1,6 +1,6 @@
 # Project State
 
-Last Updated: 2025-10-27 (Friendly Error Handling)
+Last Updated: 2025-10-27 (Complete Lesson Curriculum)
 
 ## Overview
 
@@ -36,9 +36,9 @@ Currently in active development with a functional web-based editor powered by Co
   - Autocomplete tests (8 tests)
   - Server tests (2 tests): auto-restart and PID management
   - Keyboard shortcut test for Cmd/Ctrl+Enter functionality
-  - Lesson tests (12 tests): validates all lesson starter.py files execute, create canvas, draw shapes, generate valid SVG
+  - Lesson tests (60 tests): validates all 15 lesson starter.py files execute, create canvas, draw shapes, generate valid SVG (4 test types × 15 lessons)
   - Snippet tests (5 tests): validates snippet execution, SVG generation, palette usage
-  - Total: 49 tests (30 passing for core: build 11, snippet 5, lesson 12, server 2)
+  - Total: 95 tests (78 passing for core: build 11, snippet 5, lesson 60, server 2)
 
 - **Development Server** (2025-10-26)
   - Background HTTPS server with auto-rebuild on file changes
@@ -110,6 +110,19 @@ Currently in active development with a functional web-based editor powered by Co
   - Visual error display with line number badge, hint bubble, and code snippet
   - Editor scrolls to error line when error occurs
   - Files: static/js/errorHandler.js, static/js/app.js, static/js/pyodide-worker.js, templates/lesson.html.jinja, templates/components/output-tabs.html
+
+- **Complete 15-Lesson Python Curriculum** (2025-10-27)
+  - Created 12 new lessons (lessons 4-15) to complete the curriculum outlined in plans/lessons.md
+  - Each lesson includes: starter.py (working code), lesson.md (instructions), help.md (troubleshooting)
+  - Car/vehicle theme consistent across all lessons
+  - **Level 1 (Foundations)**: Variables, strings, text, booleans, conditionals
+  - **Level 2 (Control Flow)**: For loops, lists, nested loops, while loops, compound conditions
+  - **Level 3 (Functions)**: Basic functions, parameters, return values, data structures, integration
+  - All 60 lesson tests passing (15 lessons × 4 test types)
+  - Fixed color compatibility issues (replaced LIGHT_GRAY, DARK_GRAY, SAGE_GREEN with valid colors)
+  - Progressive complexity from simple shapes to complete city traffic scenes
+  - Final project integrates all concepts: functions, loops, conditionals, lists, dictionaries
+  - Directories: lessons/04-strings-and-text through lessons/15-final-project
 
 ### In Progress
 

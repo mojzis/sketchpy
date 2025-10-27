@@ -5,6 +5,94 @@ Each decision includes: Context, Decision, Rationale, Trade-offs, Alternatives C
 
 ---
 
+## Car Theme for Complete 15-Lesson Curriculum (2025-10-27)
+
+**Status**: Accepted
+
+**Context**
+After implementing the initial 3 lessons (flower and geometric themes), needed to create 12 additional lessons (4-15) to complete the Python programming curriculum outlined in plans/lessons.md. The curriculum covers three levels: Foundations (variables, strings, conditionals), Control Flow (loops, lists, compound logic), and Functions & Modularity (functions, parameters, return values, data structures). Needed to choose a consistent theme that would work across all lessons while teaching these programming concepts through visual art.
+
+**Decision**
+Use a **car/vehicle theme** for lessons 4-15, building from simple labeled cars to complete city traffic scenes. The theme progression:
+- Early lessons (4-7): Single cars with labels, text, colors from lists
+- Middle lessons (8-11): Multiple cars in grids, traffic jams, different vehicle types
+- Advanced lessons (12-14): Parameterized car functions, calculated positions, data-driven rendering
+- Final project (15): Complete city scene with buildings, roads, traffic lights, multiple vehicle types
+
+Each lesson includes three files:
+- `starter.py`: Working Python code demonstrating concepts
+- `lesson.md`: Student-facing instructions with steps, tips, challenges
+- `help.md`: Troubleshooting guide with common issues and debugging strategies
+
+**Rationale**
+- **Universal appeal**: Cars are culturally familiar across demographics, gender-neutral
+- **Scalability**: Simple rectangle+circles for beginners, complex compositions for advanced
+- **Visual variety**: Different vehicle types (sedans, trucks, compact cars) for function lessons
+- **Natural progression**: Single car → parking lot → grid → traffic jam → city scene
+- **Real-world context**: Traffic systems, speed limits, day/night provide relatable conditional logic scenarios
+- **Composition practice**: Cars are modular (body, wheels, windows, lights) - perfect for teaching functions
+- **Curriculum fit**: The lessons from plans/lessons.md already specified car examples as one theme option
+
+**Trade-offs**
+- **Pros**:
+  - Consistent visual language across 12 lessons
+  - Natural complexity progression from simple to complex
+  - Easy for students to relate to (everyone knows what a car looks like)
+  - Modular composition teaches function decomposition naturally
+  - Traffic scenarios provide authentic conditional logic practice
+  - City scenes allow integration of all concepts in final project
+  - Car parameters (color, size, position) map perfectly to function parameters
+  - All lessons tested and validated (60 tests, 100% pass rate)
+
+- **Cons**:
+  - Less variety than switching themes per lesson
+  - Students may get bored with same theme (mitigated by increasing complexity)
+  - Doesn't showcase library's full versatility (flowers, patterns, etc. in lessons 1-3)
+  - Car drawing may not interest all students (but broad enough appeal)
+
+**Alternatives Considered**
+
+1. **Mixed themes (cars, flowers, patterns) across lessons 4-15**
+   - Why rejected: Cognitive overhead of switching contexts, harder for students to see progression, inconsistent visual language, each theme restart feels like starting over
+
+2. **Flower theme for all 15 lessons**
+   - Why rejected: Initial 3 lessons already use flowers, would be repetitive, harder to teach conditionals (no natural "day/night flower" scenario), less modular for function composition
+
+3. **Abstract geometric patterns for all lessons**
+   - Why rejected: Less relatable for beginners, harder to teach conditional logic (no natural real-world scenarios), less engaging for younger learners, no clear "object" to decompose into functions
+
+4. **Game sprites theme (characters, enemies, items)**
+   - Why rejected: Requires more complex shapes initially, pixel art doesn't showcase SVG's strength, less universal appeal, gaming context may alienate some students
+
+5. **House/building theme**
+   - Why rejected: Too static (houses don't move/change like cars do), harder to teach loops naturally (no "row of houses" feels less natural than "parking lot"), less variety in scenarios
+
+6. **Robot/character theme**
+   - Why rejected: More complex shapes required, faces are harder to draw with simple shapes, anthropomorphic features add complexity, less universal design (what does a "robot" look like?)
+
+**Related Decisions**
+- YAML + Markdown lesson structure (provides the framework for these lessons)
+- Parameterized lesson tests (automatically validates all 15 lessons)
+- CreativeGardenPalette and CalmOasisPalette (colors used in some lessons)
+- plans/lessons.md curriculum (source of the lesson concepts and structure)
+
+**Implementation Details**
+- Created 12 new lesson directories: `lessons/04-strings-and-text` through `lessons/15-final-project`
+- Each directory contains: `starter.py`, `lesson.md`, `help.md`
+- Total file count: 36 files (12 lessons × 3 files each)
+- All 60 lesson tests passing (15 lessons × 4 test types: execution, canvas, shapes, SVG)
+- Fixed color compatibility: replaced non-existent colors (LIGHT_GRAY, DARK_GRAY, SAGE_GREEN) with valid alternatives (SILVER, GRAY, BROWN/HONEYDEW)
+- Parallel development using subagents for efficient creation
+- Documentation follows established pattern from lessons 1-3
+
+**Test Coverage**
+- `tests/test_lessons.py` automatically discovers and validates all lessons
+- 4 test types per lesson: code execution, canvas creation, shape drawing, SVG generation
+- 60 passing tests total (15 lessons × 4 tests)
+- Ensures code quality and consistency across entire curriculum
+
+---
+
 ## Server-Side Snippet Execution for Landing Page (2025-10-27)
 
 **Status**: Accepted
