@@ -3,7 +3,7 @@
     <div class="lesson-selector">
         <label>📚 Lesson</label>
         <select class="lesson-dropdown"
-                @change="window.location.href = `/lessons/${$event.target.value}.html`">
+                @change="window.location.href = `${window.BASE_PATH}/lessons/${$event.target.value}.html`">
             <template x-for="(lessonItem, index) in lessons" :key="lessonItem.id">
                 <option :value="lessonItem.id"
                         :selected="currentLessonId === lessonItem.id"

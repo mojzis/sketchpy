@@ -51,12 +51,12 @@ function appState() {
         initPyodideWorker() {
             console.log('Initializing Pyodide worker...');
 
-            // Use relative path based on current page location
-            // For file:// protocol compatibility
+            // Use base path from configuration
+            const basePath = window.BASE_PATH || '';
             const isInLessonsDir = window.location.pathname.includes('/lessons/');
             const workerPath = isInLessonsDir
-                ? '../static/js/pyodide-worker.js'  // From lessons/ subdirectory
-                : 'static/js/pyodide-worker.js';     // From root
+                ? `${basePath}/static/js/pyodide-worker.js`  // From lessons/ subdirectory
+                : `${basePath}/static/js/pyodide-worker.js`; // From root
 
             this.pyodideWorker = new Worker(workerPath);
 

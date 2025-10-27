@@ -139,6 +139,8 @@ uv run srv -f
 ```
 
 **Build Process (happens automatically):**
+- Auto-discovers all lessons from `lessons/` directory (no manual YAML maintenance)
+- Extracts lesson metadata (title, description) from `lesson.md` files
 - Reads `sketchpy/shapes.py` and removes browser-incompatible code:
   - File I/O methods like `save()`
   - Unused `Point` dataclass (and associated `dataclasses`, `enum` imports)
@@ -146,8 +148,8 @@ uv run srv -f
 - Keeps `_repr_html_()` for marimo compatibility
 - Removes type hints from function signatures for cleaner browser-side code
 - Stops at convenience functions (quick_draw, CarShapes) to keep payload small (~4KB)
-- Renders `templates/index.html.jinja` with the processed code
-- Outputs to `output/index.html` (ignored by git, regenerate as needed)
+- Renders all templates with `BASE_PATH` configuration for deployment flexibility
+- Outputs to `output/` directory (ignored by git, regenerate as needed)
 
 **Development Server Features:**
 - Auto-generates self-signed SSL certificates (localhost.pem)
@@ -203,6 +205,34 @@ kill $(cat logs/srv.pid)
 ```
 
 **THE SERVER IS SELF-RESTARTING. JUST RUN `uv run srv` EVERY TIME.**
+
+### Deployment Configuration
+
+**BASE_PATH Setting:**
+The build system uses a configurable `BASE_PATH` for deployment flexibility. This is set in `scripts/build.py`:
+
+```python
+# Use '/sketchpy' for GitHub Pages, '' for local development or custom domain
+BASE_PATH = '/sketchpy'
+```
+
+**Deployment targets:**
+- **GitHub Pages** (current): Uses `BASE_PATH = '/sketchpy'` to match the repository name
+  - URL: https://mojzis.github.io/sketchpy/
+  - All links include the `/sketchpy` prefix
+- **Custom domain** (future): Change to `BASE_PATH = ''` for root-level deployment
+  - All links work without prefix
+
+**How it works:**
+- Build script passes `base_path` to all Jinja2 templates
+- Templates use `{{ base_path }}/lessons/...` for links
+- JavaScript receives `window.BASE_PATH` for dynamic resource loading
+- Worker paths and static assets use the BASE_PATH prefix
+
+**To change deployment:**
+1. Edit `BASE_PATH` in `scripts/build.py`
+2. Run `uv run build` to regenerate all files
+3. Deploy the `output/` directory
 
 ### Testing the Library
 

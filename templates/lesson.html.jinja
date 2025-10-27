@@ -11,7 +11,7 @@
     </script>
 
     <!-- Alpine app state (must load before Alpine.js) -->
-    <script type="module" src="../static/js/app.js"></script>
+    <script type="module" src="{{ base_path }}/static/js/app.js"></script>
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -995,6 +995,7 @@
 
     <!-- Inject lesson data -->
     <script>
+        window.BASE_PATH = {{ base_path | tojson }};
         window.CURRENT_LESSON = {{ lesson | tojson }};
         window.ALL_LESSONS = {{ all_lessons | tojson }};
     </script>

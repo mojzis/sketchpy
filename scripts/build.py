@@ -11,6 +11,10 @@ import sys
 from pathlib import Path
 from jinja2 import Environment, FileSystemLoader
 
+# Base path configuration for deployment
+# Use '/sketchpy' for GitHub Pages, '' for local development or custom domain
+BASE_PATH = '/sketchpy'
+
 # Use parent logger from srv.py when imported, or configure if run standalone
 logger = logging.getLogger(__name__)
 if __name__ == '__main__':
@@ -150,7 +154,7 @@ def load_snippets(project_root: Path):
 
 
 class LessonLoader:
-    """Load and process lesson content from YAML and Markdown."""
+    """Load and process lesson content from lesson directories."""
 
     def __init__(self, project_root: Path):
         self.project_root = project_root
@@ -158,10 +162,76 @@ class LessonLoader:
         self.md = markdown.Markdown(extensions=['fenced_code', 'tables'])
 
     def load_lessons_config(self):
-        """Load lessons.yaml"""
-        yaml_path = self.lessons_dir / 'lessons.yaml'
-        with open(yaml_path, 'r') as f:
-            return yaml.safe_load(f)
+        """Auto-generate lessons config from lesson directories."""
+        # Find all lesson directories (format: NN-lesson-name)
+        lesson_dirs = sorted([
+            d for d in self.lessons_dir.iterdir()
+            if d.is_dir() and d.name[0].isdigit()
+        ])
+
+        lessons = []
+        for lesson_dir in lesson_dirs:
+            lesson_id = lesson_dir.name
+
+            # Extract metadata from lesson.md
+            lesson_md_path = lesson_dir / 'lesson.md'
+            if not lesson_md_path.exists():
+                logger.warning(f"Skipping {lesson_id}: no lesson.md found")
+                continue
+
+            # Parse the markdown to extract title and description
+            lesson_md = lesson_md_path.read_text()
+            lines = lesson_md.split('\n')
+
+            # Find title (first ## heading)
+            title = None
+            for line in lines:
+                if line.startswith('## '):
+                    # Remove emoji and extract title
+                    title = line.replace('##', '').strip()
+                    # Remove leading emoji if present
+                    title = re.sub(r'^[^\w\s]+\s*', '', title)
+                    break
+
+            if not title:
+                logger.warning(f"Skipping {lesson_id}: no title found in lesson.md")
+                continue
+
+            # Extract description from "Goal" section
+            description = None
+            for i, line in enumerate(lines):
+                if line.strip() == '### Goal':
+                    # Next non-empty line is the description
+                    for j in range(i + 1, len(lines)):
+                        if lines[j].strip():
+                            description = lines[j].strip()
+                            break
+                    break
+
+            if not description:
+                description = "Learn new Python concepts through drawing"
+
+            # Determine difficulty based on lesson number
+            lesson_num = int(lesson_id.split('-')[0])
+            if lesson_num <= 3:
+                difficulty = 'beginner'
+            elif lesson_num <= 10:
+                difficulty = 'intermediate'
+            else:
+                difficulty = 'advanced'
+
+            # Estimate duration (15 min for early lessons, 20-30 for later ones)
+            duration = 15 if lesson_num <= 5 else (20 if lesson_num <= 10 else 25)
+
+            lessons.append({
+                'id': lesson_id,
+                'title': title,
+                'description': description,
+                'difficulty': difficulty,
+                'duration': duration
+            })
+
+        return {'lessons': lessons}
 
     def load_lesson_content(self, lesson_id: str):
         """Load lesson markdown, starter code, and optional help."""
@@ -214,7 +284,8 @@ def build_lessons(project_root: Path, shapes_code: str):
         html = template.render(
             lesson=lesson_data,
             all_lessons=lessons_config['lessons'],
-            shapes_code=shapes_code
+            shapes_code=shapes_code,
+            base_path=BASE_PATH
         )
 
         # Write output
@@ -284,7 +355,8 @@ def main():
     index_template = env.get_template('index.html.jinja')
     index_html = index_template.render(
         all_lessons=lessons_config['lessons'],
-        snippets=snippets
+        snippets=snippets,
+        base_path=BASE_PATH
     )
     index_path = output_dir / 'index.html'
     index_path.write_text(index_html)
