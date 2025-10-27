@@ -3,7 +3,7 @@ shapes.py - Simple SVG shape library for learning Python
 No walking, just drawing. Perfect for building car scenes!
 """
 
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 from dataclasses import dataclass
 from enum import Enum
 
@@ -66,6 +66,26 @@ class Point:
     y: float
 
 
+class GroupContext:
+    """Context manager for adding shapes to a named group."""
+
+    def __init__(self, canvas: 'Canvas', name: str):
+        self.canvas = canvas
+        self.name = name
+
+    def __enter__(self):
+        if self.name not in self.canvas.groups:
+            self.canvas.groups[self.name] = []
+            self.canvas.group_visibility[self.name] = True
+            self.canvas.group_transforms[self.name] = ""
+        self.canvas.current_group = self.name
+        return self.canvas
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.canvas.current_group = None
+        return False
+
+
 class Canvas:
     """Main drawing canvas that collects shapes and renders to SVG."""
     
@@ -74,36 +94,147 @@ class Canvas:
         self.height = height
         self.background = background
         self.shapes: List[str] = []
-    
+        self.gradients: Dict[str, str] = {}  # gradient_id -> SVG definition
+        self.groups: Dict[str, List[str]] = {}  # group_name -> list of shapes
+        self.current_group: Optional[str] = None  # active group context
+        self.group_transforms: Dict[str, str] = {}  # group_name -> transform attribute
+        self.group_visibility: Dict[str, bool] = {}  # group_name -> visible
+
+
+    def linear_gradient(self, name: str,
+                       start: Tuple[float, float] = (0, 0),
+                       end: Tuple[float, float] = (100, 0),
+                       colors: List[Tuple[str, float]] = None) -> 'Canvas':
+        """
+        Define a linear gradient for use in fills.
+
+        Args:
+            name: Identifier to use as fill="gradient:{name}"
+            start: (x, y) start point in percentages (0-100)
+            end: (x, y) end point in percentages (0-100)
+            colors: List of (color, offset) tuples. Offset is 0.0-1.0
+                    If just colors provided, distribute evenly
+
+        Example:
+            canvas.linear_gradient("sunset",
+                start=(0, 0), end=(100, 0),
+                colors=[("#FF6B6B", 0), ("#FFA500", 0.5), ("#FFD93D", 1.0)])
+
+            # Then use as: canvas.circle(100, 100, 50, fill="gradient:sunset")
+        """
+        if colors is None:
+            colors = [("#000000", 0), ("#FFFFFF", 1)]
+
+        # Auto-distribute offsets if colors is list of strings
+        if colors and isinstance(colors[0], str):
+            n = len(colors)
+            colors = [(color, i/(n-1) if n > 1 else 0) for i, color in enumerate(colors)]
+
+        gradient_id = f"grad_{name}"
+        stops = "".join(f'<stop offset="{offset*100}%" stop-color="{color}"/>'
+                        for color, offset in colors)
+
+        svg_def = f'''<linearGradient id="{gradient_id}" x1="{start[0]}%" y1="{start[1]}%" x2="{end[0]}%" y2="{end[1]}%">
+{stops}
+</linearGradient>'''
+
+        self.gradients[name] = svg_def
+        return self
+
+    def radial_gradient(self, name: str,
+                       center: Tuple[float, float] = (50, 50),
+                       radius: float = 50,
+                       colors: List[Tuple[str, float]] = None) -> 'Canvas':
+        """
+        Define a radial gradient for use in fills.
+
+        Args:
+            name: Identifier to use as fill="gradient:{name}"
+            center: (x, y) center point in percentages (0-100)
+            radius: Radius in percentages (0-100)
+            colors: List of (color, offset) tuples or just colors
+        """
+        if colors is None:
+            colors = [("#000000", 0), ("#FFFFFF", 1)]
+
+        if colors and isinstance(colors[0], str):
+            n = len(colors)
+            colors = [(color, i/(n-1) if n > 1 else 0) for i, color in enumerate(colors)]
+
+        gradient_id = f"grad_{name}"
+        stops = "".join(f'<stop offset="{offset*100}%" stop-color="{color}"/>'
+                        for color, offset in colors)
+
+        svg_def = f'''<radialGradient id="{gradient_id}" cx="{center[0]}%" cy="{center[1]}%" r="{radius}%">
+{stops}
+</radialGradient>'''
+
+        self.gradients[name] = svg_def
+        return self
+
+    def _resolve_fill(self, fill: str) -> str:
+        """Convert gradient:{name} to url(#grad_{name}), pass through regular colors."""
+        if fill.startswith("gradient:"):
+            gradient_name = fill[9:]  # Remove "gradient:" prefix
+            return f"url(#grad_{gradient_name})"
+        return fill
+
+    def group(self, name: str) -> GroupContext:
+        """
+        Create a context manager for adding shapes to a named group.
+
+        Example:
+            with canvas.group("flower"):
+                canvas.circle(100, 100, 20, fill=Color.YELLOW)
+                canvas.circle(85, 90, 10, fill=Color.PINK)
+
+            # Later manipulate as a unit
+            canvas.move_group("flower", dx=50, dy=30)
+            canvas.hide_group("flower")
+        """
+        return GroupContext(self, name)
+
     def rect(self, x: float = 0, y: float = 0, width: float = 100, height: float = 100,
              fill: str = Color.BLACK, stroke: str = Color.BLACK,
              stroke_width: float = 1) -> 'Canvas':
         """Draw a rectangle. Returns self for chaining."""
-        svg = f'<rect x="{x}" y="{y}" width="{width}" height="{height}" fill="{fill}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
-        self.shapes.append(svg)
+        svg = f'<rect x="{x}" y="{y}" width="{width}" height="{height}" fill="{self._resolve_fill(fill)}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
+        if self.current_group:
+            self.groups[self.current_group].append(svg)
+        else:
+            self.shapes.append(svg)
         return self
     
     def circle(self, x: float = 50, y: float = 50, radius: float = 25,
                fill: str = Color.BLACK, stroke: str = Color.BLACK,
                stroke_width: float = 1) -> 'Canvas':
         """Draw a circle at center (x, y). Returns self for chaining."""
-        svg = f'<circle cx="{x}" cy="{y}" r="{radius}" fill="{fill}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
-        self.shapes.append(svg)
+        svg = f'<circle cx="{x}" cy="{y}" r="{radius}" fill="{self._resolve_fill(fill)}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
+        if self.current_group:
+            self.groups[self.current_group].append(svg)
+        else:
+            self.shapes.append(svg)
         return self
     
     def ellipse(self, x: float = 50, y: float = 50, rx: float = 40, ry: float = 25,
                 fill: str = Color.BLACK, stroke: str = Color.BLACK,
                 stroke_width: float = 1) -> 'Canvas':
         """Draw an ellipse. rx = horizontal radius, ry = vertical radius."""
-        svg = f'<ellipse cx="{x}" cy="{y}" rx="{rx}" ry="{ry}" fill="{fill}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
-        self.shapes.append(svg)
+        svg = f'<ellipse cx="{x}" cy="{y}" rx="{rx}" ry="{ry}" fill="{self._resolve_fill(fill)}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
+        if self.current_group:
+            self.groups[self.current_group].append(svg)
+        else:
+            self.shapes.append(svg)
         return self
     
     def line(self, x1: float = 0, y1: float = 0, x2: float = 100, y2: float = 100,
              stroke: str = Color.BLACK, stroke_width: float = 2) -> 'Canvas':
         """Draw a line from (x1, y1) to (x2, y2)."""
         svg = f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
-        self.shapes.append(svg)
+        if self.current_group:
+            self.groups[self.current_group].append(svg)
+        else:
+            self.shapes.append(svg)
         return self
     
     def polygon(self, points: List[Tuple[float, float]] = None,
@@ -113,16 +244,22 @@ class Canvas:
         if points is None:
             points = [(50, 0), (100, 100), (0, 100)]  # Default triangle
         points_str = " ".join(f"{x},{y}" for x, y in points)
-        svg = f'<polygon points="{points_str}" fill="{fill}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
-        self.shapes.append(svg)
+        svg = f'<polygon points="{points_str}" fill="{self._resolve_fill(fill)}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
+        if self.current_group:
+            self.groups[self.current_group].append(svg)
+        else:
+            self.shapes.append(svg)
         return self
     
     def text(self, x: float = 0, y: float = 20, text: str = "Hello",
              size: int = 16, fill: str = Color.BLACK,
              font: str = "Arial") -> 'Canvas':
         """Draw text at (x, y). Note: y is the baseline."""
-        svg = f'<text x="{x}" y="{y}" font-size="{size}" fill="{fill}" font-family="{font}">{text}</text>'
-        self.shapes.append(svg)
+        svg = f'<text x="{x}" y="{y}" font-size="{size}" fill="{self._resolve_fill(fill)}" font-family="{font}">{text}</text>'
+        if self.current_group:
+            self.groups[self.current_group].append(svg)
+        else:
+            self.shapes.append(svg)
         return self
     
     def rounded_rect(self, x: float = 0, y: float = 0, width: float = 100, height: float = 100,
@@ -130,8 +267,11 @@ class Canvas:
                      fill: str = Color.BLACK, stroke: str = Color.BLACK,
                      stroke_width: float = 1) -> 'Canvas':
         """Draw a rectangle with rounded corners."""
-        svg = f'<rect x="{x}" y="{y}" width="{width}" height="{height}" rx="{rx}" ry="{ry}" fill="{fill}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
-        self.shapes.append(svg)
+        svg = f'<rect x="{x}" y="{y}" width="{width}" height="{height}" rx="{rx}" ry="{ry}" fill="{self._resolve_fill(fill)}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
+        if self.current_group:
+            self.groups[self.current_group].append(svg)
+        else:
+            self.shapes.append(svg)
         return self
     
     def grid(self, spacing: int = 50, color: str = "#E8E8E8",
@@ -207,18 +347,88 @@ class Canvas:
 
         return self
 
+    def move_group(self, name: str, dx: float = 0, dy: float = 0) -> 'Canvas':
+        """Move a group by offset (dx, dy)."""
+        if name not in self.groups:
+            return self
+
+        # Parse existing transform or create new one
+        existing = self.group_transforms.get(name, "")
+        if existing and "translate" in existing:
+            # Extract current translation and add to it
+            # For simplicity, replace any existing translate
+            import re
+            existing = re.sub(r'translate\([^)]+\)', '', existing)
+
+        self.group_transforms[name] = f"translate({dx}, {dy}) {existing}".strip()
+        return self
+
+    def rotate_group(self, name: str, angle: float, cx: float = 0, cy: float = 0) -> 'Canvas':
+        """Rotate a group by angle degrees around point (cx, cy)."""
+        if name not in self.groups:
+            return self
+
+        existing = self.group_transforms[name]
+        self.group_transforms[name] = f"{existing} rotate({angle}, {cx}, {cy})".strip()
+        return self
+
+    def hide_group(self, name: str) -> 'Canvas':
+        """Hide a group from rendering."""
+        if name in self.group_visibility:
+            self.group_visibility[name] = False
+        return self
+
+    def show_group(self, name: str) -> 'Canvas':
+        """Show a previously hidden group."""
+        if name in self.group_visibility:
+            self.group_visibility[name] = True
+        return self
+
+    def remove_group(self, name: str) -> 'Canvas':
+        """Permanently remove a group from the canvas."""
+        if name in self.groups:
+            del self.groups[name]
+            del self.group_visibility[name]
+            del self.group_transforms[name]
+        return self
+
     def clear(self) -> 'Canvas':
-        """Clear all shapes from the canvas."""
+        """Clear all shapes and groups from the canvas."""
         self.shapes = []
+        self.groups = {}
+        self.group_transforms = {}
+        self.group_visibility = {}
+        self.current_group = None
         return self
     
     def to_svg(self) -> str:
         """Generate the complete SVG string."""
         svg_header = f'<svg width="{self.width}" height="{self.height}" xmlns="http://www.w3.org/2000/svg">'
         svg_background = f'<rect width="100%" height="100%" fill="{self.background}"/>'
+
+        defs_section = ""
+        if self.gradients:
+            gradient_defs = "".join(self.gradients.values())
+            defs_section = f"<defs>{gradient_defs}</defs>"
+
+        # Ungrouped shapes
+        ungrouped = ''.join(self.shapes)
+
+        # Grouped shapes
+        grouped = ""
+        for group_name, shapes in self.groups.items():
+            if not self.group_visibility.get(group_name, True):
+                continue  # Skip hidden groups
+
+            transform = self.group_transforms.get(group_name, "")
+            transform_attr = f' transform="{transform}"' if transform else ""
+
+            group_svg = f'<g id="{group_name}"{transform_attr}>{"".join(shapes)}</g>'
+            grouped += group_svg
+
         svg_footer = '</svg>'
-        
-        return svg_header + svg_background + ''.join(self.shapes) + svg_footer
+
+        return svg_header + svg_background + defs_section + ungrouped + grouped + svg_footer
     
     def save(self, filename: str) -> None:
         """Save the canvas to an SVG file."""
