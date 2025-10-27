@@ -131,7 +131,34 @@ function appState() {
             errorDiv.style.display = 'none';
             statusSpan.textContent = 'Running...';
 
-            // Send code to worker
+            // Basic security validation (worker does deeper validation)
+            // Check code length
+            if (code.length > 10000) {
+                this.isRunning = false;
+                this.error = 'Code too long (max 10,000 characters)';
+                errorDiv.textContent = '❌ ' + this.error;
+                errorDiv.style.display = 'block';
+                statusSpan.textContent = 'Error';
+                return;
+            }
+
+            // Check for obviously forbidden patterns
+            const forbidden = [
+                /\bimport\s+js\b/, /\bfrom\s+js\b/,
+                /\beval\s*\(/, /\bexec\s*\(/, /\bopen\s*\(/
+            ];
+            for (const pattern of forbidden) {
+                if (pattern.test(code)) {
+                    this.isRunning = false;
+                    this.error = `Forbidden pattern detected: ${pattern.source}`;
+                    errorDiv.textContent = '❌ Security: ' + this.error;
+                    errorDiv.style.display = 'block';
+                    statusSpan.textContent = 'Error';
+                    return;
+                }
+            }
+
+            // Send code to worker (which will do full security validation)
             this.pyodideWorker.postMessage({
                 type: 'run',
                 code: code
