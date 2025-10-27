@@ -20,15 +20,21 @@
 - canvas higher, allow user to move
 - save code to github gists ☮️
 - lessons 🚧
-- safe execution - errors, potential exhaustion ☮️
-- sharing 
+- safe execution ✅
+  - timeout protection (5s limit with worker termination)
+  - import blocking (allow stdlib validation modules, block user imports)
+  - AST validation (block eval/exec/__import__/dangerous patterns)
+  - canvas limits (max size, max shapes)
+  - client-side validation (code length, forbidden patterns)
+  - comprehensive test coverage with error reporting
+- sharing
  - security though ?
 - help panel
  - for this lib
  - basic python help ☮️
 - palletes
   - add a function to show the current pallete, ✅
-  - pick palletes, 
+  - pick palletes,
   - switch pallets
 - add color picker ?
 - help
@@ -40,9 +46,16 @@
   - llm.txt file
 
 ## drawing improvements
-- gradients 🚧
+- gradients ✅
+  - linear gradients with customizable colors and offsets
+  - radial gradients with center/radius control
+- named groups ✅
+  - group context manager for organizing shapes
+  - group transformations (move, rotate)
+  - group visibility control (hide/show)
+  - group removal
 - splines
-- object manipulation (copy, rotate, change color)
+- object manipulation (copy, change color)
 
 
 ## much later
