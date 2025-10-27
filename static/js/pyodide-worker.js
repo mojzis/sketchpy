@@ -24,11 +24,10 @@ import sys
 import builtins
 
 # === REMOVE DANGEROUS BUILTINS ===
-# NOTE: Keep 'compile' - Pyodide needs it internally for runPythonAsync
+# NOTE: Keep eval/exec/compile - Pyodide needs them internally
+# User code access is blocked via AST validation before execution
 dangerous_builtins = [
     'open',      # File I/O
-    'eval',      # Code execution
-    'exec',      # Code execution
     '__import__', # Direct import
     'input',     # User input (would hang)
 ]
@@ -37,6 +36,8 @@ for name in dangerous_builtins:
     if hasattr(builtins, name):
         delattr(builtins, name)
         print(f"✓ Removed builtins.{name}")
+
+# Note: eval, exec, compile kept but blocked in user code via AST validation
 
 # === BLOCK JS MODULE ===
 # Prevent access to JavaScript bridge
