@@ -71,16 +71,13 @@ print("✓ Security restrictions applied")
 print(f"✓ Allowed imports: {', '.join(ALLOWED_MODULES)}")
     `);
 
-    // Load shapes code (Canvas API) - we'll inject this
-    // For now, fetch from server (build process will handle this)
-    try {
-        const response = await fetch('/static/shapes_embedded.py');
-        shapesCode = await response.text();
+    // Load shapes code (Canvas API) from shapesCode variable
+    // This is set by the 'init' message from the main thread
+    if (shapesCode) {
         await pyodide.runPythonAsync(shapesCode);
         console.log('✓ Canvas API loaded');
-    } catch (error) {
-        console.error('Failed to load Canvas API:', error);
-        throw error;
+    } else {
+        console.warn('No shapes code provided yet, waiting for init message');
     }
 
     // Signal ready
@@ -188,9 +185,59 @@ async function executeCode(code) {
  * Handle messages from main thread
  */
 self.onmessage = async (event) => {
-    const { id, type, code } = event.data;
+    const { id, type, code, shapes } = event.data;
 
     try {
+        // Handle init message (from app.js)
+        if (type === 'init') {
+            shapesCode = shapes;
+            await initPyodide();
+            return;
+        }
+
+        // Handle run message (from app.js - old protocol)
+        if (type === 'run') {
+            if (!pyodide) {
+                await initPyodide();
+            }
+
+            // Validate and execute code
+            const validation = await validateCode(code);
+            if (!validation.valid) {
+                self.postMessage({
+                    type: 'result',
+                    error: validation.error
+                });
+                return;
+            }
+
+            // Execute the code
+            await pyodide.runPythonAsync(code);
+
+            // Check if canvas was created
+            const canvasExists = await pyodide.runPythonAsync(`
+'can' in dir() and hasattr(can, 'to_svg')
+            `);
+
+            if (!canvasExists) {
+                self.postMessage({
+                    type: 'result',
+                    error: 'No canvas found!\n\nMake sure your code creates a Canvas object named "can":\ncan = Canvas(800, 600)'
+                });
+                return;
+            }
+
+            // Get SVG output
+            const svg = await pyodide.runPythonAsync('can.to_svg()');
+
+            self.postMessage({
+                type: 'result',
+                svg: svg
+            });
+            return;
+        }
+
+        // Handle execute message (from executor - new security protocol)
         if (type === 'execute') {
             // Initialize on first execution
             if (!pyodide) {
@@ -210,12 +257,19 @@ self.onmessage = async (event) => {
         }
     } catch (error) {
         // Send error
-        self.postMessage({
-            id,
-            type: 'result',
-            success: false,
-            error: error.message
-        });
+        if (type === 'run') {
+            self.postMessage({
+                type: 'result',
+                error: error.message
+            });
+        } else {
+            self.postMessage({
+                id,
+                type: 'result',
+                success: false,
+                error: error.message
+            });
+        }
     }
 };
 
