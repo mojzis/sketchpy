@@ -49,9 +49,11 @@ print("✓ Initial security applied")
         await pyodide.runPythonAsync(shapesCode);
         console.log('✓ Canvas API loaded');
 
+        // Import ast module BEFORE we block imports (needed for validation)
         // NOW block all imports for user code (after shapes.py loaded successfully)
         await pyodide.runPythonAsync(`
 import builtins
+import ast  # Import this BEFORE blocking, needed for validation
 
 def block_all_imports(name, globals=None, locals=None, fromlist=(), level=0):
     """Block ALL imports in user code - maximum security"""
@@ -67,6 +69,7 @@ def block_all_imports(name, globals=None, locals=None, fromlist=(), level=0):
 builtins.__import__ = block_all_imports
 
 print("✓ All imports blocked for user code")
+print("✓ ast module pre-loaded for validation")
         `);
     } else {
         console.warn('No shapes code provided yet, waiting for init message');
