@@ -134,20 +134,22 @@ def validate_ast(code_string):
                     'error': f"Access to '{node.attr}' is not allowed"
                 }
 
-        # Check imports (should be caught by restricted_import, but double-check)
+        # Check imports - use blocklist approach (matches runtime check)
+        blocked_imports = {'os', 'subprocess', 'socket', 'urllib', 'requests', 'http', 'sys', 'io'}
+
         if isinstance(node, ast.Import):
             for alias in node.names:
-                if alias.name not in ['Canvas', 'Color', 'CreativeGardenPalette', 'CalmOasisPalette']:
+                if alias.name in blocked_imports:
                     return {
                         'valid': False,
-                        'error': f"Import '{alias.name}' not allowed"
+                        'error': f"Import '{alias.name}' not allowed (blocked for security)"
                     }
 
         if isinstance(node, ast.ImportFrom):
-            if node.module and node.module not in ['Canvas', 'Color', 'CreativeGardenPalette', 'CalmOasisPalette']:
+            if node.module and node.module in blocked_imports:
                 return {
                     'valid': False,
-                    'error': f"Import from '{node.module}' not allowed"
+                    'error': f"Import from '{node.module}' not allowed (blocked for security)"
                 }
 
     return {'valid': True}
