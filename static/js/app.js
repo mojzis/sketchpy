@@ -143,6 +143,7 @@ function appState() {
             }
 
             // Check for obviously forbidden patterns
+            // Note: compile() is kept for Pyodide internal use
             const forbidden = [
                 /\bimport\s+js\b/, /\bfrom\s+js\b/,
                 /\beval\s*\(/, /\bexec\s*\(/, /\bopen\s*\(/

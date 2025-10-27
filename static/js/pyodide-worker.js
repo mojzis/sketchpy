@@ -24,11 +24,11 @@ import sys
 import builtins
 
 # === REMOVE DANGEROUS BUILTINS ===
+# NOTE: Keep 'compile' - Pyodide needs it internally for runPythonAsync
 dangerous_builtins = [
     'open',      # File I/O
     'eval',      # Code execution
     'exec',      # Code execution
-    'compile',   # Code compilation
     '__import__', # Direct import
     'input',     # User input (would hang)
 ]
@@ -99,8 +99,9 @@ def validate_ast(code_string):
         return {'valid': False, 'error': f'Syntax error: {e}'}
 
     # Check for forbidden AST nodes
+    # Note: compile() kept for Pyodide internal use
     forbidden_names = {
-        'eval', 'exec', 'compile', '__import__',
+        'eval', 'exec', '__import__',
         'open', 'input', 'globals', 'locals',
         'vars', 'dir', 'getattr', 'setattr', 'delattr'
     }

@@ -1,4 +1,12 @@
 
+## meta stuff
+- claude skills 🚧
+ - testing ?
+- ideas interchange with claude.ai 🚧
+- ci/cd
+ - (some) tests ?
+- tests for javascript features ?
+- license ? (not copyright ...)
 
 ## features
 - nicer homepage 🚧
@@ -9,10 +17,10 @@
 - theme switching
   - create lessons per theme though ?
 - canvas higher, allow user to move
-- save code to github ☮️
+- save code to github gists ☮️
 - lessons 🚧
-- safe execution - errors, potential exhaustion
-- sharing
+- safe execution - errors, potential exhaustion ☮️
+- sharing 
  - security though ?
 - help panel
  - for this lib
@@ -36,16 +44,8 @@
 - object manipulation (copy, rotate, change color)
 
 
-## later
+## much later
 i18n ? :)
-
-## meta stuff
-- claude skills 🚧
- - testing ?
-- ideas interchange with claude.ai 🚧
-- ci/cd
- - github pages not generating properly ?!
-- brief tests
 
 ## NTH
 auto reload in browser for development ?

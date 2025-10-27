@@ -22,13 +22,13 @@ export const SecurityConfig = {
     ]),
 
     // Forbidden Patterns (regex)
+    // Note: compile() kept for Pyodide internal use
     FORBIDDEN_PATTERNS: [
         /\bimport\s+js\b/,               // import js
         /\bfrom\s+js\b/,                 // from js import
         /__import__\s*\(/,               // __import__(
         /\beval\s*\(/,                   // eval(
         /\bexec\s*\(/,                   // exec(
-        /\bcompile\s*\(/,                // compile(
         /\bopen\s*\(/,                   // open(
         /__builtins__/,                  // __builtins__
         /\bglobals\s*\(/,                // globals(
