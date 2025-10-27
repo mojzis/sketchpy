@@ -16,20 +16,18 @@ async function initPyodide() {
         indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/'
     });
 
-    console.log('Pyodide loaded, applying security restrictions...');
+    console.log('Pyodide loaded, applying initial security...');
 
-    // Execute security lockdown
+    // Remove immediately dangerous builtins first
     await pyodide.runPythonAsync(`
 import sys
 import builtins
 
-# === REMOVE DANGEROUS BUILTINS ===
-# NOTE: Keep eval/exec/compile - Pyodide needs them internally
-# User code access is blocked via AST validation before execution
+# === REMOVE TRULY DANGEROUS BUILTINS ===
+# Keep eval/exec/compile for Pyodide, block via AST
 dangerous_builtins = [
-    'open',      # File I/O
-    '__import__', # Direct import
-    'input',     # User input (would hang)
+    'open',   # File I/O
+    'input',  # User input (would hang)
 ]
 
 for name in dangerous_builtins:
@@ -37,48 +35,12 @@ for name in dangerous_builtins:
         delattr(builtins, name)
         print(f"✓ Removed builtins.{name}")
 
-# Note: eval, exec, compile kept but blocked in user code via AST validation
-
 # === BLOCK JS MODULE ===
-# Prevent access to JavaScript bridge
 if 'js' in sys.modules:
     del sys.modules['js']
-sys.modules['js'] = None  # Block future imports
+sys.modules['js'] = None
 
-# === RESTRICT IMPORTS ===
-# Store original __import__ before we deleted it
-_original_import = builtins.__dict__.get('__import__')
-
-# Whitelist of allowed modules
-ALLOWED_MODULES = {
-    'Canvas',
-    'Color',
-    'CreativeGardenPalette',
-    'CalmOasisPalette',
-    'typing',  # Used by shapes.py for type hints
-    're',      # Used by shapes.py internally
-}
-
-def restricted_import(name, globals=None, locals=None, fromlist=(), level=0):
-    """Only allow safe imports, block dangerous ones"""
-    # Blocked imports (dangerous/not needed)
-    blocked = {'os', 'subprocess', 'socket', 'urllib', 'requests', 'http', 'sys', 'io'}
-
-    if name in blocked:
-        raise ImportError(f"Import '{name}' not allowed (blocked for security)")
-
-    # For standard library and our classes, use original import
-    # Pyodide will handle it
-    if _original_import:
-        return _original_import(name, globals, locals, fromlist, level)
-
-    return None
-
-# Replace import mechanism
-builtins.__import__ = restricted_import
-
-print("✓ Security restrictions applied")
-print(f"✓ Allowed imports: {', '.join(ALLOWED_MODULES)}")
+print("✓ Initial security applied")
     `);
 
     // Load shapes code (Canvas API) from shapesCode variable
@@ -86,6 +48,26 @@ print(f"✓ Allowed imports: {', '.join(ALLOWED_MODULES)}")
     if (shapesCode) {
         await pyodide.runPythonAsync(shapesCode);
         console.log('✓ Canvas API loaded');
+
+        // NOW block all imports for user code (after shapes.py loaded successfully)
+        await pyodide.runPythonAsync(`
+import builtins
+
+def block_all_imports(name, globals=None, locals=None, fromlist=(), level=0):
+    """Block ALL imports in user code - maximum security"""
+    raise ImportError(
+        f"Import '{name}' is not allowed.\\n\\n"
+        f"You have everything you need:\\n"
+        f"  • Canvas, Color (for drawing)\\n"
+        f"  • CreativeGardenPalette, CalmOasisPalette (color palettes)\\n\\n"
+        f"No imports needed for the lessons!"
+    )
+
+# Replace import with blocking function
+builtins.__import__ = block_all_imports
+
+print("✓ All imports blocked for user code")
+        `);
     } else {
         console.warn('No shapes code provided yet, waiting for init message');
     }
@@ -134,23 +116,18 @@ def validate_ast(code_string):
                     'error': f"Access to '{node.attr}' is not allowed"
                 }
 
-        # Check imports - use blocklist approach (matches runtime check)
-        blocked_imports = {'os', 'subprocess', 'socket', 'urllib', 'requests', 'http', 'sys', 'io'}
-
+        # Check imports - block ALL imports for maximum security
         if isinstance(node, ast.Import):
-            for alias in node.names:
-                if alias.name in blocked_imports:
-                    return {
-                        'valid': False,
-                        'error': f"Import '{alias.name}' not allowed (blocked for security)"
-                    }
+            return {
+                'valid': False,
+                'error': 'Imports are not allowed. You have Canvas, Color, and palettes already loaded!'
+            }
 
         if isinstance(node, ast.ImportFrom):
-            if node.module and node.module in blocked_imports:
-                return {
-                    'valid': False,
-                    'error': f"Import from '{node.module}' not allowed (blocked for security)"
-                }
+            return {
+                'valid': False,
+                'error': 'Imports are not allowed. You have Canvas, Color, and palettes already loaded!'
+            }
 
     return {'valid': True}
 
