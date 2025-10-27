@@ -11,7 +11,7 @@
     </script>
 
     <!-- Alpine app state (must load before Alpine.js) -->
-    <script src="../static/js/app.js"></script>
+    <script type="module" src="../static/js/app.js"></script>
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -465,16 +465,166 @@
             font-size: 13px;
         }
 
-        .error-message {
-            background: #ffebee;
-            border-left: 4px solid #f44336;
-            padding: 10px;
-            margin-top: 10px;
+        /* Friendly Error Display - Category-based styling */
+        .friendly-error {
+            margin-top: 15px;
         }
 
-        .error-message pre {
-            background: transparent;
-            color: #c62828;
+        .error-card {
+            border-radius: 6px;
+            padding: 16px;
+            margin: 12px 0;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        /* Python errors - Orange/Yellow theme (learning opportunity) */
+        .error-card.python-error {
+            background: #FFF3E0;
+            border-left: 4px solid #FF9800;
+        }
+
+        .error-card.python-error .error-header h3 {
+            color: #E65100;
+        }
+
+        /* Security errors - Blue theme (information, not punishment) */
+        .error-card.security-error {
+            background: #E3F2FD;
+            border-left: 4px solid #2196F3;
+        }
+
+        .error-card.security-error .error-header h3 {
+            color: #1565C0;
+        }
+
+        /* Timeout errors - Purple theme (performance issue) */
+        .error-card.timeout-error {
+            background: #F3E5F5;
+            border-left: 4px solid #9C27B0;
+        }
+
+        .error-card.timeout-error .error-header h3 {
+            color: #6A1B9A;
+        }
+
+        /* System errors - Gray theme (technical issue) */
+        .error-card.system-error {
+            background: #FAFAFA;
+            border-left: 4px solid #757575;
+        }
+
+        .error-card.system-error .error-header h3 {
+            color: #424242;
+        }
+
+        .error-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .error-icon {
+            font-size: 24px;
+            line-height: 1;
+        }
+
+        .error-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .error-explanation {
+            color: #333;
+            margin: 0 0 12px 0;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .error-location {
+            background: #E3F2FD;
+            border-radius: 4px;
+            padding: 8px 12px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #1565C0;
+        }
+
+        .location-icon {
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .error-hint {
+            background: #FFF9C4;
+            border-radius: 4px;
+            padding: 10px 12px;
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .hint-icon {
+            font-size: 18px;
+            line-height: 1;
+        }
+
+        .error-code-section {
+            margin-top: 12px;
+        }
+
+        .error-code-header {
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .error-code {
+            background: #F5F5F5;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            border: 1px solid #E0E0E0;
+        }
+
+        .code-line {
+            display: flex;
+            gap: 12px;
+            padding: 2px 4px;
+        }
+
+        .error-line {
+            background: #FFCDD2;
+            margin: 0 -4px;
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+
+        .line-number {
+            color: #999;
+            width: 30px;
+            text-align: right;
+            user-select: none;
+            font-weight: 500;
+        }
+
+        .line-code {
+            white-space: pre;
+            flex: 1;
+        }
+
+        .print-output h4 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            color: #666;
         }
 
         .help-content {

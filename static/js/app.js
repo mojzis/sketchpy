@@ -1,6 +1,10 @@
 /**
  * Alpine.js app state for sketchpy learning platform
+ *
+ * Integrates with errorHandler.js to provide friendly error messages
  */
+
+import { PyodideErrorHandler } from './errorHandler.js';
 
 function appState() {
     return {
@@ -12,11 +16,15 @@ function appState() {
         // Execution state
         isRunning: false,
         output: '',
-        error: '',
+        error: null,  // Changed to null to store formatted error object
+        errorText: '', // Plain text version for banner
 
         // Pyodide worker
         pyodideWorker: null,
         pyodideReady: false,
+
+        // Error handler (initialized after Pyodide is ready)
+        errorHandler: null,
 
         // Current lesson and all lessons
         lesson: window.CURRENT_LESSON || null,
@@ -71,11 +79,16 @@ function appState() {
 
         // Handle messages from worker
         handleWorkerMessage(event) {
-            const { type, output, svg, error } = event.data;
+            const { type, output, svg, error, errorData, code } = event.data;
 
             if (type === 'ready') {
                 console.log('Pyodide worker ready!');
                 this.pyodideReady = true;
+
+                // Initialize error handler (doesn't need Pyodide instance in main thread)
+                this.errorHandler = new PyodideErrorHandler(null);
+                console.log('✓ Error handler ready');
+
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('runBtn').disabled = false;
                 document.getElementById('status').textContent = 'Ready! ✓';
@@ -90,13 +103,60 @@ function appState() {
                 const statusSpan = document.getElementById('status');
 
                 if (error) {
-                    // Error occurred
-                    this.error = error;
+                    // Error occurred - format it with errorHandler
+                    let formattedError;
+
+                    if (errorData && this.errorHandler) {
+                        // Use structured error data to create friendly message
+                        formattedError = this.errorHandler.formatForBeginners(errorData, code || window.editorView?.state.doc.toString());
+                    } else if (this.errorHandler) {
+                        // Try to extract error info from the message string
+                        const parsedError = this.parseErrorMessage(error);
+                        const currentCode = code || window.editorView?.state.doc.toString();
+
+                        if (parsedError) {
+                            formattedError = this.errorHandler.formatForBeginners(parsedError, currentCode);
+                        } else {
+                            // Fallback to simple format
+                            const lineNum = this.extractLineFromMessage(error);
+                            formattedError = {
+                                title: 'Error',
+                                explanation: error,
+                                hint: this.getSimpleHint(error),
+                                line: lineNum,
+                                snippet: this.errorHandler && lineNum ?
+                                    this.errorHandler.getSnippet(currentCode, lineNum) : null,
+                                category: 'python'
+                            };
+                        }
+                    } else {
+                        // No error handler available
+                        formattedError = {
+                            title: 'Error',
+                            explanation: error,
+                            hint: null,
+                            line: null,
+                            snippet: null,
+                            category: 'python'
+                        };
+                    }
+
+                    // Store formatted error for UI
+                    this.error = formattedError;
+                    this.errorText = error; // Keep plain text for banner
                     this.activeTab = 'output';
-                    errorDiv.textContent = '❌ Error: ' + error;
+
+                    // Update banner - just say to check output
+                    errorDiv.innerHTML = '<span style="cursor: pointer;" @click="activeTab = \'output\'">⚠️ Error occurred - click to view details in Output tab</span>';
                     errorDiv.style.display = 'block';
+
                     statusSpan.textContent = 'Error';
                     statusSpan.style.color = '#f44336';
+
+                    // Highlight error line in editor if available
+                    if (formattedError.line && window.editorView) {
+                        this.highlightErrorLine(formattedError.line);
+                    }
                 } else if (svg) {
                     // Success - got SVG
                     canvasDiv.innerHTML = svg;
@@ -104,6 +164,11 @@ function appState() {
                     statusSpan.textContent = 'Success! ✓';
                     statusSpan.style.color = '#4CAF50';
                     this.markComplete(this.currentLessonId);
+
+                    // Clear any previous errors
+                    this.error = null;
+                    this.errorText = '';
+                    errorDiv.style.display = 'none';
                 } else {
                     // No SVG returned
                     canvasDiv.innerHTML = '<div style="color: #999;">Make sure your code ends with "can" to display the canvas.</div>';
@@ -194,7 +259,109 @@ function appState() {
             document.getElementById('canvas').innerHTML = '<div style="color: #999;">Canvas cleared. Click "Run Code" to draw.</div>';
             document.getElementById('error').style.display = 'none';
             this.output = '';
-            this.error = '';
+            this.error = null;
+            this.errorText = '';
+        },
+
+        // Get error icon based on category
+        getErrorIcon(category) {
+            const icons = {
+                python: '⚠️',      // Learning opportunity
+                security: 'ℹ️',    // Information
+                timeout: '⏱️',     // Performance issue
+                system: '⚙️'       // Technical problem
+            };
+            return icons[category] || '⚠️';
+        },
+
+        // Parse error message to extract structured info
+        parseErrorMessage(errorMsg) {
+            // Pyodide sends full traceback - we want only the last line (actual error)
+            // Example full traceback:
+            // Traceback (most recent call last):
+            //   File "/lib/python311.zip/_pyodide/_base.py", line 573, in eval_code_async
+            //   File "<exec>", line 20, in <module>
+            // NameError: name 'hoho' is not defined
+
+            if (!errorMsg) return null;
+
+            // Split into lines and find the last line with an error type
+            const lines = errorMsg.trim().split('\n');
+            const errorLine = lines.reverse().find(line => /\w+Error:/.test(line));
+
+            if (errorLine) {
+                // Parse the error line: "NameError: name 'xx' is not defined"
+                const match = errorLine.match(/(\w+Error):\s*(.+)/);
+                if (match) {
+                    return {
+                        type: match[1],
+                        message: match[2].trim(),
+                        line: this.extractLineFromMessage(errorMsg)
+                    };
+                }
+            }
+
+            return null;
+        },
+
+        // Extract line number from error message
+        extractLineFromMessage(errorMsg) {
+            // Look for line number in <exec> frame (user's code), not Pyodide internals
+            // Example: File "<exec>", line 20, in <module>
+            const execMatch = errorMsg.match(/<exec>",\s*line\s+(\d+)/);
+            if (execMatch) {
+                return parseInt(execMatch[1]);
+            }
+
+            // Fallback: look for any line number (but this might be wrong)
+            const match = errorMsg.match(/line (\d+)/i);
+            return match ? parseInt(match[1]) : null;
+        },
+
+        // Get simple hint based on error message
+        getSimpleHint(errorMsg) {
+            if (errorMsg.includes('not defined')) {
+                const match = errorMsg.match(/name '(\w+)' is not defined/);
+                if (match) {
+                    return `Define the variable first: ${match[1]} = ...`;
+                }
+                return 'Make sure to define variables before using them';
+            }
+            if (errorMsg.includes('Canvas') && errorMsg.includes('not found')) {
+                return 'Create a canvas first: can = Canvas(800, 600)';
+            }
+            if (errorMsg.includes('SyntaxError')) {
+                return 'Check for missing colons, quotes, or brackets';
+            }
+            if (errorMsg.includes('IndentationError')) {
+                return 'Make sure all lines at the same level have the same spacing';
+            }
+            return null;
+        },
+
+        // Highlight error line in CodeMirror editor
+        highlightErrorLine(lineNumber) {
+            if (!window.editorView) return;
+
+            try {
+                const view = window.editorView;
+                const doc = view.state.doc;
+
+                // Get the line position
+                if (lineNumber > 0 && lineNumber <= doc.lines) {
+                    const line = doc.line(lineNumber);
+
+                    // Scroll to the error line (simple scrolling without EditorView import)
+                    view.dispatch({
+                        selection: { anchor: line.from },
+                        scrollIntoView: true
+                    });
+
+                    console.log(`Scrolled to error line ${lineNumber}`);
+                }
+            } catch (e) {
+                console.error('Failed to highlight error line:', e);
+            }
         }
     }
 }

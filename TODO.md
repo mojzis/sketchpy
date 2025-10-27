@@ -4,20 +4,27 @@
  - testing ?
 - ideas interchange with claude.ai 🚧
 - ci/cd
+ - lessons pages broken
  - (some) tests ?
-- tests for javascript features ?
+- tests 
+ - for javascript features ?
+ - review and fix browser tests
+ - test the lib on python per pyodide (3.13 after update)
+- newer pyodide ✈️
 - license ? (not copyright ...)
-- use newest pyodide, test the lib on the python it supports
 
 ## features
+- ERRORS - still not good ! 🚧
 - nicer homepage 🚧
  - add usual stuff like favicon ...
  - add social links
  - colored code !
+ - even better pictures :)
 - link to home ?
 - theme switching
   - create lessons per theme though ?
 - canvas higher, allow user to move
+- store code in browser ?
 - save code to github gists ☮️
 - lessons 🚧
 - safe execution ✅

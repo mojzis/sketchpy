@@ -1,6 +1,6 @@
 # Project State
 
-Last Updated: 2025-10-27 (Landing Page Snippets)
+Last Updated: 2025-10-27 (Friendly Error Handling)
 
 ## Overview
 
@@ -100,6 +100,17 @@ Currently in active development with a functional web-based editor powered by Co
   - Total test count: 49 tests (30 passing for core functionality: build, snippet, lesson, server)
   - Snippets: sunset_garden.py, calm_waves.py, geometric_harmony.py
 
+- **Beginner-Friendly Error Handling System** (2025-10-27)
+  - Created errorHandler.js module for transforming Python errors into beginner-friendly messages
+  - Integrated error handler with app.js (ES6 module) and pyodide-worker.js
+  - Enhanced error extraction to show only user code line numbers (from `<exec>`), not Pyodide internals
+  - Smart error message parsing extracts error type from full traceback
+  - Category-based error display: Python (orange), Security (blue), Timeout (purple), System (gray)
+  - Context-aware hints based on error patterns (e.g., "Define the variable first: xx = ...")
+  - Visual error display with line number badge, hint bubble, and code snippet
+  - Editor scrolls to error line when error occurs
+  - Files: static/js/errorHandler.js, static/js/app.js, static/js/pyodide-worker.js, templates/lesson.html.jinja, templates/components/output-tabs.html
+
 ### In Progress
 
 None currently
@@ -154,6 +165,11 @@ None currently
 - **Rationale**: Keeps UI responsive during Python code execution, prevents UI freezing on long-running code, better performance on slower devices
 - **Date**: 2025-10-26
 
+### Beginner-Friendly Error Messages
+- **Decision**: Transform technical Python errors into friendly, actionable messages with context-aware hints
+- **Rationale**: Students learning to code need clear explanations, not technical tracebacks; show only user code errors, hide Pyodide internals
+- **Date**: 2025-10-27
+
 ## Code Patterns
 
 ### Jinja2 Template Code Embedding
@@ -190,6 +206,16 @@ None currently
 - **Usage**: Build process executes Python snippets and captures SVG output for embedding
 - **Example**: `scripts/build.py` has `execute_snippet()` and `load_snippets()` functions that run code in snippets/ directory
 - **Rationale**: Pre-rendered SVG avoids Pyodide loading on landing page, showcases library capabilities immediately, enables snippet rotation without runtime execution
+
+### Error Handler Transformation Pattern
+- **Usage**: PyodideErrorHandler class transforms technical errors into beginner-friendly messages
+- **Example**: Worker extracts error info from `sys.last_type`, filters for `<exec>` frames only, sends to main thread for formatting
+- **Rationale**: Separates error extraction (Python/worker) from formatting (JavaScript/main thread); shows only user code line numbers; provides category-based styling hints
+
+### Traceback Parsing for User Code Only
+- **Usage**: Filter traceback frames to show only `<exec>` (user code), exclude Pyodide internals
+- **Example**: `get_error_info()` in errorHandler.js filters frames where `'<exec>' in f.filename`
+- **Rationale**: Beginners don't need internal Python machinery details; showing line 20 (user code) instead of line 573 (Pyodide) is much clearer
 
 ## Known Constraints
 

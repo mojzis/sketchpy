@@ -1,8 +1,13 @@
 // Import Pyodide from CDN
 importScripts('https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js');
 
+// Import error handler (can't use ES6 import in worker, so we'll load it differently)
+// For now, we'll implement the error handler inline in the worker
+// TODO: Find a way to share the errorHandler code or duplicate key functionality here
+
 let pyodide = null;
 let shapesCode = null; // Will be populated with embedded Canvas API
+let errorHandler = null; // Will be initialized after Pyodide is ready
 
 /**
  * Initialize Pyodide and lock down dangerous functionality
@@ -265,11 +270,32 @@ self.onmessage = async (event) => {
             });
         }
     } catch (error) {
-        // Send error
+        // Extract structured error information from Python if possible
+        let errorData = null;
+        if (pyodide && type === 'run') {
+            try {
+                // Use the get_error_info function we set up during initialization
+                const getErrorInfo = pyodide.globals.get('get_error_info');
+                if (getErrorInfo) {
+                    const info = getErrorInfo();
+                    if (info) {
+                        errorData = info.toJs({ dict_converter: Object.fromEntries });
+                        console.log('Extracted error data:', errorData);
+                    }
+                }
+            } catch (e) {
+                // If error extraction fails, just use the original error
+                console.warn('Failed to extract Python error info:', e);
+            }
+        }
+
+        // Send error with structured data
         if (type === 'run') {
             self.postMessage({
                 type: 'result',
-                error: error.message
+                error: error.message,
+                errorData: errorData,  // Structured error info for formatting
+                code: code  // Send code back for snippet extraction
             });
         } else {
             self.postMessage({

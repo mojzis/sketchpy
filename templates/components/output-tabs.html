@@ -27,10 +27,57 @@
     <!-- Output Tab -->
     <div x-show="activeTab === 'output'"
          class="output-text">
-        <pre x-text="output || 'No output yet'"></pre>
-        <div x-show="error" class="error-message">
-            <strong>Error:</strong>
-            <pre x-text="error"></pre>
+        <!-- Print output (if any) -->
+        <div x-show="output" class="print-output">
+            <h4>Output:</h4>
+            <pre x-text="output"></pre>
+        </div>
+
+        <!-- Friendly error display (if error occurred) -->
+        <div x-show="error" class="friendly-error">
+            <!-- Error card with category-based styling -->
+            <div class="error-card" :class="error?.category + '-error'">
+                <!-- Header with icon and title -->
+                <div class="error-header">
+                    <span class="error-icon" x-text="getErrorIcon(error?.category)"></span>
+                    <h3 x-text="error?.title || 'Error'"></h3>
+                </div>
+
+                <!-- Explanation -->
+                <p class="error-explanation" x-text="error?.explanation"></p>
+
+                <!-- Line number (if available) -->
+                <div x-show="error?.line" class="error-location">
+                    <span class="location-icon">📍</span>
+                    <span>Line <strong x-text="error?.line"></strong></span>
+                </div>
+
+                <!-- Hint (if available) -->
+                <div x-show="error?.hint" class="error-hint">
+                    <span class="hint-icon">💡</span>
+                    <span x-text="error?.hint"></span>
+                </div>
+
+                <!-- Code snippet (if available) -->
+                <template x-if="error?.snippet && error.snippet.length > 0">
+                    <div class="error-code-section">
+                        <div class="error-code-header">Code:</div>
+                        <div class="error-code">
+                            <template x-for="line in error.snippet" :key="line.number">
+                                <div class="code-line" :class="{ 'error-line': line.isError }">
+                                    <span class="line-number" x-text="line.number"></span>
+                                    <span class="line-code" x-text="line.code"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- No output message -->
+        <div x-show="!output && !error" style="color: #999; padding: 20px;">
+            No output yet. Run your code to see results here.
         </div>
     </div>
 
