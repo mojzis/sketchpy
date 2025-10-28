@@ -50,7 +50,6 @@ def test_generated_python_syntax():
         re.DOTALL
     )
     assert match is not None, "Could not find Python code in generated HTML (window.SHAPES_CODE)"
-
     python_code = match.group(1)
 
     # Try to compile the Python code
@@ -71,6 +70,7 @@ def test_generated_code_has_required_classes():
         content,
         re.DOTALL
     )
+    assert match is not None, "Could not find Python code in generated HTML (window.SHAPES_CODE)"
     python_code = match.group(1)
 
     # Check for required classes and methods
@@ -92,6 +92,7 @@ def test_generated_code_excludes_browser_incompatible():
         content,
         re.DOTALL
     )
+    assert match is not None, "Could not find Python code in generated HTML (window.SHAPES_CODE)"
     python_code = match.group(1)
 
     # These should NOT be in the generated code
@@ -112,6 +113,7 @@ def test_generated_code_has_required_imports():
         content,
         re.DOTALL
     )
+    assert match is not None, "Could not find Python code in generated HTML (window.SHAPES_CODE)"
     python_code = match.group(1)
 
     # Check for required imports
@@ -133,6 +135,7 @@ def test_generated_code_has_repr_html():
         content,
         re.DOTALL
     )
+    assert match is not None, "Could not find Python code in generated HTML (window.SHAPES_CODE)"
     python_code = match.group(1)
 
     # Check for _repr_html_ method (needed for marimo)
@@ -150,6 +153,7 @@ def test_generated_code_size():
         content,
         re.DOTALL
     )
+    assert match is not None, "Could not find Python code in generated HTML (window.SHAPES_CODE)"
     python_code = match.group(1)
 
     # The generated Python code should be reasonable size (less than 20KB)

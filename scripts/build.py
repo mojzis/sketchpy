@@ -22,6 +22,26 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s', datefmt='%H:%M:%S')
 
 
+def remove_type_hints_simple(code: str) -> str:
+    """
+    Remove Python type hints using a simple regex-based approach.
+    Handles common types including Union, Optional, List, Tuple, Dict, etc.
+    """
+    # First, collapse nested generic types by removing innermost brackets iteratively
+    # This converts Union[List[str], List[Tuple[str, float]], None] -> Union[List, List, None] -> Union
+    for _ in range(5):  # Repeat to handle deep nesting
+        before = code
+        # Match innermost generic types (no brackets inside)
+        code = re.sub(r'(List|Tuple|Optional|Union|Dict)\[([^\[\]]+)\]', r'\1', code)
+        if code == before:  # No more changes
+            break
+
+    # Now remove all type hints (including the collapsed generics and simple types)
+    code = re.sub(r': (List|Tuple|Optional|Union|Dict|float|int|str|bool|None)+', '', code)
+
+    return code
+
+
 def process_shapes_code(shapes_path: Path) -> str:
     """
     Read and process shapes.py for embedding in Pyodide.
@@ -73,13 +93,10 @@ def process_shapes_code(shapes_path: Path) -> str:
     # Clean up excessive blank lines
     processed_code = re.sub(r'\n\n\n+', '\n\n', processed_code)
 
-    # Remove type hints from function signatures for cleaner browser code
-    # Handle nested brackets properly (e.g., List[Tuple[float, float]])
-    # Using a regex that handles one level of nesting
-    processed_code = re.sub(r': (List|Tuple|Optional)\[([^\[\]]+|\[[^\]]*\])*\]', '', processed_code)
-    # Remove simple type hints
-    processed_code = re.sub(r': (float|int|str|bool)', '', processed_code)
-    # Remove return type annotations
+    # Remove type hints using iterative regex approach
+    processed_code = remove_type_hints_simple(processed_code)
+
+    # Remove return type annotations (these use ` ->` which is easier to match)
     processed_code = re.sub(r' -> [\'"]?Canvas[\'"]?', '', processed_code)
     processed_code = re.sub(r' -> (str|None)', '', processed_code)
 

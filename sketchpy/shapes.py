@@ -3,7 +3,7 @@ shapes.py - Simple SVG shape library for learning Python
 No walking, just drawing. Perfect for building car scenes!
 """
 
-from typing import List, Tuple, Optional, Dict
+from typing import List, Tuple, Optional, Dict, Union
 from dataclasses import dataclass
 from enum import Enum
 
@@ -150,7 +150,7 @@ class Canvas:
     def linear_gradient(self, name: str,
                        start: Tuple[float, float] = (0, 0),
                        end: Tuple[float, float] = (100, 0),
-                       colors: List[Tuple[str, float]] = None) -> 'Canvas':
+                       colors: Union[List[str], List[Tuple[str, float]], None] = None) -> 'Canvas':
         """
         Define a linear gradient for use in fills.
 
@@ -190,7 +190,7 @@ class Canvas:
     def radial_gradient(self, name: str,
                        center: Tuple[float, float] = (50, 50),
                        radius: float = 50,
-                       colors: List[Tuple[str, float]] = None) -> 'Canvas':
+                       colors: Union[List[str], List[Tuple[str, float]], None] = None) -> 'Canvas':
         """
         Define a radial gradient for use in fills.
 
@@ -287,7 +287,7 @@ class Canvas:
             self.shapes.append(svg)
         return self
     
-    def polygon(self, points: List[Tuple[float, float]] = None,
+    def polygon(self, points: Optional[List[Tuple[float, float]]] = None,
                 fill: str = Color.BLACK, stroke: str = Color.BLACK,
                 stroke_width: float = 1) -> 'Canvas':
         """Draw a polygon from a list of (x, y) points."""

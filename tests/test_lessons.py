@@ -2,7 +2,6 @@
 
 import ast
 from pathlib import Path
-import sys
 
 import pytest
 
@@ -10,8 +9,7 @@ import pytest
 from sketchpy.shapes import Canvas, Color, CreativeGardenPalette, CalmOasisPalette
 
 # Import the extraction function from build.py
-sys.path.insert(0, str(Path(__file__).parent.parent / 'scripts'))
-from build import extract_main_function_body
+from scripts.build import extract_main_function_body
 
 
 PROJECT_ROOT = Path(__file__).parent.parent

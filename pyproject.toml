@@ -4,14 +4,7 @@ version = "0.1.0"
 description = "Educational Python graphics library for teaching programming through visual art"
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = [
-    "colabturtleplus>=2.0.1",
-    "jinja2>=3.1.6",
-    "marimo>=0.17.2",
-    "markdown>=3.9",
-    "pyyaml>=6.0.3",
-    "watchdog>=6.0.0",
-]
+dependencies = []
 
 [build-system]
 requires = ["setuptools>=61.0"]
@@ -32,4 +25,40 @@ packages = ["sketchpy", "scripts"]
 dev = [
     "playwright>=1.55.0",
     "pytest>=8.4.2",
+    "poethepoet>=0.37.0",
+    "jinja2>=3.1.6",
+    "marimo",
+    "markdown>=3.9",
+    "pyyaml>=6.0.3",
+    "watchdog>=6.0.0",
+    "ruff>=0.14.2",
+    "ty>=0.0.1a24",
+    "pymarkdownlnt>=0.9.33",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+# Default: quiet mode (-q) for minimal output, matching what LLMs see
+# Override with: pytest -v (verbose) or pytest --tb=long (detailed tracebacks)
+addopts = [
+    "-q",
+    "--tb=short",
+    "--strict-markers",
+]
+
+
+[tool.poe.tasks]
+# Test commands
+test-js = "npm test"
+test-py = "pytest"
+test = ["test-js", "test-py"]
+
+# Lint commands
+lint-js = "npm run lint"
+lint-py = "ruff check ."
+lint = ["lint-js", "lint-py"]
+
+check = ["lint", "test"]
