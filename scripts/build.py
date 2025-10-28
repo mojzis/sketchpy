@@ -160,7 +160,17 @@ class LessonLoader:
     def __init__(self, project_root: Path):
         self.project_root = project_root
         self.lessons_dir = project_root / 'lessons'
-        self.md = markdown.Markdown(extensions=['fenced_code', 'tables'])
+        self.md = markdown.Markdown(extensions=[
+            'fenced_code',
+            'tables',
+            'codehilite'
+        ], extension_configs={
+            'codehilite': {
+                'css_class': 'highlight',
+                'linenums': False,
+                'guess_lang': False
+            }
+        })
 
     def load_lessons_config(self):
         """Auto-generate lessons config from lesson directories."""
