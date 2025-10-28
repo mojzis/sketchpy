@@ -29,10 +29,10 @@ def main():
 
 
     # Left leaf (ellipse)
-    can.ellipse(cx - 40, cy + 140, 30, 15, fill=CreativeGardenPalette.HONEYDEW)
+    can.ellipse(cx - 35, cy + 140, 30, 15, fill=CreativeGardenPalette.HONEYDEW)
 
     # Right leaf (ellipse)
-    can.ellipse(cx + 40, cy + 190, 30, 15, fill=CreativeGardenPalette.MINT_CREAM)
+    can.ellipse(cx + 35, cy + 190, 30, 15, fill=CreativeGardenPalette.MINT_CREAM)
 
     # Your turn! Add more petals, change colors, or create your own garden!
 

@@ -14,25 +14,42 @@
     </script>
 
     <!-- Import lesson state module (Alpine.js app state) -->
+    <!-- ⚠️ CRITICAL: DO NOT MODIFY THIS SCRIPT BLOCK ⚠️ -->
+    <!-- This handles async module loading + Alpine.js initialization timing -->
+    <!-- Key requirements:
+         1. Must wrap import in async IIFE to handle top-level await
+         2. Must expose window.appState as a FUNCTION (not direct assignment)
+         3. Must set window.appStateReady flag AFTER import completes
+         4. Alpine.js loading script below polls for appStateReady
+         5. Changing this breaks Alpine.js initialization (appState not defined errors)
+    -->
     <script type="module">
         // Use runtime BASE_PATH for dynamic imports
         const basePath = window.BASE_PATH || '';
-        const { createAppState } = await import(`${basePath}/static/js/core/lessonState.js`);
 
-        // Make appState available for Alpine.js
-        window.appState = createAppState;
+        // Import and setup appState before Alpine loads
+        (async () => {
+            const { createAppState } = await import(`${basePath}/static/js/core/lessonState.js`);
 
-        // Keep these for backward compatibility with HTML onclick
-        window.runCode = function() {
-            const app = Alpine.$data(document.querySelector('[x-data]'));
-            if (app) app.runCode();
-        };
+            // Make appState available for Alpine.js (as a function that creates the state)
+            window.appState = () => createAppState();
 
-        window.clearCanvas = function() {
-            const app = Alpine.$data(document.querySelector('[x-data]'));
-            if (app) app.clearCanvas();
-        };
+            // Signal that appState is ready
+            window.appStateReady = true;
+
+            // Keep these for backward compatibility with HTML onclick
+            window.runCode = function() {
+                const app = Alpine.$data(document.querySelector('[x-data]'));
+                if (app) app.runCode();
+            };
+
+            window.clearCanvas = function() {
+                const app = Alpine.$data(document.querySelector('[x-data]'));
+                if (app) app.clearCanvas();
+            };
+        })();
     </script>
+    <!-- ⚠️ END CRITICAL SECTION ⚠️ -->
 
     <!-- Alpine app state (OLD - now loaded from module) -->
     <script style="display: none;">
@@ -1241,8 +1258,25 @@
         })();
     </script>
 
-    <!-- Alpine.js (loads after modules are defined above) -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Alpine.js (wait for appState to be ready) -->
+    <!-- ⚠️ CRITICAL: DO NOT MODIFY THIS SCRIPT BLOCK ⚠️ -->
+    <!-- This polls for window.appStateReady flag set by module script above -->
+    <!-- Ensures Alpine.js only loads AFTER appState function is defined -->
+    <!-- Without this, Alpine tries to call appState() before it exists -->
+    <script>
+        // Wait for appState to be ready before loading Alpine
+        (function loadAlpine() {
+            if (window.appStateReady) {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js';
+                script.defer = true;
+                document.head.appendChild(script);
+            } else {
+                setTimeout(loadAlpine, 50);
+            }
+        })();
+    </script>
+    <!-- ⚠️ END CRITICAL SECTION ⚠️ -->
 </body>
 
 </html>

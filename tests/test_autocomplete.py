@@ -1,35 +1,20 @@
 """Browser tests for CodeMirror autocomplete functionality."""
 
-import subprocess
-from pathlib import Path
-
 import pytest
 from playwright.sync_api import sync_playwright, expect
 
 
-PROJECT_ROOT = Path(__file__).parent.parent
-OUTPUT_FILE = PROJECT_ROOT / 'output' / 'index.html'
-
-
-@pytest.fixture(scope="module")
-def build_output():
-    """Build the output file before tests."""
-    subprocess.run(['uv', 'run', 'build'], cwd=PROJECT_ROOT, check=True)
-    assert OUTPUT_FILE.exists(), "Build did not create output file"
-    return OUTPUT_FILE
-
-
-def test_codemirror_initialized(build_output):
+def test_codemirror_initialized(http_server):
     """Test that CodeMirror 6 editor is initialized."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
-        # Load the page
-        page.goto(f'file://{build_output.absolute()}')
+        # Load the lesson page (not index.html which is a landing page)
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Wait for editor to be initialized (CodeMirror 6 uses .cm-editor)
-        page.wait_for_selector('.cm-editor', timeout=5000)
+        page.wait_for_selector('.cm-editor', timeout=10000)
 
         # Verify CodeMirror is visible
         editor = page.locator('.cm-editor')
@@ -38,17 +23,17 @@ def test_codemirror_initialized(build_output):
         browser.close()
 
 
-def test_api_definitions_extracted(build_output):
+def test_api_definitions_extracted(http_server):
     """Test that API definitions are extracted from Python code."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
-        # Load the page
-        page.goto(f'file://{build_output.absolute()}')
+        # Load the lesson page
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Wait for page to load (CodeMirror 6)
-        page.wait_for_selector('.cm-editor', timeout=5000)
+        page.wait_for_selector('.cm-editor', timeout=10000)
 
         # Check that API_DEFINITIONS exists and has Canvas methods
         result = page.evaluate('''
@@ -83,17 +68,17 @@ def test_api_definitions_extracted(build_output):
         browser.close()
 
 
-def test_canvas_methods_have_defaults(build_output):
+def test_canvas_methods_have_defaults(http_server):
     """Test that Canvas methods show default parameter values."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
-        # Load the page
-        page.goto(f'file://{build_output.absolute()}')
+        # Load the lesson page
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Wait for page to load (CodeMirror 6)
-        page.wait_for_selector('.cm-editor', timeout=5000)
+        page.wait_for_selector('.cm-editor', timeout=10000)
 
         # Check that methods have default values
         result = page.evaluate('''
@@ -127,17 +112,17 @@ def test_canvas_methods_have_defaults(build_output):
         browser.close()
 
 
-def test_autocomplete_triggers_on_dot(build_output):
+def test_autocomplete_triggers_on_dot(http_server):
     """Test that autocomplete popup appears when typing 'can.'"""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
-        # Load the page
-        page.goto(f'file://{build_output.absolute()}')
+        # Load the lesson page
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Wait for CodeMirror 6 to load
-        page.wait_for_selector('.cm-editor', timeout=5000)
+        page.wait_for_selector('.cm-editor', timeout=10000)
 
         # Focus the editor (CodeMirror 6 uses .cm-content for the editable area)
         page.click('.cm-content')
@@ -163,17 +148,17 @@ def test_autocomplete_triggers_on_dot(build_output):
         browser.close()
 
 
-def test_autocomplete_filters_on_typing(build_output):
+def test_autocomplete_filters_on_typing(http_server):
     """Test that autocomplete filters results when typing."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
-        # Load the page
-        page.goto(f'file://{build_output.absolute()}')
+        # Load the lesson page
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Wait for CodeMirror 6 to load
-        page.wait_for_selector('.cm-editor', timeout=5000)
+        page.wait_for_selector('.cm-editor', timeout=10000)
 
         # Focus the editor
         page.click('.cm-content')
@@ -198,17 +183,17 @@ def test_autocomplete_filters_on_typing(build_output):
         browser.close()
 
 
-def test_palette_colors_available(build_output):
+def test_palette_colors_available(http_server):
     """Test that palette color constants are available in autocomplete."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
-        # Load the page
-        page.goto(f'file://{build_output.absolute()}')
+        # Load the lesson page
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Wait for page to load (CodeMirror 6)
-        page.wait_for_selector('.cm-editor', timeout=5000)
+        page.wait_for_selector('.cm-editor', timeout=10000)
 
         # Check that palette colors are extracted
         result = page.evaluate('''
@@ -247,17 +232,17 @@ def test_palette_colors_available(build_output):
         browser.close()
 
 
-def test_autocomplete_shows_palette_colors(build_output):
+def test_autocomplete_shows_palette_colors(http_server):
     """Test that autocomplete shows palette colors when typing 'CreativeGardenPalette.'"""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
-        # Load the page
-        page.goto(f'file://{build_output.absolute()}')
+        # Load the lesson page
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Wait for CodeMirror 6 to load
-        page.wait_for_selector('.cm-editor', timeout=5000)
+        page.wait_for_selector('.cm-editor', timeout=10000)
 
         # Focus the editor
         page.click('.cm-content')
@@ -286,17 +271,17 @@ def test_autocomplete_shows_palette_colors(build_output):
         browser.close()
 
 
-def test_method_signatures_are_single_line(build_output):
+def test_method_signatures_are_single_line(http_server):
     """Test that method signatures are formatted as single lines."""
     with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
 
-        # Load the page
-        page.goto(f'file://{build_output.absolute()}')
+        # Load the lesson page
+        page.goto(f'{http_server}/lessons/01-first-flower.html')
 
         # Wait for page to load (CodeMirror 6)
-        page.wait_for_selector('.cm-editor', timeout=5000)
+        page.wait_for_selector('.cm-editor', timeout=10000)
 
         # Check that method signatures don't have newlines
         result = page.evaluate('''

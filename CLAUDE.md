@@ -25,11 +25,12 @@ Just report "Server running at https://localhost:8007/sketchpy/" - no need for v
    - `CarShapes` class: Educational helper shapes (cars, traffic lights, roads)
    - Shape methods: `rect()`, `circle()`, `ellipse()`, `line()`, `polygon()`, `text()`, `rounded_rect()`, `grid()`
 
-2. **templates/index.html.jinja** - Browser-based learning environment template:
+2. **templates/lesson.html.jinja** - Browser-based learning environment template:
    - Split-pane UI with instructions and live code editor
    - Pyodide integration for running Python in the browser
    - Interactive tutorials for drawing cars and scenes
    - Jinja2 template that embeds shapes.py code at build time
+   - **⚠️ CRITICAL: Contains two script blocks marked "DO NOT MODIFY"** - these handle async module loading timing with Alpine.js. Modifying them causes "appState is not defined" errors.
 
 3. **scripts/** - Development utilities:
    - `srv.py`: HTTPS server with logging support (serves from project root)
@@ -161,6 +162,35 @@ npm test && uv run pytest
 - **apiDefinitions.test.js** (10 tests): Palette extraction, Canvas API generation
 - Total: 36 unit tests verifying core JS logic
 - Run with `npm test` (fast, ~400ms)
+
+### CRITICAL: Alpine.js Initialization Pattern
+
+**⚠️ DO NOT MODIFY the Alpine.js loading pattern in `templates/lesson.html.jinja`**
+
+The template contains two critical script blocks that handle async module loading timing:
+
+1. **Module Import Block** (lines ~17-52):
+   - Wraps dynamic import in async IIFE
+   - Exposes `window.appState` as a **function** (not direct assignment)
+   - Sets `window.appStateReady` flag after import completes
+   - Must complete before Alpine.js initializes
+
+2. **Alpine.js Loading Block** (lines ~1262-1279):
+   - Polls for `window.appStateReady` flag
+   - Only loads Alpine.js after appState is defined
+   - Prevents "appState is not defined" errors
+
+**Why this pattern?**
+- ES6 modules (`type="module"`) are async and deferred by default
+- Dynamic `import()` adds another async layer
+- Alpine.js `defer` script can load before modules finish
+- Without polling, Alpine tries to call `appState()` before it exists
+- This pattern ensures correct initialization order
+
+**If you see "appState is not defined" errors:**
+1. Check that both script blocks are intact
+2. Verify `window.appState = () => createAppState()` wrapper exists
+3. Confirm polling script waits for `appStateReady` flag
 
 ### JavaScript Architecture
 

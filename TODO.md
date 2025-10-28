@@ -32,6 +32,12 @@ DEAR CLAUDE, please dont edit this.
  - canvas - generated from code (meticulously explain each param)
  - python - basic principles, with examples (as links to editor ?) ☮️
 
+I would like to split the content of the help tab into 3:
+- the actual content for the lesson
+- help for the sketchpy lib (ideally generated from the lib itself)
+- 
+
+
 - lesson desc vs help panel
 
 

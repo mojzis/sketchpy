@@ -245,11 +245,7 @@ def daemonize(project_root):
         pid = os.fork()
         if pid > 0:
             # Parent process - print info and exit
-            print(f"✓ Server started in background (PID: {pid})")
-            print(f"  Access: https://localhost:8007/sketchpy/")
-            print(f"  Logs: tail -f {LOG_FILE}")
-            print(f"  Stop: kill $(cat {PID_FILE})")
-            print(f"  Note: Server configured for GitHub Pages path (/sketchpy/)")
+            print(f"✓ Server started in background (PID: {pid}) Access: https://localhost:8007/sketchpy/")
             sys.exit(0)
     except OSError as e:
         logger.error(f"Fork failed: {e}")
