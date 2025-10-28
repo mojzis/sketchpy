@@ -73,11 +73,24 @@ _rebuild_lock = threading.Lock()
 
 
 class LoggingHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
-    """HTTP request handler that logs to file instead of stderr."""
+    """HTTP request handler that logs to file instead of stderr and handles /sketchpy/ path prefix."""
 
     def __init__(self, *args, **kwargs):
         # Serve from the output directory
         super().__init__(*args, directory='output', **kwargs)
+
+    def translate_path(self, path):
+        """Strip /sketchpy prefix to serve from output/ directory root.
+
+        This simulates GitHub Pages where the repo is served at /sketchpy/.
+        Allows local development to match production path structure.
+        """
+        # Strip /sketchpy prefix if present
+        if path.startswith('/sketchpy/'):
+            path = path[9:]  # Remove '/sketchpy'
+        elif path.startswith('/sketchpy'):
+            path = path[8:]  # Remove '/sketchpy'
+        return super().translate_path(path)
 
     def log_message(self, format, *args):
         logger.info(f"{self.address_string()} - {format % args}")
@@ -233,9 +246,10 @@ def daemonize(project_root):
         if pid > 0:
             # Parent process - print info and exit
             print(f"✓ Server started in background (PID: {pid})")
-            print(f"  Access: https://localhost:8007/")
+            print(f"  Access: https://localhost:8007/sketchpy/")
             print(f"  Logs: tail -f {LOG_FILE}")
             print(f"  Stop: kill $(cat {PID_FILE})")
+            print(f"  Note: Server configured for GitHub Pages path (/sketchpy/)")
             sys.exit(0)
     except OSError as e:
         logger.error(f"Fork failed: {e}")
@@ -321,7 +335,7 @@ def main():
     hostname = socket.gethostname()
     local_ip = socket.gethostbyname(hostname)
 
-    logger.info(f"🚀 Server: https://localhost:{PORT} (also at https://{local_ip}:{PORT})")
+    logger.info(f"🚀 Server: https://localhost:{PORT}/sketchpy/ (also at https://{local_ip}:{PORT}/sketchpy/)")
 
     # Write PID file
     write_pid()

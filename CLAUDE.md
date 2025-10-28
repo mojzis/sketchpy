@@ -9,7 +9,7 @@ After making changes to lesson files, templates, or the shapes.py library, alway
 uv run srv
 ```
 
-Just report "Server running at https://localhost:8007/" - no need for verbose output.
+Just report "Server running at https://localhost:8007/sketchpy/" - no need for verbose output.
 
 ## Project Overview
 
@@ -69,11 +69,14 @@ The project includes both Python tests (Pytest) and JavaScript tests (Vitest):
 # First time setup: Install Playwright browsers (only needed once)
 uv run playwright install chromium
 
-# Run all Python tests
+# Run all Python tests (quiet mode by default - configured in pyproject.toml)
 uv run pytest
 
-# Run tests with verbose output
-uv run pytest -v
+# Run tests with verbose output showing test names (when debugging)
+uv run pytest -vv
+
+# Run tests with full tracebacks (only when deep debugging needed)
+uv run pytest -vv --tb=long
 
 # Run only build tests (fast, no browser)
 uv run pytest tests/test_build.py
@@ -86,7 +89,21 @@ uv run pytest tests/test_server.py
 
 # Run specific test
 uv run pytest tests/test_build.py::test_generated_python_syntax
+
+# Run only last failed tests (efficient when fixing failures)
+uv run pytest --lf
+
+# Stop after N failures (useful for large test suites)
+uv run pytest --maxfail=5
 ```
+
+**Test Output Philosophy:**
+- **Default mode** (configured in `pyproject.toml`): Quiet mode (`-q`) shows only dots and summary
+- **Reduces token usage by 10-50x** - what you see in terminal matches what LLMs see
+- **Verbose mode** (`-vv` flag): Shows test names and detailed output for debugging
+- Configured with `--tb=short` for concise failure tracebacks by default
+- Override with `--tb=long` only when actively debugging specific failures
+- **Users and AI see the same minimal output** by default, optimizing for efficiency
 
 **JavaScript Tests:**
 ```bash
@@ -190,7 +207,7 @@ uv run srv
 
 # Server starts in background and returns immediately:
 # ✓ Server started in background (PID: 12345)
-#   Access: https://localhost:8007/
+#   Access: https://localhost:8007/sketchpy/
 #   Logs: tail -f logs/srv.log
 #   Restart: uv run srv (auto-kills existing server)
 #   Stop: kill $(cat logs/srv.pid)
@@ -324,7 +341,7 @@ c  # Auto-displays via _repr_html_()
 
 **In the browser (via development server):**
 
-Edit the code directly in the web interface at `https://localhost:8007/` after running `uv run srv`.
+Edit the code directly in the web interface at `https://localhost:8007/sketchpy/` after running `uv run srv`.
 
 ## Key Technical Details
 
