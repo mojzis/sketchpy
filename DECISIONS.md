@@ -1,5 +1,24 @@
 # Architectural Decisions
 
+## Pygments Syntax Highlighting for Help Content (2025-10-28)
+
+**Decision**: Add Pygments codehilite to Markdown processor for colored Python syntax in help tabs
+
+**Why**: Code examples easier to read with colors; matches editor theme for visual consistency
+
+**Rejected**:
+- highlight.js (requires JavaScript, client-side processing)
+- Prism.js (requires JavaScript, bundle size)
+- Plain code blocks (harder to read, less professional)
+- Server-side highlight.js (requires Node, complex setup)
+- Manual HTML spans (unmaintainable)
+
+**Implementation**:
+- scripts/build.py (codehilite extension config)
+- templates/lesson.html.jinja (Dracula theme CSS)
+
+---
+
 ## JavaScript Modularization with Unit Testing (2025-10-28)
 
 **Decision**: Restructure JavaScript from monolithic app.js to modular ES6 modules with unit testing

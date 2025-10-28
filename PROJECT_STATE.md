@@ -8,6 +8,7 @@ Educational Python graphics library for teaching programming through visual art.
 
 ## Completed
 
+- **Syntax Highlighting** (2025-10-28) - Pygments-powered Python syntax coloring in help tabs with Dracula theme
 - **JavaScript Modularization** (2025-10-28) - Modular ES6 structure with unit testing (36 tests, Vitest, ESLint)
 - **15-Lesson Curriculum** (2025-10-27) - Complete Python course (variables to functions, car theme)
 - **Error Handling System** (2025-10-27) - Beginner-friendly errors with context-aware hints
