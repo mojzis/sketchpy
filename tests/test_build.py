@@ -8,8 +8,8 @@ import pytest
 
 
 PROJECT_ROOT = Path(__file__).parent.parent
-# Use first lesson file for testing (multi-lesson structure)
-OUTPUT_FILE = PROJECT_ROOT / 'output' / 'lessons' / '01-first-flower.html'
+# Use first lesson file for testing (multi-lesson structure with themes)
+OUTPUT_FILE = PROJECT_ROOT / 'output' / 'lessons' / 'theme-1' / '01-first-flower.html'
 
 
 def test_build_command_runs_successfully():

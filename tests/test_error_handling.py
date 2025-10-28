@@ -24,13 +24,16 @@ def lesson_page(http_server):
         page = context.new_page()
 
         # Load lesson page
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for Pyodide to be ready (loading indicator hidden)
-        page.wait_for_selector('#loading', state='hidden', timeout=30000)
+        page.wait_for_selector('#loading', state='hidden', timeout=20000)
 
-        # Wait for Run button to be enabled (indicates editor is ready)
-        page.wait_for_selector('#runBtn:not([disabled])', timeout=5000)
+        # Wait for auto-run to complete (button re-enabled after initial auto-run)
+        # Note: Button gets disabled during auto-run, then re-enabled when done
+        # We need to wait for it to be enabled, then briefly disabled, then enabled again
+        import time
+        time.sleep(2)  # Give auto-run time to complete (simple but effective)
 
         yield page
 

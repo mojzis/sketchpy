@@ -2,6 +2,22 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Communication Style
+
+**CRITICAL: Be concise. State what was done, nothing more.**
+
+- Skip evaluation, flattery, praise
+- Use minimal words to describe actions
+- Example: "Added X to Y" not "Successfully implemented X feature in Y component"
+
+## Testing Requirements
+
+**CRITICAL: Run tests after every change. Browser tests must pass.**
+
+- Run `uv run pytest` after every code change
+- Browser tests are baseline - investigate all failures immediately
+- Passing tests before change + failing tests after = regression requiring fix
+
 ## Important: Always Start the Server After Changes
 
 After making changes to lesson files, templates, or the shapes.py library, always run:

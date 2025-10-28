@@ -14,7 +14,7 @@ import pytest
 PROJECT_ROOT = Path(__file__).parent.parent
 OUTPUT_DIR = PROJECT_ROOT / 'output'
 OUTPUT_FILE = OUTPUT_DIR / 'index.html'
-LESSON_FILE = OUTPUT_DIR / 'lessons' / '01-first-flower.html'
+LESSON_FILE = OUTPUT_DIR / 'lessons' / 'theme-1' / '01-first-flower.html'
 
 # Default port for test server, with fallback
 TEST_PORT = 8765

@@ -43,8 +43,21 @@ export function createAppState() {
 
         // Current lesson and all lessons
         lesson: window.CURRENT_LESSON || null,
-        lessons: window.ALL_LESSONS || [],
         currentLessonId: window.CURRENT_LESSON?.id,
+
+        // Theme support
+        themes: window.ALL_THEMES || [],
+        currentTheme: window.CURRENT_THEME || null,
+        currentThemeId: window.CURRENT_THEME?.id || (window.ALL_THEMES && window.ALL_THEMES.length > 0 ? window.ALL_THEMES[0].id : null),
+
+        // Get lessons for current theme
+        get filteredLessons() {
+            if (!this.themes || !Array.isArray(this.themes) || this.themes.length === 0) {
+                return [];
+            }
+            const theme = this.themes.find(t => t.id === this.currentThemeId);
+            return (theme && theme.lessons) ? theme.lessons : [];
+        },
 
         // Initialization
         init() {
@@ -272,6 +285,23 @@ export function createAppState() {
             if (confirm('Reset all progress? This cannot be undone.')) {
                 localStorage.removeItem('lessonProgress');
                 location.reload();
+            }
+        },
+
+        // Theme Navigation
+        updateTheme() {
+            // When theme changes, navigate to first lesson in that theme
+            const theme = this.themes.find(t => t.id === this.currentThemeId);
+            if (theme && theme.lessons.length > 0) {
+                this.navigateToLesson(theme.lessons[0].id);
+            }
+        },
+
+        navigateToLesson(lessonId) {
+            const basePath = window.BASE_PATH || '';
+            const theme = this.themes.find(t => t.id === this.currentThemeId);
+            if (theme) {
+                window.location.href = `${basePath}/lessons/${theme.id}/${lessonId}.html`;
             }
         },
 

@@ -1,0 +1,8 @@
+id: theme-1
+name: Creative Garden
+description: Learn Python through drawing colorful flowers, gardens, and geometric patterns
+icon: "🌸"
+# Theme color scheme (optional, for future UI customization)
+colors:
+  primary: "#2C5F7C"
+  accent: "#FF6B6B"

@@ -27,7 +27,7 @@ def test_worker_initializes_without_errors(http_server):
         page.on('pageerror', lambda exc: page_errors.append(str(exc)))
 
         # Load a LESSON page (not the landing page) - lessons have the editor and status
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait a bit for page to start loading
         time.sleep(2)
@@ -108,7 +108,7 @@ def test_worker_validates_and_executes_code(http_server):
         page.on('pageerror', lambda exc: page_errors.append(str(exc)))
 
         # Load a lesson page (not index.html which is a landing page)
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for worker to be ready
         try:
@@ -167,7 +167,7 @@ def test_worker_blocks_forbidden_imports(http_server):
         page.on('console', lambda msg: console_messages.append(f"[{msg.type}] {msg.text}"))
 
         # Load a lesson page (not index.html which is a landing page)
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         try:
             page.wait_for_selector('#loading', state='hidden', timeout=30000)

@@ -1,0 +1,8 @@
+id: theme-2
+name: Flowers
+description: Discover Python by creating beautiful flower gardens
+icon: "🌸"
+# Theme color scheme (optional, for future UI customization)
+colors:
+  primary: "#4A148C"
+  accent: "#FFD700"

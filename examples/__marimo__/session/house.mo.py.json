@@ -1,0 +1,40 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.17.2"
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "37ef2c8cc09269234d8739b076b5eb38",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<svg width=\"800\" height=\"600\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"100%\" height=\"100%\" fill=\"#FFFFFF\"/><rect x=\"0\" y=\"0\" width=\"800\" height=\"300\" fill=\"#A5C8E4\" stroke=\"#000000\" stroke-width=\"1\"/><rect x=\"0\" y=\"300\" width=\"800\" height=\"100\" fill=\"#B8D8E8\" stroke=\"#000000\" stroke-width=\"1\"/><rect x=\"0\" y=\"400\" width=\"800\" height=\"200\" fill=\"#9DC183\" stroke=\"#000000\" stroke-width=\"1\"/><rect x=\"250\" y=\"250\" width=\"300\" height=\"200\" fill=\"#FFF8DC\" stroke=\"#8B7355\" stroke-width=\"3\"/><polygon points=\"230,250 400,150 570,250\" fill=\"#FF9E80\" stroke=\"#8B4513\" stroke-width=\"3\"/><rect x=\"360\" y=\"350\" width=\"80\" height=\"100\" rx=\"8\" ry=\"5\" fill=\"#8B4513\" stroke=\"#000\" stroke-width=\"2\"/><circle cx=\"425\" cy=\"400\" r=\"5\" fill=\"#FFD700\" stroke=\"#000\" stroke-width=\"1\"/><rect x=\"290\" y=\"290\" width=\"60\" height=\"60\" fill=\"#F5F5F5\" stroke=\"#000\" stroke-width=\"2\"/><rect x=\"450\" y=\"290\" width=\"60\" height=\"60\" fill=\"#F5F5F5\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"320\" y1=\"290\" x2=\"320\" y2=\"350\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"290\" y1=\"320\" x2=\"350\" y2=\"320\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"480\" y1=\"290\" x2=\"480\" y2=\"350\" stroke=\"#000\" stroke-width=\"2\"/><line x1=\"450\" y1=\"320\" x2=\"510\" y2=\"320\" stroke=\"#000\" stroke-width=\"2\"/><rect x=\"385\" y=\"450\" width=\"30\" height=\"25\" fill=\"#D3C5B0\" stroke=\"#A89C86\" stroke-width=\"1.5\"/><rect x=\"385\" y=\"485\" width=\"30\" height=\"25\" fill=\"#D3C5B0\" stroke=\"#A89C86\" stroke-width=\"1.5\"/><rect x=\"385\" y=\"520\" width=\"30\" height=\"25\" fill=\"#D3C5B0\" stroke=\"#A89C86\" stroke-width=\"1.5\"/><rect x=\"385\" y=\"555\" width=\"30\" height=\"25\" fill=\"#D3C5B0\" stroke=\"#A89C86\" stroke-width=\"1.5\"/><line x1=\"270\" y1=\"470\" x2=\"270\" y2=\"510\" stroke=\"#6B8E23\" stroke-width=\"3\"/><circle cx=\"270\" cy=\"475\" r=\"12\" fill=\"#F6A8A6\" stroke=\"#000\" stroke-width=\"1.5\"/><line x1=\"320\" y1=\"485\" x2=\"320\" y2=\"525\" stroke=\"#6B8E23\" stroke-width=\"3\"/><circle cx=\"320\" cy=\"490\" r=\"12\" fill=\"#FFF0A3\" stroke=\"#000\" stroke-width=\"1.5\"/><line x1=\"365\" y1=\"475\" x2=\"365\" y2=\"515\" stroke=\"#6B8E23\" stroke-width=\"3\"/><circle cx=\"365\" cy=\"480\" r=\"12\" fill=\"#D5C3E0\" stroke=\"#000\" stroke-width=\"1.5\"/><line x1=\"435\" y1=\"480\" x2=\"435\" y2=\"520\" stroke=\"#6B8E23\" stroke-width=\"3\"/><circle cx=\"435\" cy=\"485\" r=\"12\" fill=\"#FFDAC1\" stroke=\"#000\" stroke-width=\"1.5\"/><line x1=\"480\" y1=\"470\" x2=\"480\" y2=\"510\" stroke=\"#6B8E23\" stroke-width=\"3\"/><circle cx=\"480\" cy=\"475\" r=\"12\" fill=\"#F6A8A6\" stroke=\"#000\" stroke-width=\"1.5\"/><line x1=\"530\" y1=\"485\" x2=\"530\" y2=\"525\" stroke=\"#6B8E23\" stroke-width=\"3\"/><circle cx=\"530\" cy=\"490\" r=\"12\" fill=\"#FFF0A3\" stroke=\"#000\" stroke-width=\"1.5\"/><circle cx=\"680\" cy=\"120\" r=\"35\" fill=\"#FFE66D\" stroke=\"#FFD700\" stroke-width=\"2\"/><line x1=\"725.0\" y1=\"120.0\" x2=\"740.0\" y2=\"120.0\" stroke=\"#FFD700\" stroke-width=\"3\"/><line x1=\"711.8198051533947\" y1=\"151.81980515339464\" x2=\"722.4264068711929\" y2=\"162.42640687119285\" stroke=\"#FFD700\" stroke-width=\"3\"/><line x1=\"680.0\" y1=\"165.0\" x2=\"680.0\" y2=\"180.0\" stroke=\"#FFD700\" stroke-width=\"3\"/><line x1=\"648.1801948466053\" y1=\"151.81980515339464\" x2=\"637.5735931288071\" y2=\"162.42640687119285\" stroke=\"#FFD700\" stroke-width=\"3\"/><line x1=\"635.0\" y1=\"120.0\" x2=\"620.0\" y2=\"120.00000000000001\" stroke=\"#FFD700\" stroke-width=\"3\"/><line x1=\"648.1801948466053\" y1=\"88.18019484660536\" x2=\"637.5735931288071\" y2=\"77.57359312880715\" stroke=\"#FFD700\" stroke-width=\"3\"/><line x1=\"680.0\" y1=\"75.0\" x2=\"680.0\" y2=\"60.0\" stroke=\"#FFD700\" stroke-width=\"3\"/><line x1=\"711.8198051533947\" y1=\"88.18019484660536\" x2=\"722.4264068711929\" y2=\"77.57359312880715\" stroke=\"#FFD700\" stroke-width=\"3\"/></svg>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SUiO",
+      "code_hash": "0357217f997381db0b68ef4fb7207324",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "application/json": "[\"MAX_AREA\", \"MAX_HEIGHT\", \"MAX_SHAPES\", \"MAX_WIDTH\", \"__class__\", \"__delattr__\", \"__dict__\", \"__dir__\", \"__doc__\", \"__eq__\", \"__firstlineno__\", \"__format__\", \"__ge__\", \"__getattribute__\", \"__getstate__\", \"__gt__\", \"__hash__\", \"__init__\", \"__init_subclass__\", \"__le__\", \"__lt__\", \"__module__\", \"__ne__\", \"__new__\", \"__reduce__\", \"__reduce_ex__\", \"__repr__\", \"__setattr__\", \"__sizeof__\", \"__static_attributes__\", \"__str__\", \"__subclasshook__\", \"__weakref__\", \"_check_shape_limit\", \"_repr_html_\", \"_resolve_fill\", \"background\", \"circle\", \"clear\", \"current_group\", \"ellipse\", \"gradients\", \"grid\", \"group\", \"group_transforms\", \"group_visibility\", \"groups\", \"height\", \"hide_group\", \"line\", \"linear_gradient\", \"move_group\", \"polygon\", \"radial_gradient\", \"rect\", \"remove_group\", \"rotate_group\", \"rounded_rect\", \"save\", \"shapes\", \"show_group\", \"show_palette\", \"text\", \"to_svg\", \"width\"]"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "srsw",
+      "code_hash": null,
+      "outputs": [],
+      "console": []
+    }
+  ]
+}

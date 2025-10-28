@@ -225,11 +225,11 @@ def extract_main_function_body(code: str) -> str:
 
 
 class LessonLoader:
-    """Load and process lesson content from lesson directories."""
+    """Load and process lesson content from theme directories."""
 
     def __init__(self, project_root: Path):
         self.project_root = project_root
-        self.lessons_dir = project_root / 'lessons'
+        self.themes_dir = project_root / 'themes'
         self.md = markdown.Markdown(extensions=[
             'fenced_code',
             'tables',
@@ -242,81 +242,108 @@ class LessonLoader:
             }
         })
 
-    def load_lessons_config(self):
-        """Auto-generate lessons config from lesson directories."""
-        # Find all lesson directories (format: NN-lesson-name)
-        lesson_dirs = sorted([
-            d for d in self.lessons_dir.iterdir()
-            if d.is_dir() and d.name[0].isdigit()
+    def load_themes_config(self):
+        """Auto-generate themes config by discovering theme directories."""
+        # Find all theme directories
+        theme_dirs = sorted([
+            d for d in self.themes_dir.iterdir()
+            if d.is_dir() and d.name.startswith('theme-')
         ])
 
-        lessons = []
-        for lesson_dir in lesson_dirs:
-            lesson_id = lesson_dir.name
-
-            # Extract metadata from lesson.md
-            lesson_md_path = lesson_dir / 'lesson.md'
-            if not lesson_md_path.exists():
-                logger.warning(f"Skipping {lesson_id}: no lesson.md found")
+        themes = []
+        for theme_dir in theme_dirs:
+            theme_yaml_path = theme_dir / 'theme.yaml'
+            if not theme_yaml_path.exists():
+                logger.warning(f"Skipping {theme_dir.name}: no theme.yaml found")
                 continue
 
-            # Parse the markdown to extract title and description
-            lesson_md = lesson_md_path.read_text()
-            lines = lesson_md.split('\n')
+            # Load theme metadata
+            with open(theme_yaml_path) as f:
+                theme_meta = yaml.safe_load(f)
 
-            # Find title (first ## heading)
-            title = None
-            for line in lines:
-                if line.startswith('## '):
-                    # Remove emoji and extract title
-                    title = line.replace('##', '').strip()
-                    # Remove leading emoji if present
-                    title = re.sub(r'^[^\w\s]+\s*', '', title)
-                    break
+            # Find all lesson directories in this theme
+            lesson_dirs = sorted([
+                d for d in theme_dir.iterdir()
+                if d.is_dir() and d.name[0].isdigit()
+            ])
 
-            if not title:
-                logger.warning(f"Skipping {lesson_id}: no title found in lesson.md")
-                continue
+            lessons = []
+            for lesson_dir in lesson_dirs:
+                lesson_id = lesson_dir.name
 
-            # Extract description from "Goal" section
-            description = None
-            for i, line in enumerate(lines):
-                if line.strip() == '### Goal':
-                    # Next non-empty line is the description
-                    for j in range(i + 1, len(lines)):
-                        if lines[j].strip():
-                            description = lines[j].strip()
-                            break
-                    break
+                # Extract metadata from lesson.md
+                lesson_md_path = lesson_dir / 'lesson.md'
+                if not lesson_md_path.exists():
+                    logger.warning(f"Skipping {theme_dir.name}/{lesson_id}: no lesson.md found")
+                    continue
 
-            if not description:
-                description = "Learn new Python concepts through drawing"
+                # Parse the markdown to extract title and description
+                lesson_md = lesson_md_path.read_text()
+                lines = lesson_md.split('\n')
 
-            # Determine difficulty based on lesson number
-            lesson_num = int(lesson_id.split('-')[0])
-            if lesson_num <= 3:
-                difficulty = 'beginner'
-            elif lesson_num <= 10:
-                difficulty = 'intermediate'
-            else:
-                difficulty = 'advanced'
+                # Find title (first ## heading)
+                title = None
+                for line in lines:
+                    if line.startswith('## '):
+                        # Remove emoji and extract title
+                        title = line.replace('##', '').strip()
+                        # Remove leading emoji if present
+                        title = re.sub(r'^[^\w\s]+\s*', '', title)
+                        break
 
-            # Estimate duration (15 min for early lessons, 20-30 for later ones)
-            duration = 15 if lesson_num <= 5 else (20 if lesson_num <= 10 else 25)
+                if not title:
+                    logger.warning(f"Skipping {theme_dir.name}/{lesson_id}: no title found in lesson.md")
+                    continue
 
-            lessons.append({
-                'id': lesson_id,
-                'title': title,
-                'description': description,
-                'difficulty': difficulty,
-                'duration': duration
+                # Extract description from "Goal" section
+                description = None
+                for i, line in enumerate(lines):
+                    if line.strip() == '### Goal':
+                        # Next non-empty line is the description
+                        for j in range(i + 1, len(lines)):
+                            if lines[j].strip():
+                                description = lines[j].strip()
+                                break
+                        break
+
+                if not description:
+                    description = "Learn new Python concepts through drawing"
+
+                # Determine difficulty based on lesson number
+                lesson_num = int(lesson_id.split('-')[0])
+                if lesson_num <= 3:
+                    difficulty = 'beginner'
+                elif lesson_num <= 10:
+                    difficulty = 'intermediate'
+                else:
+                    difficulty = 'advanced'
+
+                # Estimate duration (15 min for early lessons, 20-30 for later ones)
+                duration = 15 if lesson_num <= 5 else (20 if lesson_num <= 10 else 25)
+
+                lessons.append({
+                    'id': lesson_id,
+                    'title': title,
+                    'description': description,
+                    'difficulty': difficulty,
+                    'duration': duration,
+                    'theme_id': theme_meta['id']
+                })
+
+            # Add theme with its lessons
+            themes.append({
+                'id': theme_meta['id'],
+                'name': theme_meta['name'],
+                'description': theme_meta['description'],
+                'icon': theme_meta.get('icon', '📚'),
+                'lessons': lessons
             })
 
-        return {'lessons': lessons}
+        return {'themes': themes}
 
-    def load_lesson_content(self, lesson_id: str):
+    def load_lesson_content(self, theme_id: str, lesson_id: str):
         """Load lesson markdown, starter code, and optional help."""
-        lesson_dir = self.lessons_dir / lesson_id
+        lesson_dir = self.themes_dir / theme_id / lesson_id
 
         content = {}
 
@@ -340,9 +367,9 @@ class LessonLoader:
 
 
 def build_lessons(project_root: Path, shapes_code: str):
-    """Build individual lesson pages."""
+    """Build individual lesson pages for all themes."""
     loader = LessonLoader(project_root)
-    lessons_config = loader.load_lessons_config()
+    themes_config = loader.load_themes_config()
 
     templates_dir = project_root / 'templates'
     output_dir = project_root / 'output'
@@ -350,39 +377,60 @@ def build_lessons(project_root: Path, shapes_code: str):
     # Setup Jinja2 environment
     env = Environment(loader=FileSystemLoader(templates_dir))
 
-    # Build each lesson
+    # Build each lesson across all themes
     all_lessons = []
-    for lesson_meta in lessons_config['lessons']:
-        lesson_id = lesson_meta['id']
-        logger.info(f"  Building lesson: {lesson_id}")
+    all_themes_metadata = []
 
-        # Load lesson content
-        content = loader.load_lesson_content(lesson_id)
+    for theme in themes_config['themes']:
+        theme_id = theme['id']
+        logger.info(f"  Building theme: {theme['name']} ({theme_id})")
 
-        # Merge metadata and content
-        lesson_data = {**lesson_meta, **content}
-        all_lessons.append(lesson_data)
+        # Save theme metadata (without lessons to avoid duplication)
+        all_themes_metadata.append({
+            'id': theme['id'],
+            'name': theme['name'],
+            'description': theme['description'],
+            'icon': theme['icon']
+        })
 
-        # Render lesson page
-        template = env.get_template('lesson.html.jinja')
-        html = template.render(
-            lesson=lesson_data,
-            all_lessons=lessons_config['lessons'],
-            shapes_code=shapes_code,
-            base_path=BASE_PATH
-        )
+        for lesson_meta in theme['lessons']:
+            lesson_id = lesson_meta['id']
+            logger.info(f"    Building lesson: {theme_id}/{lesson_id}")
 
-        # Write output
-        lesson_path = output_dir / 'lessons' / f"{lesson_id}.html"
-        lesson_path.parent.mkdir(parents=True, exist_ok=True)
-        lesson_path.write_text(html)
-        logger.info(f"    → lessons/{lesson_id}.html ({len(html)} bytes)")
+            # Load lesson content
+            content = loader.load_lesson_content(theme_id, lesson_id)
+
+            # Merge metadata and content
+            lesson_data = {**lesson_meta, **content}
+            all_lessons.append(lesson_data)
+
+            # Render lesson page
+            template = env.get_template('lesson.html.jinja')
+            html = template.render(
+                lesson=lesson_data,
+                current_theme=theme,
+                all_themes=themes_config['themes'],
+                shapes_code=shapes_code,
+                base_path=BASE_PATH
+            )
+
+            # Write output to theme-specific directory
+            lesson_path = output_dir / 'lessons' / theme_id / f"{lesson_id}.html"
+            lesson_path.parent.mkdir(parents=True, exist_ok=True)
+            lesson_path.write_text(html)
+            logger.info(f"      → lessons/{theme_id}/{lesson_id}.html ({len(html)} bytes)")
 
     # Write lessons.json for client-side use
     lessons_json_path = output_dir / 'static' / 'data' / 'lessons.json'
     lessons_json_path.parent.mkdir(parents=True, exist_ok=True)
     lessons_json_path.write_text(json.dumps(all_lessons, indent=2))
     logger.info(f"  → static/data/lessons.json")
+
+    # Write themes.json for client-side use
+    themes_json_path = output_dir / 'static' / 'data' / 'themes.json'
+    themes_json_path.parent.mkdir(parents=True, exist_ok=True)
+    themes_json_path.write_text(json.dumps(themes_config['themes'], indent=2))
+    logger.info(f"  → static/data/themes.json")
 
     # Copy static files (js, css, etc.) to output
     static_src = project_root / 'static'
@@ -398,6 +446,8 @@ def build_lessons(project_root: Path, shapes_code: str):
                     dest.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(item, dest)
         logger.info(f"  → static/ files copied")
+
+    return themes_config
 
 
 def main():
@@ -424,10 +474,8 @@ def main():
     # output_file.write_text(html_content)
     # logger.info(f"🔨 Built output/index.html ({len(html_content)} bytes)")
 
-    # Build new multi-lesson version
-    loader = LessonLoader(project_root)
-    lessons_config = loader.load_lessons_config()
-    build_lessons(project_root, shapes_code)
+    # Build new multi-theme lesson version
+    themes_config = build_lessons(project_root, shapes_code)
 
     # Load and execute snippets
     logger.info("Loading snippets...")
@@ -438,7 +486,7 @@ def main():
     logger.info("Building landing page...")
     index_template = env.get_template('index.html.jinja')
     index_html = index_template.render(
-        all_lessons=lessons_config['lessons'],
+        all_themes=themes_config['themes'],
         snippets=snippets,
         base_path=BASE_PATH
     )

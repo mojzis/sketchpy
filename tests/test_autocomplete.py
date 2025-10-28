@@ -11,7 +11,7 @@ def test_codemirror_initialized(http_server):
         page = browser.new_page()
 
         # Load the lesson page (not index.html which is a landing page)
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for editor to be initialized (CodeMirror 6 uses .cm-editor)
         page.wait_for_selector('.cm-editor', timeout=10000)
@@ -30,7 +30,7 @@ def test_api_definitions_extracted(http_server):
         page = browser.new_page()
 
         # Load the lesson page
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for page to load (CodeMirror 6)
         page.wait_for_selector('.cm-editor', timeout=10000)
@@ -75,7 +75,7 @@ def test_canvas_methods_have_defaults(http_server):
         page = browser.new_page()
 
         # Load the lesson page
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for page to load (CodeMirror 6)
         page.wait_for_selector('.cm-editor', timeout=10000)
@@ -119,7 +119,7 @@ def test_autocomplete_triggers_on_dot(http_server):
         page = browser.new_page()
 
         # Load the lesson page
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for CodeMirror 6 to load
         page.wait_for_selector('.cm-editor', timeout=10000)
@@ -155,7 +155,7 @@ def test_autocomplete_filters_on_typing(http_server):
         page = browser.new_page()
 
         # Load the lesson page
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for CodeMirror 6 to load
         page.wait_for_selector('.cm-editor', timeout=10000)
@@ -190,7 +190,7 @@ def test_palette_colors_available(http_server):
         page = browser.new_page()
 
         # Load the lesson page
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for page to load (CodeMirror 6)
         page.wait_for_selector('.cm-editor', timeout=10000)
@@ -239,7 +239,7 @@ def test_autocomplete_shows_palette_colors(http_server):
         page = browser.new_page()
 
         # Load the lesson page
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for CodeMirror 6 to load
         page.wait_for_selector('.cm-editor', timeout=10000)
@@ -278,7 +278,7 @@ def test_method_signatures_are_single_line(http_server):
         page = browser.new_page()
 
         # Load the lesson page
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for page to load (CodeMirror 6)
         page.wait_for_selector('.cm-editor', timeout=10000)

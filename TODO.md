@@ -91,3 +91,4 @@ auto reload in browser for development ?
 - better code formating in help tab
 - more beatiful pictures (use palletes, gradients ?)
 - use new features of the lib (groups ...)
+

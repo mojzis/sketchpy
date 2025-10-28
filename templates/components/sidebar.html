@@ -1,10 +1,24 @@
 <div class="sidebar-content">
+    <!-- Theme Selector -->
+    <div class="lesson-selector">
+        <label>🎨 Theme</label>
+        <select class="lesson-dropdown"
+                x-model="currentThemeId"
+                @change="updateTheme()">
+            <template x-for="theme in themes" :key="theme.id">
+                <option :value="theme.id"
+                        x-text="`${theme.icon} ${theme.name}`">
+                </option>
+            </template>
+        </select>
+    </div>
+
     <!-- Lesson Selector -->
     <div class="lesson-selector">
         <label>📚 Lesson</label>
         <select class="lesson-dropdown"
-                @change="window.location.href = `${window.BASE_PATH}/lessons/${$event.target.value}.html`">
-            <template x-for="(lessonItem, index) in lessons" :key="lessonItem.id">
+                @change="navigateToLesson($event.target.value)">
+            <template x-for="(lessonItem, index) in filteredLessons" :key="lessonItem.id">
                 <option :value="lessonItem.id"
                         :selected="currentLessonId === lessonItem.id"
                         x-text="`${isCompleted(lessonItem.id) ? '✓ ' : ''}${index + 1}. ${lessonItem.title}`">

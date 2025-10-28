@@ -8,7 +8,7 @@ from playwright.sync_api import sync_playwright, expect
 
 PROJECT_ROOT = Path(__file__).parent.parent
 OUTPUT_DIR = PROJECT_ROOT / 'output'
-LESSON_FILE = OUTPUT_DIR / 'lessons' / '01-first-flower.html'
+LESSON_FILE = OUTPUT_DIR / 'lessons' / 'theme-1' / '01-first-flower.html'
 
 
 def test_page_loads_without_errors(http_server):
@@ -34,7 +34,7 @@ def test_page_loads_without_errors(http_server):
         page.on('pageerror', lambda exc: page_errors.append(str(exc)))
 
         # Load the lesson page (not index.html which is now a landing page)
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for the page to be ready (CodeMirror 6 editor)
         page.wait_for_selector('.cm-editor', timeout=5000)
@@ -61,7 +61,7 @@ def test_pyodide_loads_successfully(http_server):
         page.on('pageerror', lambda exc: page_errors.append(str(exc)))
 
         # Load the lesson page
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for loading indicator to disappear (Pyodide loaded)
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -96,7 +96,7 @@ def test_python_code_executes_without_errors(http_server):
         page.on('pageerror', lambda exc: page_errors.append(str(exc)))
 
         # Load the lesson page
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -121,7 +121,7 @@ def test_canvas_renders_svg(http_server):
         page = browser.new_page()
 
         # Load the lesson page
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -154,7 +154,7 @@ def test_color_class_available(http_server):
         page = browser.new_page()
 
         # Load the lesson page
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -222,7 +222,7 @@ def test_canvas_class_available(http_server):
         page = browser.new_page()
 
         # Load the lesson page
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -286,7 +286,7 @@ def test_grid_method_works(http_server):
         page = browser.new_page()
 
         # Load the lesson page
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -358,7 +358,7 @@ def test_show_palette_method_works(http_server):
         page = browser.new_page()
 
         # Load the lesson page
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -429,7 +429,7 @@ def test_keyboard_shortcut_runs_code(http_server):
         page = browser.new_page()
 
         # Load the lesson page
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Wait for Pyodide to load
         page.wait_for_selector('#loading', state='hidden', timeout=30000)
@@ -492,7 +492,7 @@ def test_lesson_page_editor_loads(http_server):
         assert LESSON_FILE.exists(), f"Lesson file not found at {LESSON_FILE}"
 
         # Load the lesson page
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Take screenshot before waiting for anything
         screenshot_dir = PROJECT_ROOT / 'test-screenshots'
@@ -544,7 +544,7 @@ def test_lesson_page_run_button_visible(http_server):
         assert LESSON_FILE.exists(), f"Lesson file not found at {LESSON_FILE}"
 
         # Load the lesson page
-        page.goto(f'{http_server}/lessons/01-first-flower.html')
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
 
         # Take screenshot
         screenshot_dir = PROJECT_ROOT / 'test-screenshots'

@@ -435,7 +435,7 @@
                             Draw patterns, create animations, and build interactive graphics.
                             It's creative, it's fun, and you'll learn programming along the way.
                         </p>
-                        <a href="{{ base_path }}/lessons/01-first-flower.html" class="cta-button">Start Creating →</a>
+                        <a href="{{ base_path }}/lessons/theme-1/01-first-flower.html" class="cta-button">Start Creating →</a>
                     </div>
                 </div>
 
@@ -496,9 +496,42 @@
         </div>
     </section>
 
+    <section class="lessons">
+        <div class="container">
+            <h2>Choose Your Learning Path</h2>
+
+            <!-- Theme Selector -->
+            <div style="margin-bottom: 2rem; text-align: center;">
+                <label for="themeSelect" style="display: block; margin-bottom: 0.5rem; font-size: 1.1rem; color: var(--text-dark); font-weight: 600;">Select Theme:</label>
+                <select id="themeSelect" x-model="selectedTheme" @change="updateLessons()" style="padding: 0.75rem 1.5rem; font-size: 1rem; border: 2px solid var(--border); border-radius: 8px; background: white; cursor: pointer; min-width: 300px;">
+                    <template x-for="theme in themes" :key="theme.id">
+                        <option :value="theme.id" x-text="theme.icon + ' ' + theme.name"></option>
+                    </template>
+                </select>
+                <p x-show="currentTheme" x-text="currentTheme?.description" style="margin-top: 0.5rem; color: var(--text-medium); font-size: 0.95rem;"></p>
+            </div>
+
+            <!-- Lessons Grid -->
+            <div class="lessons-grid">
+                <template x-for="lesson in filteredLessons" :key="lesson.id">
+                    <div class="lesson-card">
+                        <div x-show="isCompleted(lesson.id)" class="lesson-checkmark">✓</div>
+                        <h3 x-text="lesson.title"></h3>
+                        <p x-text="lesson.description"></p>
+                        <div class="lesson-meta">
+                            <span class="lesson-badge" x-text="lesson.difficulty"></span>
+                            <span class="lesson-badge" x-text="lesson.duration + ' min'"></span>
+                        </div>
+                        <a :href="`{{ base_path }}/lessons/${lesson.theme_id}/${lesson.id}.html`" class="lesson-button">Start Lesson →</a>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </section>
+
     <div class="cta-section">
         <div class="container">
-            <a href="{{ base_path }}/lessons/01-first-flower.html" class="cta-button">Ready? Start Creating Now →</a>
+            <button @click="resetProgress()" class="reset-button">Reset All Progress</button>
         </div>
     </div>
 
@@ -509,11 +542,25 @@
     </footer>
 
     <script>
-        window.LESSONS = {{ all_lessons | tojson }};
+        window.THEMES = {{ all_themes | tojson }};
 
         function landingState() {
             return {
-                lessons: window.LESSONS || [],
+                themes: window.THEMES || [],
+                selectedTheme: (window.THEMES && window.THEMES.length > 0) ? window.THEMES[0].id : null,
+
+                get currentTheme() {
+                    return this.themes.find(t => t.id === this.selectedTheme);
+                },
+
+                get filteredLessons() {
+                    const theme = this.currentTheme;
+                    return theme ? theme.lessons : [];
+                },
+
+                updateLessons() {
+                    // Trigger reactivity update
+                },
 
                 isCompleted(lessonId) {
                     const progress = JSON.parse(localStorage.getItem('lessonProgress') || '{}');
