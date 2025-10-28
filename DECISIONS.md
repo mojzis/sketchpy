@@ -1,5 +1,27 @@
 # Architectural Decisions
 
+## Type Checking with ty (2025-10-28)
+
+**Decision**: Add ty static type checker to dev toolchain with type hints for all function signatures
+
+**Why**: Catch type errors early before runtime; improve code maintainability; enable better IDE support
+
+**Rejected**:
+- mypy (slower, more configuration needed)
+- pyright (requires Node.js, heavier)
+- pytype (Google-only focus, limited adoption)
+- No type checking (missed Union type issue in gradients)
+- Type hints without checker (annotations ignored)
+- Runtime type checking with typeguard (performance overhead)
+
+**Implementation**:
+- sketchpy/shapes.py (Union types for gradient methods)
+- tests/*.py (None checks, proper imports)
+- scripts/build.py (improved type hint removal for Union types)
+- pyproject.toml (ty dependency, exclusions)
+
+---
+
 ## Pygments Syntax Highlighting for Help Content (2025-10-28)
 
 **Decision**: Add Pygments codehilite to Markdown processor for colored Python syntax in help tabs
