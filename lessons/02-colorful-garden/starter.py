@@ -1,9 +1,11 @@
-# Create a colorful garden!
+# Create a colorful garden with gradients!
 
 can = Canvas(800, 600)
 
-# Background: Sky (top half)
-can.rect(0, 0, 800, 300, fill=CalmOasisPalette.SKY_BLUE)
+# Create a beautiful gradient sky
+can.linear_gradient("sky", start=(0, 0), end=(0, 100),
+                    colors=[CalmOasisPalette.POWDER_BLUE, CalmOasisPalette.SKY_BLUE])
+can.rect(0, 0, 800, 300, fill="gradient:sky")
 
 # Background: Grass (bottom half)
 can.rect(0, 300, 800, 300, fill=CreativeGardenPalette.MINT_CREAM)
@@ -12,14 +14,20 @@ can.rect(0, 300, 800, 300, fill=CreativeGardenPalette.MINT_CREAM)
 # TODO: Use a for loop to draw 5 flowers
 
 # Example: Draw ONE flower first, then put it in a loop
+# This flower uses a radial gradient for depth
 cx, cy = 150, 250
-can.circle(cx, cy, 30, fill=CreativeGardenPalette.ROSE_QUARTZ)
+
+# Create gradient for the flower petals
+can.radial_gradient("petal", center=(50, 50), radius=50,
+                    colors=[CreativeGardenPalette.ROSE_QUARTZ, CreativeGardenPalette.CORAL_BLUSH])
+
+can.circle(cx, cy, 30, fill="gradient:petal")
 can.circle(cx, cy, 15, fill=CreativeGardenPalette.BUTTER_YELLOW)
 
 # Your turn! Add more flowers with a loop
 # for i in range(5):
 #     x = 150 + i * 150
 #     y = 250
-#     # Draw flower at (x, y)
+#     # Draw flower at (x, y) - try using the gradient!
 
 can

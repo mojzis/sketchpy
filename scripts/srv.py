@@ -233,7 +233,7 @@ def daemonize(project_root):
         if pid > 0:
             # Parent process - print info and exit
             print(f"✓ Server started in background (PID: {pid})")
-            print(f"  Access: https://localhost:8000/")
+            print(f"  Access: https://localhost:8007/")
             print(f"  Logs: tail -f {LOG_FILE}")
             print(f"  Stop: kill $(cat {PID_FILE})")
             sys.exit(0)

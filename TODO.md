@@ -21,9 +21,10 @@ DEAR CLAUDE, please dont edit this.
 ## canvas lib
 - curves ✈️
 
-## layout
+## layout & format
 - allow user to move canvas vs code border
 - link to home ?
+- better code formating in help tab
 
 ## content
 - help

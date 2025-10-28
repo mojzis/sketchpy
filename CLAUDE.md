@@ -2,6 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Important: Always Start the Server After Changes
+
+After making changes to lesson files, templates, or the shapes.py library, always run:
+```bash
+uv run srv
+```
+
+Just report "Server running at https://localhost:8000/" - no need for verbose output.
+
 ## Project Overview
 
 **sketchpy** is an educational Python graphics library for teaching programming through visual art. It provides a simple SVG-based canvas API that works in Jupyter notebooks, marimo, and web browsers via Pyodide. The library emphasizes ease of learning with no "turtle walking" paradigm - just direct shape drawing.
