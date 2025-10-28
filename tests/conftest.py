@@ -51,9 +51,19 @@ def http_server(build_output):
             continue
 
     # Create a custom handler that serves from OUTPUT_DIR with CORS headers
+    # and simulates GitHub Pages path structure (/sketchpy/)
     class Handler(http.server.SimpleHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, directory=str(OUTPUT_DIR), **kwargs)
+
+        def translate_path(self, path):
+            # Strip /sketchpy prefix to serve from OUTPUT_DIR root
+            # This simulates GitHub Pages where repo is served at /sketchpy/
+            if path.startswith('/sketchpy/'):
+                path = path[9:]  # Remove '/sketchpy'
+            elif path.startswith('/sketchpy'):
+                path = path[8:]  # Remove '/sketchpy'
+            return super().translate_path(path)
 
         def end_headers(self):
             # Add headers required for Pyodide/SharedArrayBuffer
@@ -75,8 +85,8 @@ def http_server(build_output):
     # Wait a moment for server to start
     time.sleep(0.5)
 
-    # Provide the base URL to tests
-    base_url = f"http://localhost:{port}"
+    # Provide the base URL to tests (with /sketchpy prefix to match GitHub Pages)
+    base_url = f"http://localhost:{port}/sketchpy"
 
     yield base_url
 

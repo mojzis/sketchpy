@@ -15,7 +15,9 @@
 
     <!-- Import lesson state module (Alpine.js app state) -->
     <script type="module">
-        import { createAppState } from '{{ base_path }}/static/js/core/lessonState.js';
+        // Use runtime BASE_PATH for dynamic imports
+        const basePath = window.BASE_PATH || '';
+        const { createAppState } = await import(`${basePath}/static/js/core/lessonState.js`);
 
         // Make appState available for Alpine.js
         window.appState = createAppState;
@@ -1216,7 +1218,9 @@
     </script>
 
     <script type="module">
-        import { initEditor } from '{{ base_path }}/static/js/core/editorSetup.js';
+        // Use runtime BASE_PATH for dynamic imports
+        const basePath = window.BASE_PATH || '';
+        const { initEditor } = await import(`${basePath}/static/js/core/editorSetup.js`);
 
         // Initialize editor when DOM is ready
         (async () => {
