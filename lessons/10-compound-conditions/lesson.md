@@ -10,7 +10,7 @@ Build a smart traffic system that uses compound conditions to determine traffic 
 - Using parentheses to group conditions
 
 ### Autocomplete Tip
-Type `can.` to see Canvas methods! Press **Tab** or **Enter** to insert working example code with all parameters. Then customize the values!
+Type `can.` to see Canvas methods! Press **Enter** to insert working example code with all parameters. Then customize the values!
 
 ### Steps
 1. Create variables for traffic conditions: `time_of_day`, `is_weekend`, `traffic_level`

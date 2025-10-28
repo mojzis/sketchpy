@@ -3,22 +3,26 @@
 ### Common Issues
 
 **Loop never stops / browser freezes?**
+
 - You forgot to update the loop variable!
 - Make sure you have: `x = x + 120` inside the loop
 - Check that your update moves toward the exit condition
 - If going right, x should increase; if going down, y should increase
 
 **No cars appear?**
+
 - Check that your starting value satisfies the condition
 - If `x = 800` and `while x < 750:`, loop never runs!
 - Make sure condition is True at the start
 
 **Only one car appears?**
+
 - Check that you're updating the variable: `x = x + 120`
 - Verify the update is inside the while loop (indented)
 - Make sure you're using the updated variable in drawing
 
 **Too many or too few cars?**
+
 - Adjust the condition: `x < 750` stops when x reaches 750
 - Or add a counter: `count < 6` for exactly 6 cars
 - Calculate: (end - start) / spacing = number of iterations
@@ -35,6 +39,7 @@ while x < 750:  # True when x is 50, 170, 290...
 ```
 
 **Tracing execution:**
+
 - Start: x=50, check 50<750 ✓, draw, update to x=170
 - Next: x=170, check 170<750 ✓, draw, update to x=290
 - ...continue...
@@ -43,11 +48,13 @@ while x < 750:  # True when x is 50, 170, 290...
 ### For vs While: When to Use Each
 
 **Use `for` when:**
+
 - You know how many times to repeat
 - You're iterating over a list
 - Example: Draw exactly 5 flowers
 
 **Use `while` when:**
+
 - You repeat until a condition changes
 - You don't know how many iterations in advance
 - Example: Draw cars until canvas is full
@@ -55,6 +62,7 @@ while x < 750:  # True when x is 50, 170, 290...
 ### Counter Patterns
 
 **Basic counter:**
+
 ```python
 count = 0
 while count < 5:
@@ -63,6 +71,7 @@ while count < 5:
 ```
 
 **Position counter:**
+
 ```python
 x = 50
 while x < 750:
@@ -71,6 +80,7 @@ while x < 750:
 ```
 
 **Combined:**
+
 ```python
 x = 50
 count = 0
@@ -117,6 +127,7 @@ while x < 750 and count < 8:
 ### Common Patterns
 
 **Move right until edge:**
+
 ```python
 x = 50
 while x < 750:
@@ -125,6 +136,7 @@ while x < 750:
 ```
 
 **Count to N:**
+
 ```python
 count = 0
 while count < 10:
@@ -133,6 +145,7 @@ while count < 10:
 ```
 
 **Multiple conditions:**
+
 ```python
 x = 50
 count = 0

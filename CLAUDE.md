@@ -9,7 +9,7 @@ After making changes to lesson files, templates, or the shapes.py library, alway
 uv run srv
 ```
 
-Just report "Server running at https://localhost:8000/" - no need for verbose output.
+Just report "Server running at https://localhost:8007/" - no need for verbose output.
 
 ## Project Overview
 
@@ -190,7 +190,7 @@ uv run srv
 
 # Server starts in background and returns immediately:
 # ✓ Server started in background (PID: 12345)
-#   Access: https://localhost:8000/
+#   Access: https://localhost:8007/
 #   Logs: tail -f logs/srv.log
 #   Restart: uv run srv (auto-kills existing server)
 #   Stop: kill $(cat logs/srv.pid)
@@ -228,7 +228,7 @@ uv run srv -f
 **Development Server Features:**
 - Auto-generates self-signed SSL certificates (localhost.pem)
 - Requires accepting certificate warnings in browser
-- Serves on port 8000 from `output/` directory
+- Serves on port 8007 from `output/` directory
 - Binds to 0.0.0.0 (accessible from localhost and local network)
 - Uses HTTPS (required for Pyodide SharedArrayBuffer)
 - Logs all requests and rebuilds to `logs/srv.log`
@@ -324,7 +324,7 @@ c  # Auto-displays via _repr_html_()
 
 **In the browser (via development server):**
 
-Edit the code directly in the web interface at `https://localhost:8000/` after running `uv run srv`.
+Edit the code directly in the web interface at `https://localhost:8007/` after running `uv run srv`.
 
 ## Key Technical Details
 

@@ -3,21 +3,25 @@
 ### Common Issues
 
 **Both conditions drawing at once?**
+
 - Check your indentation - code inside if/else must be indented
 - Make sure you're using `if`/`else`, not two separate `if` statements
 
 **Condition never True?**
+
 - Check spelling: `True` and `False` must be capitalized
 - For comparisons, use `==` (two equals) not `=` (one equals)
 - Example: `if speed == 100:` not `if speed = 100:`
 
 **Nothing showing for one condition?**
+
 - Make sure both if and else blocks have drawing code
 - Check that variables used in both blocks are defined before the if
 
 ### Boolean Logic
 
 **What are booleans?**
+
 Booleans are True/False values that let your code make decisions:
 ```python
 is_raining = True
@@ -26,6 +30,7 @@ temperature = 75
 ```
 
 **If/Else Structure:**
+
 ```python
 if condition:
     # This runs when condition is True
@@ -36,6 +41,7 @@ else:
 ```
 
 **If/Elif/Else (three or more options):**
+
 ```python
 if time == "morning":
     can.text(400, 50, "Good morning!")
@@ -67,6 +73,7 @@ if is_night:
 ### Common Patterns
 
 **Toggle between two states:**
+
 ```python
 is_on = True
 
@@ -77,6 +84,7 @@ else:
 ```
 
 **Range checking:**
+
 ```python
 if speed < 60:
     message = "Too slow"
@@ -89,6 +97,7 @@ can.text(400, 50, message)
 ```
 
 **Multiple conditions (and/or):**
+
 ```python
 if is_night and speed > 100:
     can.text(400, 50, "Dangerous night driving!", fill=Color.RED)

@@ -3,19 +3,23 @@
 ### Common Issues
 
 **"List index out of range" error?**
+
 - Make sure your lists are the same length
 - If `colors` has 5 items and `sizes` has 3, you'll get an error
 - Check: `len(colors)` should equal `len(sizes)`
 
 **Cars not displaying?**
+
 - Make sure your code ends with `can` on the last line
 - Check that you created the canvas: `can = Canvas(800, 600)`
 
 **Colors not working?**
+
 - Use `Color.COLOR_NAME` or `CalmOasisPalette.COLOR_NAME`
 - Make sure colors are in a list: `[Color.RED, Color.BLUE]`
 
 **Cars overlapping or off screen?**
+
 - Check your spacing calculation: `x = 50 + i * 150`
 - Increase the multiplier (150) to spread cars further apart
 - Use `can.grid(spacing=50, show_coords=True)` to see positions

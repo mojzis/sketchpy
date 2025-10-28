@@ -3,20 +3,24 @@
 ### Common Issues
 
 **Function not doing anything?**
+
 - You defined it but didn't call it! Add `function_name(can)` after the definition
 - Make sure you're calling with parentheses: `draw_car(can)` not `draw_car`
 
 **SyntaxError or IndentationError?**
+
 - Function body must be indented (4 spaces or 1 tab)
 - Make sure the `def` line ends with a colon `:`
 - Everything in the function must be indented the same amount
 
 **Canvas not passed correctly?**
+
 - Function definition: `def draw_car(canvas):`
 - Function call: `draw_car(can)`
 - The parameter name (canvas) and argument name (can) don't have to match!
 
 **Nothing displays?**
+
 - Make sure `can` is on the last line (outside all functions)
 - Functions need to be called to execute
 
@@ -43,12 +47,14 @@ The `canvas` parameter is a **placeholder** - it receives whatever you pass when
 ### Function Definition vs. Function Call
 
 **Definition** (creates the recipe):
+
 ```python
 def draw_truck(canvas):
     canvas.rect(...)
 ```
 
 **Call** (uses the recipe):
+
 ```python
 draw_truck(can)
 ```

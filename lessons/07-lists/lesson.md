@@ -11,7 +11,7 @@ Create a fleet of cars in different colors and sizes using lists to store car pr
 - Understanding list length with len()
 
 ### Autocomplete Tip
-Type `can.` to see Canvas methods! Press **Tab** or **Enter** to insert working example code with all parameters. Then customize the values!
+Type `can.` to see Canvas methods! Press **Enter** to insert working example code with all parameters. Then customize the values!
 
 ### Steps
 1. Create lists to store car colors and sizes

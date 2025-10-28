@@ -3,20 +3,24 @@
 ### Common Issues
 
 **KeyError: 'x' or similar?**
+
 - Check that your dictionary has the key you're trying to access
 - Make sure all dictionaries in your list have the same keys
 - Typo in key name? Dictionary keys are case-sensitive: `'X'` ≠ `'x'`
 
 **Function doesn't accept dictionary?**
+
 - Make sure you're passing the whole dictionary: `draw_car(can, car)`
 - Not individual values: `draw_car(can, x, y, width, height)` (wrong for dict version)
 
 **Loop not working with dictionary?**
+
 - When looping over a list: `for car in cars:` gives you each dictionary
 - To access values: `car['x']`, `car['y']`, etc.
 - Don't loop over the dictionary itself when you want the list!
 
 **Cars all look the same?**
+
 - Check that you're using the dictionary values: `car_data['color']`
 - Not hardcoded values: `Color.RED` (unless that's what you want)
 
@@ -38,6 +42,7 @@ x_pos = car('x')  # ERROR: use square brackets, not parentheses
 ### Dictionary Best Practices
 
 **Use consistent keys:**
+
 ```python
 # Good - all cars have same keys
 cars = [
@@ -55,6 +60,7 @@ cars = [
 ```
 
 **Check for required keys:**
+
 ```python
 def draw_car(canvas, car_data):
     # Optional: validate data
@@ -77,6 +83,7 @@ def draw_car(canvas, car_data):
 ### Tips for Data-Driven Drawing
 
 **Start with one object:**
+
 ```python
 # 1. Get one object working
 car = {'x': 100, 'y': 200, 'width': 150, 'height': 80, 'color': Color.RED}
@@ -92,6 +99,7 @@ for car in cars:
 ```
 
 **Use default values:**
+
 ```python
 def draw_car(canvas, car_data):
     # Provide defaults for optional keys
@@ -103,6 +111,7 @@ def draw_car(canvas, car_data):
 ```
 
 **Add variety to your scene:**
+
 ```python
 # Use loops to generate data
 cars = []
@@ -123,6 +132,7 @@ for car in cars:
 ### Debugging Dictionary Issues
 
 **Print to see what you have:**
+
 ```python
 car = {'x': 100, 'y': 200, 'color': Color.RED}
 print(car)  # See the whole dictionary
@@ -131,6 +141,7 @@ print(car.keys())  # See all keys
 ```
 
 **Check if a key exists:**
+
 ```python
 if 'color' in car:
     print("Car has a color")
@@ -142,6 +153,7 @@ else:
 ### Common Patterns
 
 **Conditional drawing based on data:**
+
 ```python
 def draw_vehicle(canvas, vehicle_data):
     if vehicle_data['type'] == 'car':
@@ -151,6 +163,7 @@ def draw_vehicle(canvas, vehicle_data):
 ```
 
 **Building lists dynamically:**
+
 ```python
 # Create cars at regular intervals
 cars = []
@@ -165,6 +178,7 @@ for i in range(10):
 ```
 
 **Combining data and functions:**
+
 ```python
 def create_car(x, y, color):
     """Helper function to create car dictionary"""

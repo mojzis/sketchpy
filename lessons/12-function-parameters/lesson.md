@@ -11,7 +11,7 @@ Learn to make flexible, reusable functions by adding parameters that let you cus
 - Creating truly reusable code
 
 ### Autocomplete Tip
-Type `can.` to see Canvas methods! Press **Tab** or **Enter** to insert working example code with all parameters. Then customize the values!
+Type `can.` to see Canvas methods! Press **Enter** to insert working example code with all parameters. Then customize the values!
 
 ### Steps
 1. Create a canvas: `can = Canvas(800, 600)`

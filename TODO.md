@@ -17,14 +17,15 @@ DEAR CLAUDE, please dont edit this.
 - changelog for lib
 - ruff, ty (?)
 - jsdoc - mentioned in js tooling last phase
+- readme - simplify, add notes about further development ?
 
 ## canvas lib
 - curves ✈️
+- pipe function
 
 ## layout & format
 - allow user to move canvas vs code border
 - link to home ?
-- better code formating in help tab
 
 ## content
 - help
@@ -32,8 +33,6 @@ DEAR CLAUDE, please dont edit this.
  - python - basic principles, with examples (as links to editor ?) ☮️
 
 - lesson desc vs help panel
-- more beatiful pictures (use palletes, gradients ?)
-- use new features of the lib (groups ...)
 
 
 ## features
@@ -53,7 +52,6 @@ DEAR CLAUDE, please dont edit this.
   - pick palletes,
   - switch pallets
   - nicer way in the code
-
  - ai
   - document sketch lib
   - llm.txt file
@@ -84,3 +82,6 @@ auto reload in browser for development ?
   - group transformations (move, rotate)
   - group visibility control (hide/show)
   - group removal
+- better code formating in help tab
+- more beatiful pictures (use palletes, gradients ?)
+- use new features of the lib (groups ...)

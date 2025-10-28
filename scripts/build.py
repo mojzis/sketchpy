@@ -154,6 +154,60 @@ def load_snippets(project_root: Path):
     return snippets
 
 
+def extract_main_function_body(code: str) -> str:
+    """
+    Extract the body of the main() function from starter.py code.
+
+    The starter.py files have this structure:
+    - imports at the top
+    - def main(): with the actual lesson code
+    - if __name__ == '__main__': block at the bottom
+
+    For the web editor, we only want the content inside main().
+    """
+    lines = code.split('\n')
+    inside_main = False
+    main_body_lines = []
+    indent_level = None
+
+    for line in lines:
+        # Start capturing when we find "def main():"
+        if line.strip().startswith('def main():'):
+            inside_main = True
+            continue
+
+        # Stop when we hit the if __name__ block or a function at the same level
+        if inside_main and line.strip().startswith('if __name__'):
+            break
+
+        # Stop if we hit another function definition at the same level
+        if inside_main and line.strip().startswith('def ') and not line.startswith('    '):
+            break
+
+        # Capture lines inside main()
+        if inside_main:
+            # Detect the base indentation level from the first non-empty line
+            if indent_level is None and line.strip():
+                indent_level = len(line) - len(line.lstrip())
+
+            # Remove the base indentation and add to result
+            if line.strip():  # Non-empty line
+                if line.startswith(' ' * indent_level):
+                    main_body_lines.append(line[indent_level:])
+                else:
+                    main_body_lines.append(line)
+            else:  # Empty line
+                main_body_lines.append('')
+
+    # Join and clean up
+    result = '\n'.join(main_body_lines).strip()
+
+    # Replace "return can" with just "can" for the browser
+    result = re.sub(r'\n\s*return\s+can\s*$', '\ncan', result)
+
+    return result
+
+
 class LessonLoader:
     """Load and process lesson content from lesson directories."""
 
@@ -254,7 +308,10 @@ class LessonLoader:
         content['instructions_html'] = self.md.convert(
             (lesson_dir / 'lesson.md').read_text()
         )
-        content['starter_code'] = (lesson_dir / 'starter.py').read_text()
+
+        # Load starter code and extract only the main() function body for the web editor
+        starter_code_full = (lesson_dir / 'starter.py').read_text()
+        content['starter_code'] = extract_main_function_body(starter_code_full)
 
         # Optional files
         help_file = lesson_dir / 'help.md'

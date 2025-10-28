@@ -3,22 +3,26 @@
 ### Common Issues
 
 **Loop only runs once?**
+
 - Check indentation - code inside the loop must be indented
 - Make sure you're using a colon `:` after the for statement
 - Example: `for i in range(5):` (don't forget the colon!)
 
 **All cars in same spot?**
+
 - You must use the loop variable `i` in your position calculation
 - Wrong: `x = 100` (same every time)
 - Right: `x = 100 + i * 150` (different each time)
 
 **Getting an error about 'i'?**
+
 - Make sure `i` is only used inside the loop (below the for statement)
 - Check that it's indented properly
 
 ### Loop Basics
 
 **What is a loop?**
+
 A loop repeats code multiple times without copying/pasting:
 
 ```python
@@ -34,6 +38,7 @@ for i in range(3):
 ```
 
 **Understanding range():**
+
 ```python
 range(5)   # → 0, 1, 2, 3, 4 (five numbers starting from 0)
 range(10)  # → 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 (ten numbers)
@@ -43,6 +48,7 @@ range(1)   # → 0 (just one number)
 ### Position Math
 
 **Spacing items evenly:**
+
 ```python
 starting_x = 50      # Where first item goes
 spacing = 150        # Gap between items
@@ -57,6 +63,7 @@ for i in range(5):
 ```
 
 **Vertical spacing:**
+
 ```python
 for i in range(4):
     y = 100 + i * 100  # Each row 100 pixels lower
@@ -66,6 +73,7 @@ for i in range(4):
 ### Common Patterns
 
 **Draw a row of shapes:**
+
 ```python
 for i in range(8):
     x = 50 + i * 90
@@ -73,6 +81,7 @@ for i in range(8):
 ```
 
 **Draw with different colors:**
+
 ```python
 colors = [Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, Color.ORANGE]
 
@@ -82,6 +91,7 @@ for i in range(5):
 ```
 
 **Draw with varying sizes:**
+
 ```python
 for i in range(6):
     x = 100 + i * 100
@@ -90,6 +100,7 @@ for i in range(6):
 ```
 
 **Preview of nested loops (grid):**
+
 ```python
 # This creates a 3×3 grid
 for row in range(3):

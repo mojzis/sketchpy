@@ -3,23 +3,27 @@
 ### Common Issues
 
 **TypeError: missing required argument?**
+
 - Count your parameters: `def draw_car(canvas, x, y, width, color):`
 - Count your arguments: `draw_car(can, 50, 200, 150, Color.RED)`
 - They must match! 5 parameters = 5 arguments
 
 **Parameters in wrong order?**
+
 - Arguments are matched by position: first argument → first parameter
 - If you define `def draw_car(canvas, x, y, width, color):`
 - Then call `draw_car(can, Color.RED, 50, 200, 150)` - RED becomes x! ❌
 - Order matters! Keep arguments in the same order as parameters ✓
 
 **Car parts in wrong positions?**
+
 - Use parameters for calculations instead of fixed numbers
 - ❌ `canvas.rect(200, 300, ...)` - fixed position
 - ✓ `canvas.rect(x, y, ...)` - uses parameter
 - ✓ `canvas.circle(x + width * 0.25, y + height, ...)` - proportional
 
 **Car looks weird at different sizes?**
+
 - Use proportional calculations, not fixed values
 - ❌ `height = 75` - always same height
 - ✓ `height = width * 0.5` - scales with width
@@ -58,16 +62,19 @@ draw_car(can, 50, 200, 150, Color.RED)  # Must pass values
 ### Function Design Principles
 
 **Good parameter naming:**
+
 - ✓ `def draw_car(canvas, x, y, width, color)` - clear!
 - ❌ `def draw_car(c, a, b, w, col)` - confusing!
 
 **Logical parameter order:**
+
 1. Canvas (always first)
 2. Position (x, y)
 3. Size (width, height)
 4. Appearance (color, stroke, etc.)
 
 **Keep it simple:**
+
 - Start with fewer parameters
 - Add more as needed
 - Too many parameters (>5-6) can be confusing
