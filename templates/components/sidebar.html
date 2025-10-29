@@ -17,10 +17,10 @@
     <div class="lesson-selector">
         <label>📚 Lesson</label>
         <select class="lesson-dropdown"
+                x-model="selectedLessonId"
                 @change="navigateToLesson($event.target.value)">
             <template x-for="(lessonItem, index) in filteredLessons" :key="lessonItem.id">
                 <option :value="lessonItem.id"
-                        :selected="currentLessonId === lessonItem.id"
                         x-text="`${isCompleted(lessonItem.id) ? '✓ ' : ''}${index + 1}. ${lessonItem.title}`">
                 </option>
             </template>

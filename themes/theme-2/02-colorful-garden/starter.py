@@ -15,23 +15,24 @@ def main():
         x = 100 + i * 150  # Calculate position: each flower is 150 pixels apart
         y = 300            # All flowers at the same height
 
-        # Draw the flower center (yellow circle)
-        can.circle(x, y, 25, fill=CreativeGardenPalette.BUTTER_YELLOW,
-                   stroke='#000', stroke_width=2)
+        # Draw a stem down to the bottom (FIRST - bottom layer)
+        can.line(x, y + 25, x, 500, stroke=CreativeGardenPalette.MINT_CREAM,
+                 stroke_width=6)
 
-        # Draw 4 petals around the center
+        # Draw 4 petals with symmetric layering (SECOND - middle layer)
         can.circle(x, y - 35, 30, fill=CreativeGardenPalette.ROSE_QUARTZ,
                    stroke='#000', stroke_width=2)  # Top petal
-        can.circle(x + 35, y, 30, fill=CreativeGardenPalette.ROSE_QUARTZ,
-                   stroke='#000', stroke_width=2)  # Right petal
         can.circle(x, y + 35, 30, fill=CreativeGardenPalette.ROSE_QUARTZ,
                    stroke='#000', stroke_width=2)  # Bottom petal
+
+        can.circle(x + 35, y, 30, fill=CreativeGardenPalette.ROSE_QUARTZ,
+                   stroke='#000', stroke_width=2)  # Right petal
         can.circle(x - 35, y, 30, fill=CreativeGardenPalette.ROSE_QUARTZ,
                    stroke='#000', stroke_width=2)  # Left petal
 
-        # Draw a stem down to the bottom
-        can.line(x, y + 25, x, 500, stroke=CreativeGardenPalette.MINT_CREAM,
-                 stroke_width=6)
+        # Draw the flower center (yellow circle) (LAST - top layer)
+        can.circle(x, y, 18, fill=CreativeGardenPalette.BUTTER_YELLOW,
+                   stroke='#000', stroke_width=2)
 
     # Your turn! Try changing the number of flowers, spacing, or colors!
 

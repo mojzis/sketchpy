@@ -18,19 +18,20 @@ def main():
             x = 120 + col * 180  # Column controls horizontal position
             y = 120 + row * 180  # Row controls vertical position
 
-            # Draw flower center
-            can.circle(x, y, 20, fill=CreativeGardenPalette.LEMON_CHIFFON,
-                       stroke='#000', stroke_width=2)
-
-            # Draw 4 petals around the center
+            # Draw 4 petals with symmetric layering (FIRST - middle layer)
             can.circle(x, y - 30, 25, fill=CreativeGardenPalette.PEACH_WHISPER,
                        stroke='#000', stroke_width=1.5)  # Top
-            can.circle(x + 30, y, 25, fill=CreativeGardenPalette.PEACH_WHISPER,
-                       stroke='#000', stroke_width=1.5)  # Right
             can.circle(x, y + 30, 25, fill=CreativeGardenPalette.PEACH_WHISPER,
                        stroke='#000', stroke_width=1.5)  # Bottom
+
+            can.circle(x + 30, y, 25, fill=CreativeGardenPalette.PEACH_WHISPER,
+                       stroke='#000', stroke_width=1.5)  # Right
             can.circle(x - 30, y, 25, fill=CreativeGardenPalette.PEACH_WHISPER,
                        stroke='#000', stroke_width=1.5)  # Left
+
+            # Draw flower center (LAST - top layer)
+            can.circle(x, y, 14, fill=CreativeGardenPalette.LEMON_CHIFFON,
+                       stroke='#000', stroke_width=2)
 
     # Your turn! Try changing the grid size or adding alternating colors!
 

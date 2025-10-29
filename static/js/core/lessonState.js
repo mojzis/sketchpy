@@ -44,6 +44,7 @@ export function createAppState() {
         // Current lesson and all lessons
         lesson: window.CURRENT_LESSON || null,
         currentLessonId: window.CURRENT_LESSON?.id,
+        selectedLessonId: window.CURRENT_LESSON?.id,
 
         // Theme support
         themes: window.ALL_THEMES || [],
@@ -290,10 +291,12 @@ export function createAppState() {
 
         // Theme Navigation
         updateTheme() {
-            // When theme changes, navigate to first lesson in that theme
+            // When theme changes, reset lesson selection and navigate to first lesson
             const theme = this.themes.find(t => t.id === this.currentThemeId);
             if (theme && theme.lessons.length > 0) {
-                this.navigateToLesson(theme.lessons[0].id);
+                const firstLessonId = theme.lessons[0].id;
+                this.selectedLessonId = firstLessonId;
+                this.navigateToLesson(firstLessonId);
             }
         },
 

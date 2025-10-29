@@ -18,23 +18,24 @@ def main():
         x = 80 + i * 120  # Start at 80, each flower 120 pixels apart
         y = 450           # Ground level for all flowers
 
-        # Draw stem from ground up to flower
+        # Draw stem from ground up to flower (FIRST - bottom layer)
         can.line(x, y, x, y - 80, stroke=CreativeGardenPalette.MINT_CREAM,
                  stroke_width=6)
 
-        # Draw flower center
-        can.circle(x, y - 80, 22, fill=CreativeGardenPalette.BUTTER_YELLOW,
-                   stroke='#000', stroke_width=2)
-
-        # Draw 4 petals around center
+        # Draw 4 petals with symmetric layering (SECOND - middle layer)
         can.circle(x, y - 110, 25, fill=CreativeGardenPalette.ROSE_QUARTZ,
                    stroke='#000', stroke_width=2)  # Top
-        can.circle(x + 30, y - 80, 25, fill=CreativeGardenPalette.ROSE_QUARTZ,
-                   stroke='#000', stroke_width=2)  # Right
         can.circle(x, y - 50, 25, fill=CreativeGardenPalette.ROSE_QUARTZ,
                    stroke='#000', stroke_width=2)  # Bottom
+
+        can.circle(x + 30, y - 80, 25, fill=CreativeGardenPalette.ROSE_QUARTZ,
+                   stroke='#000', stroke_width=2)  # Right
         can.circle(x - 30, y - 80, 25, fill=CreativeGardenPalette.ROSE_QUARTZ,
                    stroke='#000', stroke_width=2)  # Left
+
+        # Draw flower center (LAST - top layer)
+        can.circle(x, y - 80, 22, fill=CreativeGardenPalette.BUTTER_YELLOW,
+                   stroke='#000', stroke_width=2)
 
     # Your turn! Try changing the spacing, number of flowers, or add more rows!
 

@@ -1,35 +1,41 @@
 from sketchpy.shapes import Canvas, CreativeGardenPalette
 
 
-def draw_flower(can, x, y, size, petal_color, center_color):
-    """Draw a customizable flower
-
-    Parameters control size and colors, making each flower unique!
-    """
-    # Calculate proportional sizes based on the size parameter
-    center_size = int(size * 0.7)  # Center is 70% of petal size
-    petal_size = size
-    petal_distance = int(size * 1.4)  # Petals positioned 1.4x size away
-
-    # Draw flower center with custom color
-    can.circle(x, y, center_size, fill=center_color,
-               stroke='#000', stroke_width=2)
-
-    # Draw 4 petals with custom color
-    can.circle(x, y - petal_distance, petal_size, fill=petal_color,
-               stroke='#000', stroke_width=1.5)
-    can.circle(x + petal_distance, y, petal_size, fill=petal_color,
-               stroke='#000', stroke_width=1.5)
-    can.circle(x, y + petal_distance, petal_size, fill=petal_color,
-               stroke='#000', stroke_width=1.5)
-    can.circle(x - petal_distance, y, petal_size, fill=petal_color,
-               stroke='#000', stroke_width=1.5)
-
-
 def main():
     # Create a diverse garden using parameters to customize each flower
 
     can = Canvas(800, 600)
+
+    def draw_flower(can, x, y, size, petal_color, center_color):
+        """Draw a customizable flower
+
+        Parameters control size and colors, making each flower unique!
+        """
+        # Calculate proportional sizes based on the size parameter
+        center_size = int(size * 0.7)  # Center is 70% of petal size
+        petal_size = size
+        petal_distance = int(size * 1.4)  # Petals positioned 1.4x size away
+
+        # Create radial gradients for depth
+        can.radial_gradient("petal_grad", center=(50, 50), radius=60,
+                            colors=['#FFFFFF', petal_color])
+        can.radial_gradient("center_grad", center=(50, 50), radius=60,
+                            colors=[center_color, '#F4E08A'])
+
+        # Draw 4 petals with symmetric layering and custom color
+        can.circle(x, y - petal_distance, petal_size, fill='gradient:petal_grad',
+                   stroke='#000', stroke_width=1.5)
+        can.circle(x, y + petal_distance, petal_size, fill='gradient:petal_grad',
+                   stroke='#000', stroke_width=1.5)
+
+        can.circle(x + petal_distance, y, petal_size, fill='gradient:petal_grad',
+                   stroke='#000', stroke_width=1.5)
+        can.circle(x - petal_distance, y, petal_size, fill='gradient:petal_grad',
+                   stroke='#000', stroke_width=1.5)
+
+        # Draw flower center with custom color (LAST - top layer)
+        can.circle(x, y, center_size, fill='gradient:center_grad',
+                   stroke='#000', stroke_width=2)
 
     # Draw a coordinate grid to help with positioning
     can.grid(spacing=50, show_coords=True)

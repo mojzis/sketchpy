@@ -581,3 +581,57 @@ def test_lesson_page_run_button_visible(http_server):
         assert button_text and ('▶' in button_text or 'Run' in button_text), f"Expected 'Run' button text, got: {button_text}"
 
         browser.close()
+
+
+def test_theme_switching_updates_lesson_list(http_server):
+    """Test that switching themes updates the lesson dropdown and navigates to new theme."""
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+
+        # Track console messages for debugging
+        console_messages = []
+        page.on('console', lambda msg: console_messages.append(f"{msg.type}: {msg.text}"))
+
+        # Load a lesson from theme-1
+        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
+
+        # Wait for page to be ready
+        page.wait_for_selector('.cm-editor', timeout=5000)
+
+        # Get initial state
+        initial_state = page.evaluate('''() => {
+            const app = Alpine.$data(document.querySelector('[x-data]'));
+            return {
+                theme: app.currentThemeId,
+                selectedLesson: app.selectedLessonId,
+                hasUpdateTheme: typeof app.updateTheme === 'function'
+            };
+        }''')
+
+        assert initial_state['theme'] == 'theme-1', "Should start on theme-1"
+        assert initial_state['hasUpdateTheme'], "updateTheme function should exist"
+
+        # Switch to theme-2 and wait for navigation
+        with page.expect_navigation(timeout=5000):
+            page.select_option('select.lesson-dropdown:first-of-type', 'theme-2')
+
+        # Verify we're now on a theme-2 lesson page
+        current_url = page.url
+        assert '/lessons/theme-2/' in current_url, f"Should navigate to theme-2 lesson, got {current_url}"
+
+        # Wait for the new page to load
+        page.wait_for_selector('.cm-editor', timeout=5000)
+
+        # Verify the theme changed in the app state
+        final_state = page.evaluate('''() => {
+            const app = Alpine.$data(document.querySelector('[x-data]'));
+            return {
+                theme: app.currentThemeId,
+                selectedLesson: app.selectedLessonId
+            };
+        }''')
+
+        assert final_state['theme'] == 'theme-2', f"Theme should be theme-2, got {final_state['theme']}"
+
+        browser.close()

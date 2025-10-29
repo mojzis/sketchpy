@@ -281,12 +281,12 @@ class LessonLoader:
                 lesson_md = lesson_md_path.read_text()
                 lines = lesson_md.split('\n')
 
-                # Find title (first ## heading)
+                # Find title (first heading of any level)
                 title = None
                 for line in lines:
-                    if line.startswith('## '):
-                        # Remove emoji and extract title
-                        title = line.replace('##', '').strip()
+                    if line.startswith('#'):
+                        # Remove all # symbols and extract title
+                        title = re.sub(r'^#+\s*', '', line).strip()
                         # Remove leading emoji if present
                         title = re.sub(r'^[^\w\s]+\s*', '', title)
                         break

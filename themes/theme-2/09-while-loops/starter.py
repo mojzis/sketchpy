@@ -20,19 +20,20 @@ def main():
     while x < 750:  # Check: is there still room?
         y = 450
 
-        # Draw flower center
-        can.circle(x, y, 20, fill=CreativeGardenPalette.BUTTER_YELLOW,
-                   stroke='#000', stroke_width=2)
-
-        # Draw 4 petals
+        # Draw 4 petals with symmetric layering
         can.circle(x, y - 28, 22, fill=CreativeGardenPalette.ROSE_QUARTZ,
-                   stroke='#000', stroke_width=1.5)
-        can.circle(x + 28, y, 22, fill=CreativeGardenPalette.ROSE_QUARTZ,
                    stroke='#000', stroke_width=1.5)
         can.circle(x, y + 28, 22, fill=CreativeGardenPalette.ROSE_QUARTZ,
                    stroke='#000', stroke_width=1.5)
+
+        can.circle(x + 28, y, 22, fill=CreativeGardenPalette.ROSE_QUARTZ,
+                   stroke='#000', stroke_width=1.5)
         can.circle(x - 28, y, 22, fill=CreativeGardenPalette.ROSE_QUARTZ,
                    stroke='#000', stroke_width=1.5)
+
+        # Draw flower center (LAST - top layer)
+        can.circle(x, y, 14, fill=CreativeGardenPalette.BUTTER_YELLOW,
+                   stroke='#000', stroke_width=2)
 
         # Update: move to next position (CRITICAL - prevents infinite loop!)
         x = x + flower_spacing

@@ -1,5 +1,9 @@
 DEAR CLAUDE, please dont edit this.
 
+# ERRORS
+- navigation broken
+- names of lessons in the dropdown doesnt work
+
 
 ## meta stuff
 - claude skills 🚧
@@ -18,6 +22,11 @@ DEAR CLAUDE, please dont edit this.
 - ruff, ty (?)
 - jsdoc - mentioned in js tooling last phase
 - readme - simplify, add notes about further development ?
+
+## CLAUDE
+- fix lesson creation skill
+ - symmetry, depth, order of layers ... 
+ - functions
 
 ## canvas lib
 - curves ✈️

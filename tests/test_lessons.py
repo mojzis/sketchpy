@@ -13,12 +13,12 @@ from scripts.build import extract_main_function_body
 
 
 PROJECT_ROOT = Path(__file__).parent.parent
-LESSONS_DIR = PROJECT_ROOT / 'lessons'
+LESSONS_DIR = PROJECT_ROOT / 'themes'
 
 
 def get_lesson_starter_files():
     """Find all starter.py files in lessons directory."""
-    return sorted(LESSONS_DIR.glob('*/starter.py'))
+    return sorted(LESSONS_DIR.glob('*/*/starter.py'))
 
 
 def create_pyodide_namespace():

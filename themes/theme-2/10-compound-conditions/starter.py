@@ -41,19 +41,20 @@ def main():
             petal_color = '#D2B48C'  # Brown
             center_color = '#8B7355'  # Dark brown
 
-        # Draw flower center
-        can.circle(x, y, 20, fill=center_color,
-                   stroke='#000', stroke_width=2)
-
-        # Draw 4 petals
+        # Draw 4 petals with symmetric layering
         can.circle(x, y - 28, 22, fill=petal_color,
-                   stroke='#000', stroke_width=1.5)
-        can.circle(x + 28, y, 22, fill=petal_color,
                    stroke='#000', stroke_width=1.5)
         can.circle(x, y + 28, 22, fill=petal_color,
                    stroke='#000', stroke_width=1.5)
+
+        can.circle(x + 28, y, 22, fill=petal_color,
+                   stroke='#000', stroke_width=1.5)
         can.circle(x - 28, y, 22, fill=petal_color,
                    stroke='#000', stroke_width=1.5)
+
+        # Draw flower center (LAST - top layer)
+        can.circle(x, y, 14, fill=center_color,
+                   stroke='#000', stroke_width=2)
 
     # Butterflies appear when it's sunny AND warm (temperature > 70)
     if is_sunny and temperature > 70:

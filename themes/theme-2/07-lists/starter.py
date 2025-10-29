@@ -30,19 +30,20 @@ def main():
         petal_color = petal_colors[i]
         name = flower_names[i]
 
-        # Draw flower center
-        can.circle(x, y, 20, fill=CreativeGardenPalette.BUTTER_YELLOW,
-                   stroke='#000', stroke_width=2)
-
-        # Draw 4 petals with the color from our list
+        # Draw 4 petals with symmetric layering and color from our list
         can.circle(x, y - 28, 22, fill=petal_color,
-                   stroke='#000', stroke_width=1.5)
-        can.circle(x + 28, y, 22, fill=petal_color,
                    stroke='#000', stroke_width=1.5)
         can.circle(x, y + 28, 22, fill=petal_color,
                    stroke='#000', stroke_width=1.5)
+
+        can.circle(x + 28, y, 22, fill=petal_color,
+                   stroke='#000', stroke_width=1.5)
         can.circle(x - 28, y, 22, fill=petal_color,
                    stroke='#000', stroke_width=1.5)
+
+        # Draw flower center (LAST - top layer)
+        can.circle(x, y, 14, fill=CreativeGardenPalette.BUTTER_YELLOW,
+                   stroke='#000', stroke_width=2)
 
         # Label with the flower name from our list
         can.text(x, y + 60, name, 18, fill='#000')

@@ -29,19 +29,20 @@ def main():
             else:
                 petal_color = CreativeGardenPalette.PEACH_WHISPER
 
-            # Draw flower center
-            can.circle(x, y, 18, fill=CreativeGardenPalette.LEMON_CHIFFON,
-                       stroke='#000', stroke_width=2)
-
-            # Draw 4 petals with alternating colors
+            # Draw 4 petals with symmetric layering and alternating colors
             can.circle(x, y - 25, 20, fill=petal_color,
-                       stroke='#000', stroke_width=1.5)
-            can.circle(x + 25, y, 20, fill=petal_color,
                        stroke='#000', stroke_width=1.5)
             can.circle(x, y + 25, 20, fill=petal_color,
                        stroke='#000', stroke_width=1.5)
+
+            can.circle(x + 25, y, 20, fill=petal_color,
+                       stroke='#000', stroke_width=1.5)
             can.circle(x - 25, y, 20, fill=petal_color,
                        stroke='#000', stroke_width=1.5)
+
+            # Draw flower center (LAST - top layer)
+            can.circle(x, y, 18, fill=CreativeGardenPalette.LEMON_CHIFFON,
+                       stroke='#000', stroke_width=2)
 
     # Your turn! Try changing the pattern using row % 2 or col % 2!
 
