@@ -44,12 +44,12 @@ export function createAppState() {
         // Current lesson and all lessons
         lesson: window.CURRENT_LESSON || null,
         currentLessonId: window.CURRENT_LESSON?.id,
-        selectedLessonId: window.CURRENT_LESSON?.id,
+        selectedLessonId: null,  // Will be set in init() after Alpine renders
 
         // Theme support
         themes: window.ALL_THEMES || [],
         currentTheme: window.CURRENT_THEME || null,
-        currentThemeId: window.CURRENT_THEME?.id || (window.ALL_THEMES && window.ALL_THEMES.length > 0 ? window.ALL_THEMES[0].id : null),
+        currentThemeId: null,  // Will be set in init() after Alpine renders
 
         // Get lessons for current theme
         get filteredLessons() {
@@ -65,6 +65,15 @@ export function createAppState() {
             console.log('Alpine initialized');
             console.log('Current lesson:', this.lesson?.id);
             this.loadSidebarState();
+
+            // Defer dropdown initialization until after Alpine renders the options
+            // This prevents the browser from defaulting to the first option
+            this.$nextTick(() => {
+                this.currentThemeId = window.CURRENT_THEME?.id || null;
+                this.selectedLessonId = window.CURRENT_LESSON?.id || null;
+                console.log('Dropdowns initialized:', this.currentThemeId, this.selectedLessonId);
+            });
+
             this.initPyodideWorker();
         },
 

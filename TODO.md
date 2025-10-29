@@ -1,8 +1,6 @@
 DEAR CLAUDE, please dont edit this.
 
 # ERRORS
-- navigation broken
-- names of lessons in the dropdown doesnt work
 
 
 ## meta stuff
