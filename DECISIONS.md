@@ -1,5 +1,27 @@
 # Architectural Decisions
 
+## Math Doodling Theme with Opacity and Global Math Module (2025-10-29)
+
+**Decision**: Create third curriculum theme focused on abstract geometric patterns using overlapping transparent circles; add opacity parameter to circle(); make math module globally available in Pyodide
+
+**Why**: Transparency-based art teaches color mixing through experimentation; mathematical patterns (mandalas, spirals) demonstrate trigonometry visually; global math removes import barrier for students
+
+**Rejected**:
+- Require `import math` for lessons (adds friction, confusing error for beginners)
+- Opacity via CSS classes (less flexible, harder to teach programmatically)
+- Separate gradient methods (opacity more versatile, simpler API)
+- Keep functions outside main() in lessons 11-15 (browser extracts only main() body)
+- Complex shapes beyond circles (reduces focus on core concept)
+
+**Implementation**:
+- themes/theme-3/ (15 lessons: first-overlap → meditative-masterpiece)
+- sketchpy/shapes.py (MathDoodlingPalette with 8 triadic colors, circle opacity parameter)
+- static/js/pyodide-worker.dev.js (pre-import math, add to allowed modules)
+- static/js/core/apiDefinitions.dev.js (extract MathDoodlingPalette, show opacity in autocomplete)
+- tests/test_lessons.py (add math and MathDoodlingPalette to test namespace)
+
+---
+
 ## Timestamp-Based Cache Busting for JavaScript (2025-10-29)
 
 **Decision**: Use single build timestamp in JS filenames instead of content-based hashing

@@ -121,7 +121,7 @@ class Canvas:
     });
 
     it('has correct number of keywords', () => {
-      expect(GENERAL_KEYWORDS).toHaveLength(4);
+      expect(GENERAL_KEYWORDS).toHaveLength(5); // Canvas, Color, CreativeGardenPalette, CalmOasisPalette, MathDoodlingPalette
     });
   });
 });

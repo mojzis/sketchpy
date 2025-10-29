@@ -14,10 +14,14 @@ DEAR CLAUDE, please dont edit this.
  - for javascript features ? 🚧
  - review and fix browser tests 🚧
  - test the lib on python per pyodide (3.13 after update)
- - make test setup smarter for claude ✈️
+ - make test setup smarter for claude 🚧
+   - mostly done for python, might need similar setup for js - ☮️
+ - TESTs
+  - playwright flaky and slow
+  - layers of tests ? order in which things run ... (test lessons, test deploy, test js, deploy, test browser )
 - license ? (not copyright ...)
 - changelog for lib
-- ruff, ty (?)
+- ruff, ty 🚧
 - jsdoc - mentioned in js tooling last phase
 - readme - simplify, add notes about further development ?
 

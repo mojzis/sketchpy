@@ -1,6 +1,6 @@
 # Project State
 
-Last Updated: 2025-10-28
+Last Updated: 2025-10-29
 
 ## Overview
 
@@ -8,6 +8,7 @@ Educational Python graphics library for teaching programming through visual art.
 
 ## Completed
 
+- **Math Doodling Theme** (2025-10-29) - Complete 15-lesson curriculum for abstract geometric patterns using transparent overlapping circles, includes MathDoodlingPalette (8 colors), opacity parameter for circles, and global math module
 - **Timestamp-Based Cache Busting** (2025-10-29) - JavaScript files versioned with build timestamp to bypass CDN caching on GitHub Pages
 - **Type Checking with ty** (2025-10-28) - Static type checking catches errors early, all 113 tests pass with zero type errors
 - **Syntax Highlighting** (2025-10-28) - Pygments-powered Python syntax coloring in help tabs with Dracula theme
@@ -24,9 +25,9 @@ Educational Python graphics library for teaching programming through visual art.
 
 ## Test Coverage
 
-- Total: 254 tests (218 Python passing + 36 JS)
+- Total: 251 tests (215 Python + 36 JS)
 - JavaScript unit: 36 tests (errorHandler 26, apiDefinitions 10)
-- Python: 218 tests (build, browser E2E, server, lesson validation)
+- Python: 215 tests (build, browser E2E, server, lesson validation for 3 themes)
 - Type checking: ty with zero errors (excludes lesson starters)
 
 ## Known Constraints

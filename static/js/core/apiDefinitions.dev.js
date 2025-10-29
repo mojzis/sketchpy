@@ -15,9 +15,10 @@
  * - Color palette constants (RED, BLUE, GREEN, etc.)
  * - CreativeGardenPalette constants
  * - CalmOasisPalette constants
+ * - MathDoodlingPalette constants
  *
  * @param {string} shapesCode - Python source code containing Canvas and Color classes
- * @returns {Object} API definitions object with keys: 'can', 'Color', 'CreativeGardenPalette', 'CalmOasisPalette'
+ * @returns {Object} API definitions object with keys: 'can', 'Color', 'CreativeGardenPalette', 'CalmOasisPalette', 'MathDoodlingPalette'
  *
  * @example
  * const api = buildApiDefinitions(window.SHAPES_CODE);
@@ -31,9 +32,9 @@ export function buildApiDefinitions(shapesCode) {
         {
             label: "circle",
             type: "method",
-            apply: "circle(x=100, y=100, radius=50, fill=Color.RED)",
-            detail: "(x, y, radius, fill=None, outline=None)",
-            info: "Draw a circle at position (x, y) with given radius"
+            apply: "circle(x=100, y=100, radius=50, fill=Color.RED, opacity=1.0)",
+            detail: "(x, y, radius, fill=Color.BLACK, stroke=Color.BLACK, stroke_width=1, opacity=1.0)",
+            info: "Draw a circle at position (x, y) with given radius. Use opacity (0.0-1.0) for transparency."
         },
         {
             label: "rect",
@@ -151,6 +152,24 @@ export function buildApiDefinitions(shapesCode) {
         api['CalmOasisPalette'] = oasisColors;
     }
 
+    // Extract MathDoodlingPalette constants
+    const mathDoodlingRegex = /class\s+MathDoodlingPalette:[\s\S]*?(?=\n(?:class|def|@dataclass|$))/;
+    const mathDoodlingMatch = shapesCode.match(mathDoodlingRegex);
+    if (mathDoodlingMatch) {
+        const mathDoodlingCode = mathDoodlingMatch[0];
+        const mathDoodlingConstRegex = /(\w+)\s*=\s*["']#[0-9A-Fa-f]{6}["']/g;
+        const mathDoodlingColors = [];
+        while ((match = mathDoodlingConstRegex.exec(mathDoodlingCode)) !== null) {
+            mathDoodlingColors.push({
+                label: match[1],
+                type: "constant",
+                apply: match[1],
+                info: `MathDoodlingPalette color`
+            });
+        }
+        api['MathDoodlingPalette'] = mathDoodlingColors;
+    }
+
     return api;
 }
 
@@ -182,5 +201,11 @@ export const GENERAL_KEYWORDS = [
         type: "class",
         apply: "CalmOasisPalette.",
         info: "Calming blues and greens color palette"
+    },
+    {
+        label: "MathDoodlingPalette",
+        type: "class",
+        apply: "MathDoodlingPalette.",
+        info: "Triadic palette for abstract geometric patterns with transparency"
     }
 ];

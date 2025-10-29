@@ -1,0 +1,8 @@
+id: theme-3
+name: Math Doodling
+description: Create meditative geometric patterns with overlapping circles - inspired by classroom compass art
+icon: "⭕"
+# Theme color scheme (optional, for future UI customization)
+colors:
+  primary: "#3B82F6"
+  accent: "#FCA5A5"

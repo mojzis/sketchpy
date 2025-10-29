@@ -233,7 +233,7 @@ export function createAppState() {
             this.error = '';
             this.activeTab = 'canvas';
 
-            const code = window.editorView.state.doc.toString();
+            const code = window.editorView?.state.doc.toString() || '';
             const errorDiv = document.getElementById('error');
             const statusSpan = document.getElementById('status');
 

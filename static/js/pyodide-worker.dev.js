@@ -56,11 +56,13 @@ print("✓ Initial security applied")
 
         // Import ast module BEFORE we block imports (needed for validation)
         // Pre-import everything ast.walk() needs to avoid blocking stdlib internals
+        // Also import math for Math Doodling lessons
         await pyodide.runPythonAsync(`
 import builtins
 import ast
 import collections  # ast.walk() needs this internally
 import sys
+import math  # For trigonometry in lessons
 
 # Store original __import__ for stdlib use
 _original_import = builtins.__import__
@@ -68,7 +70,7 @@ _original_import = builtins.__import__
 # Set of modules that are safe/needed for validation
 _allowed_modules = {
     'collections', 'collections.abc', '_collections_abc',
-    'ast', 'sys', 'builtins', 'typing', 're'
+    'ast', 'sys', 'builtins', 'typing', 're', 'math'
 }
 
 def block_user_imports(name, globals=None, locals=None, fromlist=(), level=0):
@@ -82,7 +84,8 @@ def block_user_imports(name, globals=None, locals=None, fromlist=(), level=0):
         f"Import '{name}' is not allowed.\\n\\n"
         f"You have everything you need:\\n"
         f"  • Canvas, Color (for drawing)\\n"
-        f"  • CreativeGardenPalette, CalmOasisPalette (color palettes)\\n\\n"
+        f"  • CreativeGardenPalette, CalmOasisPalette, MathDoodlingPalette (color palettes)\\n"
+        f"  • math (for trigonometry: math.pi, math.cos(), math.sin())\\n\\n"
         f"No imports needed for the lessons!"
     )
 
@@ -91,6 +94,7 @@ builtins.__import__ = block_user_imports
 
 print("✓ Imports restricted for user code (stdlib validation modules allowed)")
 print("✓ ast module and dependencies pre-loaded")
+print("✓ math module available globally")
         `);
     } else {
         console.warn('No shapes code provided yet, waiting for init message');
@@ -144,10 +148,17 @@ def validate_ast(code_string):
         if isinstance(node, ast.Import):
             return {
                 'valid': False,
-                'error': 'Imports are not allowed. You have Canvas, Color, and palettes already loaded!'
+                'error': 'Imports are not allowed. You have Canvas, Color, palettes (CreativeGardenPalette, CalmOasisPalette, MathDoodlingPalette), and math already loaded!'
             }
 
         if isinstance(node, ast.ImportFrom):
+            return {
+                'valid': False,
+                'error': 'Imports are not allowed. You have Canvas, Color, palettes (CreativeGardenPalette, CalmOasisPalette, MathDoodlingPalette), and math already loaded!'
+            }
+
+        # Old code (keep for reference but shouldn't be reached)
+        if False and isinstance(node, ast.ImportFrom):
             return {
                 'valid': False,
                 'error': 'Imports are not allowed. You have Canvas, Color, and palettes already loaded!'

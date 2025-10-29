@@ -27,11 +27,16 @@ def create_pyodide_namespace():
     In Pyodide, classes are available globally and imports are blocked.
     This namespace blocks imports like the real environment does.
     """
+    import math
+    from sketchpy.shapes import MathDoodlingPalette
+
     namespace = {
         'Canvas': Canvas,
         'Color': Color,
         'CreativeGardenPalette': CreativeGardenPalette,
         'CalmOasisPalette': CalmOasisPalette,
+        'MathDoodlingPalette': MathDoodlingPalette,
+        'math': math,  # Math module for trigonometry
         '__builtins__': __builtins__,
     }
     return namespace

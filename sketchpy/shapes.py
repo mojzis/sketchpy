@@ -59,6 +59,28 @@ class CreativeGardenPalette:
     VANILLA_CREAM = "#FAF0E6"   # Warm white - cozy, safe
     DOVE_GRAY = "#D5D5D5"       # Soft gray - stable, grounding
 
+class MathDoodlingPalette:
+    """
+    Ultra-minimal triadic palette for abstract geometric patterns.
+    Inspired by classroom compass doodling - overlapping circles creating meditative art.
+
+    Best for: Mathematical patterns, symmetry exploration, transparent layering.
+    Use with low opacity (0.15-0.4) for beautiful color mixing effects.
+    """
+    # Triadic core colors (evenly spaced on color wheel)
+    MIST_BLUE = "#93C5FD"       # Soft blue - calm, mathematical, precise
+    MIST_ROSE = "#FCA5A5"       # Gentle rose - warmth, creativity, balance
+    MIST_MINT = "#86EFAC"       # Light mint - growth, harmony, freshness
+
+    # Extended shades for variety
+    DEEP_BLUE = "#3B82F6"       # Deeper blue for contrast
+    WARM_CORAL = "#F87171"      # Warmer rose for emphasis
+    FRESH_GREEN = "#4ADE80"     # Brighter mint for accents
+
+    # Subtle neutrals for backgrounds
+    PAPER_WHITE = "#FAFAFA"     # Very light grey - like notebook paper
+    PENCIL_GREY = "#E5E7EB"     # Subtle grey - like pencil guidelines
+
 @dataclass
 class Point:
     """A point in 2D space."""
@@ -254,10 +276,22 @@ class Canvas:
     
     def circle(self, x: float = 50, y: float = 50, radius: float = 25,
                fill: str = Color.BLACK, stroke: str = Color.BLACK,
-               stroke_width: float = 1) -> 'Canvas':
-        """Draw a circle at center (x, y). Returns self for chaining."""
+               stroke_width: float = 1, opacity: float = 1.0) -> 'Canvas':
+        """Draw a circle at center (x, y). Returns self for chaining.
+
+        Args:
+            opacity: Transparency from 0.0 (invisible) to 1.0 (solid). Default 1.0.
+        """
         self._check_shape_limit()
-        svg = f'<circle cx="{x}" cy="{y}" r="{radius}" fill="{self._resolve_fill(fill)}" stroke="{stroke}" stroke-width="{stroke_width}"/>'
+        style_parts = [
+            f'fill="{self._resolve_fill(fill)}"',
+            f'stroke="{stroke}"',
+            f'stroke-width="{stroke_width}"'
+        ]
+        if opacity < 1.0:
+            style_parts.append(f'opacity="{opacity}"')
+
+        svg = f'<circle cx="{x}" cy="{y}" r="{radius}" {" ".join(style_parts)}/>'
         if self.current_group:
             self.groups[self.current_group].append(svg)
         else:

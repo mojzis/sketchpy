@@ -276,7 +276,7 @@ uv run srv -f
 ```
 
 **Build Process (happens automatically):**
-- Auto-discovers all lessons from `lessons/` directory (no manual YAML maintenance)
+- Auto-discovers all lessons from `themes/` directory (no manual YAML maintenance)
 - Extracts lesson metadata (title, description) from `lesson.md` files
 - Reads `sketchpy/shapes.py` and removes browser-incompatible code:
   - File I/O methods like `save()`
