@@ -93,8 +93,8 @@ export function createAppState() {
             const basePath = window.BASE_PATH || '';
             const isInLessonsDir = window.location.pathname.includes('/lessons/');
             const workerPath = isInLessonsDir
-                ? `${basePath}/static/js/pyodide-worker.js`  // From lessons/ subdirectory
-                : `${basePath}/static/js/pyodide-worker.js`; // From root
+                ? `${basePath}/static/js/pyodide-worker.dev.js`  // From lessons/ subdirectory
+                : `${basePath}/static/js/pyodide-worker.dev.js`; // From root
 
             this.pyodideWorker = new Worker(workerPath);
 
@@ -126,7 +126,7 @@ export function createAppState() {
                 // Dynamically import error handler when Pyodide is ready
                 try {
                     const basePath = window.BASE_PATH || '';
-                    const { PyodideErrorHandler } = await import(`${basePath}/static/js/errorHandler.js`);
+                    const { PyodideErrorHandler } = await import(`${basePath}/static/js/errorHandler.dev.js`);
                     this.errorHandler = new PyodideErrorHandler(null);
                     console.log('✓ Error handler ready');
                 } catch (e) {

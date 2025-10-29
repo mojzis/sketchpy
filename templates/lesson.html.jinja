@@ -30,7 +30,7 @@
 
         // Import and setup appState before Alpine loads
         (async () => {
-            const { createAppState } = await import(`${basePath}/static/js/core/lessonState.js`);
+            const { createAppState } = await import(`${basePath}/static/js/core/lessonState.{{ build_version }}.js`);
 
             // Make appState available for Alpine.js (as a function that creates the state)
             window.appState = () => createAppState();
@@ -140,7 +140,7 @@
                         // Dynamically import error handler when Pyodide is ready
                         try {
                             const basePath = window.BASE_PATH || '';
-                            const { PyodideErrorHandler } = await import(`${basePath}/static/js/errorHandler.js`);
+                            const { PyodideErrorHandler } = await import(`${basePath}/static/js/errorHandler.{{ build_version }}.js`);
                             this.errorHandler = new PyodideErrorHandler(null);
                             console.log('✓ Error handler ready');
                         } catch (e) {
@@ -1238,7 +1238,7 @@
     <script type="module">
         // Use runtime BASE_PATH for dynamic imports
         const basePath = window.BASE_PATH || '';
-        const { initEditor } = await import(`${basePath}/static/js/core/editorSetup.js`);
+        const { initEditor } = await import(`${basePath}/static/js/core/editorSetup.{{ build_version }}.js`);
 
         // Initialize editor when DOM is ready
         (async () => {

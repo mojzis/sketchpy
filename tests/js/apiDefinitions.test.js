@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildApiDefinitions, GENERAL_KEYWORDS } from '../../static/js/core/apiDefinitions.js';
+import { buildApiDefinitions, GENERAL_KEYWORDS } from '../../static/js/core/apiDefinitions.dev.js';
 
 describe('API Definitions Builder', () => {
   const mockShapesCode = `

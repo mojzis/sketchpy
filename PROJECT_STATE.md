@@ -8,6 +8,7 @@ Educational Python graphics library for teaching programming through visual art.
 
 ## Completed
 
+- **Timestamp-Based Cache Busting** (2025-10-29) - JavaScript files versioned with build timestamp to bypass CDN caching on GitHub Pages
 - **Type Checking with ty** (2025-10-28) - Static type checking catches errors early, all 113 tests pass with zero type errors
 - **Syntax Highlighting** (2025-10-28) - Pygments-powered Python syntax coloring in help tabs with Dracula theme
 - **JavaScript Modularization** (2025-10-28) - Modular ES6 structure with unit testing (36 tests, Vitest, ESLint)
@@ -23,9 +24,9 @@ Educational Python graphics library for teaching programming through visual art.
 
 ## Test Coverage
 
-- Total: 149 tests (113 Python passing + 36 JS)
+- Total: 254 tests (218 Python passing + 36 JS)
 - JavaScript unit: 36 tests (errorHandler 26, apiDefinitions 10)
-- Python: 113 tests (build 6, lesson 67, gradient 19, autocomplete 8, others 13)
+- Python: 218 tests (build, browser E2E, server, lesson validation)
 - Type checking: ty with zero errors (excludes lesson starters)
 
 ## Known Constraints

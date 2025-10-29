@@ -1,5 +1,28 @@
 # Architectural Decisions
 
+## Timestamp-Based Cache Busting for JavaScript (2025-10-29)
+
+**Decision**: Use single build timestamp in JS filenames instead of content-based hashing
+
+**Why**: Varnish CDN on GitHub Pages ignores query strings; content hashing creates cascade problem where changing one file requires rewriting imports in dependent files
+
+**Rejected**:
+- Query strings (?v=timestamp) - Ignored by Varnish cache
+- Content-based hashing (SHA256) - Import cascade hell (changing errorHandler.abc.js breaks lessonState.js imports)
+- Manual versioning - Requires remembering to bump version
+- No cache busting - Users see stale JS after deployments
+- Service workers - Complex, requires maintenance
+- ETags only - Not sufficient for aggressive CDN caching
+
+**Implementation**:
+- Source files: *.dev.js (unchanged for tests/dev)
+- Build output: *.{YYYYMMDDHHMMSS}.js (timestamped)
+- scripts/build.py (timestamp generation, file copying with string replacement)
+- templates/lesson.html.jinja ({{ build_version }} template variable)
+- Cleanup: output/static/js/ removed before each build
+
+---
+
 ## Type Checking with ty (2025-10-28)
 
 **Decision**: Add ty static type checker to dev toolchain with type hints for all function signatures

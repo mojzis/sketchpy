@@ -10,7 +10,7 @@
  * @module editorSetup
  */
 
-import { buildApiDefinitions, GENERAL_KEYWORDS } from './apiDefinitions.js';
+import { buildApiDefinitions, GENERAL_KEYWORDS } from './apiDefinitions.dev.js';
 
 /**
  * Smart completion function that detects object.method patterns

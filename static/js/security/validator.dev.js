@@ -1,4 +1,4 @@
-import { SecurityConfig } from './config.js';
+import { SecurityConfig } from './config.dev.js';
 
 /**
  * Client-side validation before code execution

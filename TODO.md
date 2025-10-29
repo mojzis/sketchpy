@@ -33,11 +33,16 @@ DEAR CLAUDE, please dont edit this.
 ## layout & format
 - allow user to move canvas vs code border
 - link to home ?
+- consider vertical layout option ?
 
 ## content
 - help
  - canvas - generated from code (meticulously explain each param)
  - python - basic principles, with examples (as links to editor ?) ☮️
+
+ - initial intro to the page - this is the editor, this is where the image will appear
+ - initial intro to the lib - setup canvas, draw a circle, draw another on top of it
+
 
 I would like to split the content of the help tab into 3:
 - the actual content for the lesson
@@ -49,6 +54,7 @@ I would like to split the content of the help tab into 3:
 
 
 ## features
+- "free editor" 
 - ERRORS - still needs love ! 🚧
  - just minor styling improvements 
 - nicer homepage 🚧

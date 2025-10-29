@@ -4,7 +4,7 @@
  * Integrates with errorHandler.js to provide friendly error messages
  */
 
-import { PyodideErrorHandler } from './errorHandler.js';
+import { PyodideErrorHandler } from './errorHandler.dev.js';
 
 function appState() {
     return {
@@ -55,8 +55,8 @@ function appState() {
             const basePath = window.BASE_PATH || '';
             const isInLessonsDir = window.location.pathname.includes('/lessons/');
             const workerPath = isInLessonsDir
-                ? `${basePath}/static/js/pyodide-worker.js`  // From lessons/ subdirectory
-                : `${basePath}/static/js/pyodide-worker.js`; // From root
+                ? `${basePath}/static/js/pyodide-worker.dev.js`  // From lessons/ subdirectory
+                : `${basePath}/static/js/pyodide-worker.dev.js`; // From root
 
             this.pyodideWorker = new Worker(workerPath);
 

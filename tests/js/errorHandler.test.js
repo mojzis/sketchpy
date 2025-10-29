@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { PyodideErrorHandler } from '../../static/js/errorHandler.js';
+import { PyodideErrorHandler } from '../../static/js/errorHandler.dev.js';
 
 describe('PyodideErrorHandler', () => {
   // Mock Pyodide instance (we don't need real Pyodide for these tests)

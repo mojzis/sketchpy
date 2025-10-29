@@ -9,11 +9,15 @@ import json
 import shutil
 import sys
 from pathlib import Path
+from datetime import datetime
 from jinja2 import Environment, FileSystemLoader
 
 # Base path configuration for deployment
 # Use '/sketchpy' for GitHub Pages, '' for local development or custom domain
 BASE_PATH = '/sketchpy'
+
+# Generate build timestamp for cache busting
+BUILD_VERSION = datetime.now().strftime('%Y%m%d%H%M%S')
 
 # Use parent logger from srv.py when imported, or configure if run standalone
 logger = logging.getLogger(__name__)
@@ -366,6 +370,58 @@ class LessonLoader:
         return content
 
 
+def copy_js_with_timestamp(static_dir: Path, output_dir: Path, timestamp: str):
+    """
+    Copy JavaScript files from static/js/ to output/static/js/ with timestamp.
+
+    Replaces .dev.js with .{timestamp}.js in:
+    - Filenames
+    - Import statements inside files
+
+    Returns mapping of original to timestamped filenames for logging.
+    """
+    js_source = static_dir / 'js'
+    js_output = output_dir / 'js'
+
+    if not js_source.exists():
+        logger.warning("No static/js directory found")
+        return {}
+
+    # Clean old timestamped JS files to prevent accumulation
+    if js_output.exists():
+        logger.info(f"  Cleaning old JavaScript files from output/static/js/")
+        shutil.rmtree(js_output)
+    js_output.mkdir(parents=True, exist_ok=True)
+
+    mapping = {}
+
+    # Find all .dev.js files
+    for js_file in js_source.rglob('*.dev.js'):
+        # Calculate relative path from js_source
+        rel_path = js_file.relative_to(js_source)
+
+        # Create timestamped filename
+        new_name = js_file.name.replace('.dev.js', f'.{timestamp}.js')
+        dest_file = js_output / rel_path.parent / new_name
+
+        # Ensure destination directory exists
+        dest_file.parent.mkdir(parents=True, exist_ok=True)
+
+        # Read file content
+        content = js_file.read_text()
+
+        # Replace all .dev.js references with timestamped version
+        content = content.replace('.dev.js', f'.{timestamp}.js')
+
+        # Write to destination
+        dest_file.write_text(content)
+
+        # Track mapping for logging
+        mapping[str(rel_path)] = new_name
+
+    return mapping
+
+
 def build_lessons(project_root: Path, shapes_code: str):
     """Build individual lesson pages for all themes."""
     loader = LessonLoader(project_root)
@@ -411,7 +467,8 @@ def build_lessons(project_root: Path, shapes_code: str):
                 current_theme=theme,
                 all_themes=themes_config['themes'],
                 shapes_code=shapes_code,
-                base_path=BASE_PATH
+                base_path=BASE_PATH,
+                build_version=BUILD_VERSION
             )
 
             # Write output to theme-specific directory
@@ -437,8 +494,9 @@ def build_lessons(project_root: Path, shapes_code: str):
     static_dest = output_dir / 'static'
     if static_src.exists():
         # Copy static files, but skip the data directory (we just created it)
+        # and skip js directory (we'll handle that separately with timestamps)
         for item in static_src.iterdir():
-            if item.name != 'data':
+            if item.name not in ('data', 'js'):
                 dest = static_dest / item.name
                 if item.is_dir():
                     shutil.copytree(item, dest, dirs_exist_ok=True)
@@ -446,6 +504,12 @@ def build_lessons(project_root: Path, shapes_code: str):
                     dest.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(item, dest)
         logger.info(f"  → static/ files copied")
+
+        # Copy JS files with timestamp
+        logger.info(f"  Copying JavaScript with timestamp: {BUILD_VERSION}")
+        js_mapping = copy_js_with_timestamp(static_src, static_dest, BUILD_VERSION)
+        for orig, timestamped in js_mapping.items():
+            logger.info(f"    {orig} → {timestamped}")
 
     return themes_config
 
@@ -488,7 +552,8 @@ def main():
     index_html = index_template.render(
         all_themes=themes_config['themes'],
         snippets=snippets,
-        base_path=BASE_PATH
+        base_path=BASE_PATH,
+        build_version=BUILD_VERSION
     )
     index_path = output_dir / 'index.html'
     index_path.write_text(index_html)

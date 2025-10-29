@@ -1,4 +1,4 @@
-import { SecurityConfig } from './config.js';
+import { SecurityConfig } from './config.dev.js';
 
 /**
  * Manages code execution in isolated Web Worker with timeout
