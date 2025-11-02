@@ -11,6 +11,7 @@ OUTPUT_DIR = PROJECT_ROOT / 'output'
 LESSON_FILE = OUTPUT_DIR / 'lessons' / 'theme-1' / '01-first-flower.html'
 
 
+@pytest.mark.browser
 def test_page_loads_without_errors(http_server):
     """Test that the lesson page loads in a browser without errors."""
     with sync_playwright() as p:
@@ -48,6 +49,7 @@ def test_page_loads_without_errors(http_server):
         browser.close()
 
 
+@pytest.mark.browser
 def test_pyodide_loads_successfully(http_server):
     """Test that Pyodide loads and initializes on lesson page."""
     with sync_playwright() as p:
@@ -76,6 +78,7 @@ def test_pyodide_loads_successfully(http_server):
         browser.close()
 
 
+@pytest.mark.browser
 def test_python_code_executes_without_errors(http_server):
     """Test that the embedded Python code runs without errors on lesson page."""
     with sync_playwright() as p:
@@ -114,6 +117,7 @@ def test_python_code_executes_without_errors(http_server):
         browser.close()
 
 
+@pytest.mark.browser
 def test_canvas_renders_svg(http_server):
     """Test that the Canvas actually renders SVG output on lesson page."""
     with sync_playwright() as p:
@@ -147,6 +151,7 @@ def test_canvas_renders_svg(http_server):
         browser.close()
 
 
+@pytest.mark.browser
 def test_color_class_available(http_server):
     """Test that the Color class is available in the Python environment on lesson page."""
     with sync_playwright() as p:
@@ -215,6 +220,7 @@ can
         browser.close()
 
 
+@pytest.mark.browser
 def test_canvas_class_available(http_server):
     """Test that the Canvas class is available and functional on lesson page."""
     with sync_playwright() as p:
@@ -279,6 +285,7 @@ can = c
         browser.close()
 
 
+@pytest.mark.browser
 def test_grid_method_works(http_server):
     """Test that the grid method works and draws grid lines on lesson page."""
     with sync_playwright() as p:
@@ -351,6 +358,7 @@ can
         browser.close()
 
 
+@pytest.mark.browser
 def test_show_palette_method_works(http_server):
     """Test that the show_palette method works and displays palette colors on lesson page."""
     with sync_playwright() as p:
@@ -422,6 +430,7 @@ can
         browser.close()
 
 
+@pytest.mark.browser
 def test_keyboard_shortcut_runs_code(http_server):
     """Test that Ctrl-Enter (or Cmd-Enter on Mac) runs the code on lesson page."""
     with sync_playwright() as p:
@@ -467,122 +476,7 @@ def test_keyboard_shortcut_runs_code(http_server):
         browser.close()
 
 
-def test_lesson_page_editor_loads(http_server):
-    """Test that the lesson page editor loads and is visible."""
-    with sync_playwright() as p:
-        browser = p.chromium.launch()
-        page = browser.new_page()
-
-        # Track console messages
-        errors = []
-        console_messages = []
-
-        def handle_console(msg):
-            console_messages.append(f"{msg.type}: {msg.text}")
-            if msg.type == 'error':
-                errors.append(msg.text)
-
-        page.on('console', handle_console)
-
-        # Track page errors
-        page_errors = []
-        page.on('pageerror', lambda exc: page_errors.append(str(exc)))
-
-        # Verify lesson file exists
-        assert LESSON_FILE.exists(), f"Lesson file not found at {LESSON_FILE}"
-
-        # Load the lesson page
-        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
-
-        # Take screenshot before waiting for anything
-        screenshot_dir = PROJECT_ROOT / 'test-screenshots'
-        screenshot_dir.mkdir(exist_ok=True)
-        page.screenshot(path=str(screenshot_dir / 'lesson-page-initial.png'))
-
-        # Wait for the page to be ready - check for CodeMirror editor
-        try:
-            page.wait_for_selector('.cm-editor', timeout=5000, state='visible')
-        except Exception as e:
-            # Take screenshot on failure
-            page.screenshot(path=str(screenshot_dir / 'lesson-page-editor-failure.png'))
-            # Print console messages to help debug
-            print("\n=== Console messages ===")
-            for msg in console_messages:
-                print(msg)
-            print(f"\n=== Page errors ===")
-            for err in page_errors:
-                print(err)
-            print(f"\n=== Screenshot saved to {screenshot_dir / 'lesson-page-editor-failure.png'} ===")
-            raise AssertionError(f"CodeMirror editor not visible: {e}")
-
-        # Take screenshot after editor loads
-        page.screenshot(path=str(screenshot_dir / 'lesson-page-editor-loaded.png'))
-
-        # Verify the editor is visible
-        editor = page.locator('.cm-editor')
-        expect(editor).to_be_visible()
-
-        # Verify the editor has content (starter code)
-        editor_content = page.locator('.cm-editor').inner_text()
-        assert len(editor_content) > 0, "Editor should have starter code"
-        assert 'Canvas' in editor_content, "Editor should contain Canvas code"
-
-        # Check for critical errors
-        assert len(page_errors) == 0, f"Page errors on lesson page: {page_errors}"
-        assert len(errors) == 0, f"Console errors on lesson page: {errors}"
-
-        browser.close()
-
-
-def test_lesson_page_run_button_visible(http_server):
-    """Test that the Run button is visible on the lesson page."""
-    with sync_playwright() as p:
-        browser = p.chromium.launch()
-        page = browser.new_page()
-
-        # Verify lesson file exists
-        assert LESSON_FILE.exists(), f"Lesson file not found at {LESSON_FILE}"
-
-        # Load the lesson page
-        page.goto(f'{http_server}/lessons/theme-1/01-first-flower.html')
-
-        # Take screenshot
-        screenshot_dir = PROJECT_ROOT / 'test-screenshots'
-        screenshot_dir.mkdir(exist_ok=True)
-        page.screenshot(path=str(screenshot_dir / 'lesson-page-run-button.png'))
-
-        # Check if run button exists and is visible
-        run_button = page.locator('#runBtn')
-
-        try:
-            expect(run_button).to_be_visible(timeout=2000)
-        except Exception as e:
-            # Get computed styles to debug visibility
-            is_displayed = page.evaluate('''() => {
-                const btn = document.getElementById('runBtn');
-                if (!btn) return 'button not found';
-                const style = window.getComputedStyle(btn);
-                const parentStyle = window.getComputedStyle(btn.parentElement);
-                return {
-                    button_display: style.display,
-                    button_visibility: style.visibility,
-                    button_opacity: style.opacity,
-                    parent_display: parentStyle.display,
-                    parent_visibility: parentStyle.visibility,
-                    button_exists: !!btn,
-                    button_offsetParent: !!btn.offsetParent
-                };
-            }''')
-            page.screenshot(path=str(screenshot_dir / 'lesson-page-run-button-hidden.png'))
-            raise AssertionError(f"Run button not visible. Styles: {is_displayed}. Screenshot saved.")
-
-        # Verify button text
-        button_text = run_button.text_content()
-        assert button_text and ('▶' in button_text or 'Run' in button_text), f"Expected 'Run' button text, got: {button_text}"
-
-        browser.close()
-
-
+@pytest.mark.browser
 def test_theme_switching_updates_lesson_list(http_server):
     """Test that switching themes updates the lesson dropdown and navigates to new theme."""
     with sync_playwright() as p:

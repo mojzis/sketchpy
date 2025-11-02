@@ -29,3 +29,7 @@ test-screenshots/
 
 # js
 node_modules/
+
+# Claude local settings
+.claude/*.local.json
+.claude/**/*.local.json

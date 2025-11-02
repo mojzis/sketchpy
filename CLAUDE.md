@@ -10,11 +10,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - Use minimal words to describe actions
 - Example: "Added X to Y" not "Successfully implemented X feature in Y component"
 
+## Environment Activation
+
+**IMPORTANT: Activate the virtual environment before running commands.**
+
+Check if environment is activated:
+```bash
+which python
+```
+
+If output shows `.venv/bin/python`, environment is active. Otherwise, activate it:
+```bash
+source .venv/bin/activate
+```
+
 ## Testing Requirements
 
 **CRITICAL: Run tests after every change. Browser tests must pass.**
 
-- Run `uv run pytest` after every code change
+- Run `pytest` after every code change
 - Browser tests are baseline - investigate all failures immediately
 - Passing tests before change + failing tests after = regression requiring fix
 
@@ -22,7 +36,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 After making changes to lesson files, templates, or the shapes.py library, always run:
 ```bash
-uv run srv
+srv
 ```
 
 Just report "Server running at https://localhost:8007/sketchpy/" - no need for verbose output.
@@ -67,14 +81,17 @@ Just report "Server running at https://localhost:8007/sketchpy/" - no need for v
 This project uses `uv` for Python dependency management and requires Python 3.14+:
 
 ```bash
-# Install dependencies
+# Install dependencies (use uv for package management)
 uv sync
 
-# Add a dependency
+# Add a dependency (use uv for package management)
 uv add <package>
 
-# Run Python with project dependencies
-uv run python main.py
+# Activate environment before running commands
+source .venv/bin/activate
+
+# Run Python with project dependencies (after activation)
+python main.py
 ```
 
 ### Running Tests
@@ -83,36 +100,45 @@ The project includes both Python tests (Pytest) and JavaScript tests (Vitest):
 
 **Python Tests:**
 ```bash
-# First time setup: Install Playwright browsers (only needed once)
-uv run playwright install chromium
+# First time setup: Install Playwright browsers (only needed once, for browser tests)
+playwright install chromium
 
-# Run all Python tests (quiet mode by default - configured in pyproject.toml)
-uv run pytest
+# Run all Python tests EXCEPT browser tests (default, fast ~2s)
+pytest
+
+# Run only browser tests (slower, uses real Chromium browser)
+pytest -m browser
+
+# Run ALL tests including browser tests
+pytest -m ""
 
 # Run tests with verbose output showing test names (when debugging)
-uv run pytest -vv
+pytest -vv
 
 # Run tests with full tracebacks (only when deep debugging needed)
-uv run pytest -vv --tb=long
+pytest -vv --tb=long
 
 # Run only build tests (fast, no browser)
-uv run pytest tests/test_build.py
-
-# Run only browser tests (slower, uses real browser)
-uv run pytest tests/test_browser.py
+pytest tests/test_build.py
 
 # Run only server tests
-uv run pytest tests/test_server.py
+pytest tests/test_server.py
 
 # Run specific test
-uv run pytest tests/test_build.py::test_generated_python_syntax
+pytest tests/test_build.py::test_generated_python_syntax
 
 # Run only last failed tests (efficient when fixing failures)
-uv run pytest --lf
+pytest --lf
 
 # Stop after N failures (useful for large test suites)
-uv run pytest --maxfail=5
+pytest --maxfail=5
 ```
+
+**Test Organization:**
+- **Fast tests** (default): Build validation, server tests, unit tests (~2s, no browser)
+- **Browser tests** (`-m browser`): Playwright E2E tests (~30s, requires Chromium)
+- **Why separated**: Browser tests are CPU/memory intensive - skip them during rapid development
+- **CI runs both**: GitHub Actions runs full suite including browser tests
 
 **Test Output Philosophy:**
 - **Default mode** (configured in `pyproject.toml`): Quiet mode (`-q`) shows only dots and summary
@@ -124,7 +150,7 @@ uv run pytest --maxfail=5
 
 **JavaScript Tests:**
 ```bash
-# Run JavaScript unit tests (fast)
+# Run JavaScript unit tests (fast, ~400ms, 43 tests)
 npm test
 
 # Run tests in watch mode
@@ -140,13 +166,23 @@ npm run lint
 npm run lint:fix
 ```
 
+**JS Test Coverage:**
+- **errorHandler.test.js** (26 tests): Error formatting, hints, categorization
+- **apiDefinitions.test.js** (10 tests): Palette extraction, Canvas API generation
+- **canvasApi.test.js** (7 tests): API presence in generated code
+- **domElements.test.js** (10 tests): Template structure validation
+- All tests use Vitest + jsdom (no real browser needed)
+
 **Full Test Suite:**
 ```bash
-# Run both Python and JavaScript tests
-npm test && uv run pytest
+# Run fast tests only (JS unit + Python non-browser, ~3s total)
+npm test && pytest
+
+# Run EVERYTHING including browser tests (~35s total)
+npm test && pytest -m ""
 ```
 
-**Build Tests (`test_build.py`):**
+**Build Tests (`test_build.py`)** - Fast, no browser:
 - Build command runs successfully
 - Output file is generated
 - Generated Python code is syntactically valid
@@ -157,27 +193,30 @@ npm test && uv run pytest
 - `_repr_html_()` is present for marimo support
 - Generated code size is reasonable (~4KB)
 
-**Browser Tests (`test_browser.py`):**
+**Browser Tests (`test_browser.py`)** - Requires Chromium (skip by default):
 - Page loads in real browser without errors
 - Pyodide loads and initializes successfully
-- Embedded Python code executes without runtime errors
+- Python code executes without runtime errors
 - Canvas renders SVG output correctly
-- Color class is available and functional
-- Canvas class is available and creates valid SVG
-- Uses Playwright to load the generated HTML in Chromium and verify it works end-to-end
+- Keyboard shortcut (Ctrl-Enter) runs code
+- Theme switching navigates to new lesson
+- Uses Playwright to verify end-to-end functionality
+- **9 critical E2E tests** (reduced from 11 to minimize CPU usage)
 
-**Server Tests (`test_server.py`):**
+**Server Tests (`test_server.py`)** - Fast, no browser:
 - Server automatically kills existing instance on restart
 - PID file is properly created and managed
 - Old server process is terminated when new one starts
 - New server process starts with different PID
 - Server cleanup works correctly
 
-**JavaScript Unit Tests (`tests/js/`):**
+**JavaScript Unit Tests (`tests/js/`)** - Fast, jsdom only:
 - **errorHandler.test.js** (26 tests): Error formatting, hints, categorization
 - **apiDefinitions.test.js** (10 tests): Palette extraction, Canvas API generation
-- Total: 36 unit tests verifying core JS logic
-- Run with `npm test` (fast, ~400ms)
+- **canvasApi.test.js** (7 tests): API presence checks (Canvas, Color classes)
+- **domElements.test.js** (10 tests): Template structure (buttons, editor, Alpine.js)
+- **Total: 53 unit tests** verifying core JS/template logic
+- Run with `npm test` (fast, ~500ms)
 
 ### CRITICAL: Alpine.js Initialization Pattern
 
@@ -213,23 +252,23 @@ The template contains two critical script blocks that handle async module loadin
 The web interface uses modular ES6 JavaScript with no bundler (CDN dependencies):
 
 **Core Modules (`static/js/core/`):**
-- **lessonState.js** - Alpine.js reactive state management
+- **lessonState.dev.js** - Alpine.js reactive state management
   - Pyodide worker initialization
   - Code execution handling
   - Error formatting and display
   - Progress tracking (localStorage)
-- **editorSetup.js** - CodeMirror 6 editor initialization
+- **editorSetup.dev.js** - CodeMirror 6 editor initialization
   - Python syntax highlighting
   - Smart autocomplete (context-aware)
   - Keyboard shortcuts (Ctrl/Cmd-Enter)
-- **apiDefinitions.js** - Dynamic API extraction from shapes.py
+- **apiDefinitions.dev.js** - Dynamic API extraction from shapes.py
   - Builds autocomplete definitions for Canvas methods
   - Extracts Color palette constants
   - Provides working code examples with parameters
 
 **Supporting Files:**
-- **errorHandler.js** - Beginner-friendly error messages
-- **pyodide-worker.js** - Python execution in Web Worker
+- **errorHandler.dev.js** - Beginner-friendly error messages
+- **pyodide-worker.dev.js** - Python execution in Web Worker
 - **security/** - Code validation and timeout handling
 
 **Dependencies (CDN):**
@@ -249,13 +288,13 @@ The web interface is generated from a Jinja2 template that embeds the current sh
 **Quick Start:**
 ```bash
 # Start the development server (runs in background by default)
-uv run srv
+srv
 
 # Server starts in background and returns immediately:
 # ✓ Server started in background (PID: 12345)
 #   Access: https://localhost:8007/sketchpy/
 #   Logs: tail -f logs/srv.log
-#   Restart: uv run srv (auto-kills existing server)
+#   Restart: srv (auto-kills existing server)
 #   Stop: kill $(cat logs/srv.pid)
 ```
 
@@ -270,9 +309,9 @@ The `srv` command runs in **background mode by default**, freeing up your termin
 
 **Run in foreground (if needed):**
 ```bash
-uv run srv --foreground
+srv --foreground
 # or
-uv run srv -f
+srv -f
 ```
 
 **Build Process (happens automatically):**
@@ -301,13 +340,13 @@ uv run srv -f
 **Manual Build (optional):**
 ```bash
 # Build without starting server
-uv run build
+build
 ```
 
 **Workflow:**
 ```bash
 # Start server (runs in background, builds automatically, watches for changes)
-uv run srv
+srv
 
 # Terminal is immediately free - server runs in background
 # Edit sketchpy/shapes.py or templates/index.html.jinja
@@ -317,7 +356,7 @@ uv run srv
 tail -f logs/srv.log
 
 # Restart server if needed (automatically kills existing server)
-uv run srv
+srv
 
 # Stop server when done
 kill $(cat logs/srv.pid)
@@ -325,23 +364,23 @@ kill $(cat logs/srv.pid)
 
 **Restarting/Stopping the server:**
 
-⚠️ **IMPORTANT: To restart the server, just run `uv run srv` again!** ⚠️
+⚠️ **IMPORTANT: To restart the server, just run `srv` again!** ⚠️
 
 The server **AUTOMATICALLY KILLS ANY EXISTING INSTANCE** before starting.
 You do NOT need to manually kill processes first.
 
 ```bash
 # ✅ CORRECT: Just restart (auto-kills old server)
-uv run srv
+srv
 
 # ❌ WRONG: Don't manually kill first (unnecessary)
-kill $(cat logs/srv.pid) && uv run srv
+kill $(cat logs/srv.pid) && srv
 
 # Manual stop without restarting (rarely needed)
 kill $(cat logs/srv.pid)
 ```
 
-**THE SERVER IS SELF-RESTARTING. JUST RUN `uv run srv` EVERY TIME.**
+**THE SERVER IS SELF-RESTARTING. JUST RUN `srv` EVERY TIME.**
 
 ### Deployment Configuration
 
@@ -368,7 +407,7 @@ BASE_PATH = '/sketchpy'
 
 **To change deployment:**
 1. Edit `BASE_PATH` in `scripts/build.py`
-2. Run `uv run build` to regenerate all files
+2. Run `build` to regenerate all files
 3. Deploy the `output/` directory
 
 ### Testing the Library
@@ -387,7 +426,7 @@ c  # Auto-displays via _repr_html_()
 
 **In the browser (via development server):**
 
-Edit the code directly in the web interface at `https://localhost:8007/sketchpy/` after running `uv run srv`.
+Edit the code directly in the web interface at `https://localhost:8007/sketchpy/` after running `srv`.
 
 ## Key Technical Details
 
@@ -497,7 +536,7 @@ Active skills loaded in Claude's context. Use when trigger conditions match.
 - **templates/**: Jinja2 templates for generating web interface
   - `lesson.html.jinja`: Lesson page template (imports modular JS)
   - `index.html.jinja`: Landing page template
-- **output/**: Generated files (gitignored, create via `uv run build`)
+- **output/**: Generated files (gitignored, create via `build`)
 - **scripts/**: Python scripts exposed as commands via pyproject.toml
 - **sketchpy/**: Core library package (browser-first, marimo-compatible)
 - **static/js/**: Modular JavaScript (ES6 modules, no bundler)

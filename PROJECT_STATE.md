@@ -1,6 +1,6 @@
 # Project State
 
-Last Updated: 2025-10-29
+Last Updated: 2025-11-02
 
 ## Overview
 
@@ -8,6 +8,7 @@ Educational Python graphics library for teaching programming through visual art.
 
 ## Completed
 
+- **Test Suite Optimization** (2025-11-02) - Browser tests marked and skipped by default; local dev runs fast unit tests (~2s); CI runs full suite including browser E2E; added 17 new JS unit tests
 - **Math Doodling Theme** (2025-10-29) - Complete 15-lesson curriculum for abstract geometric patterns using transparent overlapping circles, includes MathDoodlingPalette (8 colors), opacity parameter for circles, and global math module
 - **Timestamp-Based Cache Busting** (2025-10-29) - JavaScript files versioned with build timestamp to bypass CDN caching on GitHub Pages
 - **Type Checking with ty** (2025-10-28) - Static type checking catches errors early, all 113 tests pass with zero type errors
@@ -25,9 +26,10 @@ Educational Python graphics library for teaching programming through visual art.
 
 ## Test Coverage
 
-- Total: 251 tests (215 Python + 36 JS)
-- JavaScript unit: 36 tests (errorHandler 26, apiDefinitions 10)
-- Python: 215 tests (build, browser E2E, server, lesson validation for 3 themes)
+- Total: 334 tests (281 Python + 53 JS)
+- JavaScript unit: 53 tests (errorHandler 26, apiDefinitions 10, canvasApi 7, domElements 10)
+- Python fast: 272 tests (build, server, lesson validation for 3 themes) - ~2s
+- Python browser: 9 tests (E2E with Playwright, Chromium) - skipped by default
 - Type checking: ty with zero errors (excludes lesson starters)
 
 ## Known Constraints

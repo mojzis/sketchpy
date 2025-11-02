@@ -1,0 +1,107 @@
+name: Run Tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'sketchpy/**'
+      - 'templates/**'
+      - 'scripts/**'
+      - 'tests/**'
+      - 'static/js/**'
+      - 'pyproject.toml'
+      - 'package.json'
+      - '.github/workflows/test.yml'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test-js:
+    name: JavaScript Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Run JavaScript tests
+        run: npm test
+
+      - name: Run linter
+        run: npm run lint
+
+  test-python-fast:
+    name: Python Tests (Fast - No Browser)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.14
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run build tests
+        run: uv run pytest tests/test_build.py -v
+
+      - name: Run server tests
+        run: uv run pytest tests/test_server.py -v
+
+  test-python-browser:
+    name: Python Tests (Browser E2E)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        run: uv python install 3.14
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Install Playwright browsers
+        run: uv run playwright install chromium --with-deps
+
+      - name: Build site (required for browser tests)
+        run: uv run build
+
+      - name: Run browser tests
+        run: uv run pytest -m browser -v
+
+  status-check:
+    name: All Tests Passed
+    runs-on: ubuntu-latest
+    needs: [test-js, test-python-fast, test-python-browser]
+    if: always()
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.test-js.result }}" != "success" ] || \
+             [ "${{ needs.test-python-fast.result }}" != "success" ] || \
+             [ "${{ needs.test-python-browser.result }}" != "success" ]; then
+            echo "Some tests failed"
+            exit 1
+          fi
+          echo "All tests passed!"

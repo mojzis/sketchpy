@@ -1,5 +1,28 @@
 # Architectural Decisions
 
+## Test Suite Optimization with Browser Marker (2025-11-02)
+
+**Decision**: Separate fast unit tests from slow browser E2E tests using pytest markers; skip browser tests by default
+
+**Why**: Browser tests (Playwright) are CPU/memory intensive on VPS; 90% reduction in local test time enables faster development iteration
+
+**Rejected**:
+- Run browser tests always (slows VPS, blocks rapid development)
+- Move to JS-based Playwright (same Chromium overhead, minimal benefit)
+- Remove browser tests entirely (lose critical E2E validation)
+- Separate test commands without markers (inconsistent, easy to forget)
+- Run browser tests only in CI (local testing becomes incomplete)
+
+**Implementation**:
+- pyproject.toml (browser marker, `-m "not browser"` in addopts)
+- tests/test_browser.py (all 9 tests marked `@pytest.mark.browser`)
+- tests/js/canvasApi.test.js (7 unit tests for API presence)
+- tests/js/domElements.test.js (10 unit tests for template structure)
+- .github/workflows/test.yml (3 jobs: JS unit, Python fast, Python browser)
+- CLAUDE.md (updated test commands, organization documented)
+
+---
+
 ## Math Doodling Theme with Opacity and Global Math Module (2025-10-29)
 
 **Decision**: Create third curriculum theme focused on abstract geometric patterns using overlapping transparent circles; add opacity parameter to circle(); make math module globally available in Pyodide

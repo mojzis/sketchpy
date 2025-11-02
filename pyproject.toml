@@ -42,11 +42,16 @@ python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
 # Default: quiet mode (-q) for minimal output, matching what LLMs see
+# Skip browser tests by default (use pytest -m browser to run them)
 # Override with: pytest -v (verbose) or pytest --tb=long (detailed tracebacks)
 addopts = [
     "-q",
     "--tb=short",
     "--strict-markers",
+    "-m", "not browser",
+]
+markers = [
+    "browser: marks tests that require Playwright and a real browser (deselected by default)",
 ]
 
 

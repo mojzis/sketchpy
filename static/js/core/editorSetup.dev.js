@@ -65,6 +65,65 @@ function smartPythonCompletions(context, apiDefinitions) {
 }
 
 /**
+ * Create hover tooltip provider for showing function signatures
+ *
+ * @param {Object} apiDefinitions - API definitions from buildApiDefinitions()
+ * @returns {Function} Hover tooltip provider function
+ */
+function createHoverTooltip(apiDefinitions) {
+    return (view, pos, side) => {
+        const { from, to, text } = view.state.doc.lineAt(pos);
+        let word = '';
+        let wordStart = pos;
+        let wordEnd = pos;
+
+        // Find word boundaries
+        while (wordStart > from && /\w/.test(text[wordStart - from - 1])) {
+            wordStart--;
+        }
+        while (wordEnd < to && /\w/.test(text[wordEnd - from])) {
+            wordEnd++;
+        }
+        word = text.slice(wordStart - from, wordEnd - from);
+
+        if (!word) return null;
+
+        // Check if hovering over a method (preceded by a dot)
+        if (wordStart > from && text[wordStart - from - 1] === '.') {
+            // Find the object name before the dot
+            let objEnd = wordStart - 1;
+            let objStart = objEnd;
+            while (objStart > from && /\w/.test(text[objStart - from - 1])) {
+                objStart--;
+            }
+            const objectName = text.slice(objStart - from, objEnd - from);
+
+            // Look up method in API definitions
+            if (apiDefinitions[objectName]) {
+                const methods = apiDefinitions[objectName];
+                const method = methods.find(m => m.label === word);
+
+                if (method && method.detail) {
+                    return {
+                        pos: wordStart,
+                        end: wordEnd,
+                        above: true,
+                        create() {
+                            const dom = document.createElement('div');
+                            dom.className = 'cm-tooltip-hover';
+                            dom.textContent = `${word}${method.detail}`;
+                            return { dom };
+                        }
+                    };
+                }
+            }
+        }
+
+        return null;
+    };
+}
+
+/**
  * Initialize CodeMirror 6 editor
  *
  * Creates and configures the code editor with Python support, autocomplete,
@@ -88,8 +147,9 @@ export async function initEditor(initialCode, onRun) {
     const { python } = await import("@codemirror/lang-python");
     const { oneDark } = await import("@codemirror/theme-one-dark");
     const { autocompletion } = await import("@codemirror/autocomplete");
-    const { keymap } = await import("@codemirror/view");
-    const { Prec } = await import("@codemirror/state");
+    const { keymap, hoverTooltip } = await import("@codemirror/view");
+    const { Prec, EditorState } = await import("@codemirror/state");
+    const { indentUnit } = await import("@codemirror/language");
 
     // Build API definitions from embedded shapes code
     const apiDefinitions = buildApiDefinitions(window.SHAPES_CODE);
@@ -105,11 +165,17 @@ export async function initEditor(initialCode, onRun) {
             python(),
             oneDark,
 
+            // Set indentation to 4 spaces (matches Python convention)
+            indentUnit.of("    "),
+
             // Autocompletion with custom source
             autocompletion({
                 override: [(context) => smartPythonCompletions(context, apiDefinitions)],
                 defaultKeymap: true
             }),
+
+            // Hover tooltips for function signatures
+            hoverTooltip(createHoverTooltip(apiDefinitions)),
 
             EditorView.lineWrapping,
 
