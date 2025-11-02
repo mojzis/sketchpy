@@ -770,17 +770,17 @@
         .right-area {
             flex: 1;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             overflow: hidden;
         }
 
         /* Editor Panel (adjusts based on content) */
         .editor-panel {
-            flex: 0 0 40%;
+            flex: 0 0 50%;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            border-bottom: 2px solid #ddd;
+            border-right: 2px solid #ddd;
         }
 
         .editor-container {
@@ -1253,6 +1253,12 @@
 
             // Expose editor to window for app state to access
             window.editorView = editor;
+
+            // Signal to Alpine app that editor is ready
+            const app = Alpine.$data(document.querySelector('[x-data]'));
+            if (app) {
+                app.setEditorReady();
+            }
 
             // Disable run button until Pyodide is ready (enabled by lessonState.js)
             document.getElementById('runBtn').disabled = true;

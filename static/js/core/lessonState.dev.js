@@ -37,6 +37,7 @@ export function createAppState() {
         // Pyodide worker
         pyodideWorker: null,
         pyodideReady: false,
+        editorReady: false,  // Track editor initialization
 
         // Error handler (initialized after Pyodide is ready)
         errorHandler: null,
@@ -137,8 +138,8 @@ export function createAppState() {
                 document.getElementById('runBtn').disabled = false;
                 document.getElementById('status').textContent = 'Ready! ✓';
 
-                // Auto-run code on load
-                this.runCode();
+                // Auto-run code only when BOTH Pyodide and editor are ready
+                this.tryAutoRun();
             } else if (type === 'result') {
                 this.isRunning = false;
 
@@ -424,6 +425,23 @@ export function createAppState() {
                 }
             } catch (e) {
                 console.error('Failed to highlight error line:', e);
+            }
+        },
+
+        // Signal that editor is ready (called from editor initialization)
+        setEditorReady() {
+            console.log('Editor ready');
+            this.editorReady = true;
+            this.tryAutoRun();
+        },
+
+        // Try to auto-run code if both Pyodide and editor are ready
+        tryAutoRun() {
+            if (this.pyodideReady && this.editorReady) {
+                console.log('Both Pyodide and editor ready - auto-running code');
+                this.runCode();
+            } else {
+                console.log(`Waiting for initialization - Pyodide: ${this.pyodideReady}, Editor: ${this.editorReady}`);
             }
         }
     };
