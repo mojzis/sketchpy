@@ -177,11 +177,12 @@ def test_generated_code_size():
     assert match is not None, "Could not find Python code in generated HTML (window.SHAPES_CODE)"
     python_code = match.group(1)
 
-    # The generated Python code should be reasonable size (less than 35KB)
+    # The generated Python code should be reasonable size (less than 45KB)
     # Increased from 10KB due to gradients, named groups, and MathDoodlingPalette
     # Increased from 21KB to 35KB due to ocean shapes (wave, blob, tentacle, OceanShapes)
+    # Increased from 35KB to 45KB due to additional Canvas features
     code_size = len(python_code)
-    assert code_size < 35000, f"Generated code is too large: {code_size} bytes (expected < 35KB)"
+    assert code_size < 45000, f"Generated code is too large: {code_size} bytes (expected < 45KB)"
     assert code_size > 1000, f"Generated code seems too small: {code_size} bytes (expected > 1KB)"
 
 

@@ -1,4 +1,4 @@
-from sketchpy.shapes import Canvas, OceanPalette, OceanShapes
+from sketchpy import Canvas, OceanPalette, OceanShapes
 
 def main():
     # Create an ocean canvas

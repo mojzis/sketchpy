@@ -1,12 +1,12 @@
 import marimo
 
-__generated_with = "0.17.2"
+__generated_with = "0.17.7"
 app = marimo.App(width="medium")
 
 
 @app.cell
 def _():
-    from sketchpy.shapes import Canvas, CreativeGardenPalette, CalmOasisPalette
+    from sketchpy import Canvas, CreativeGardenPalette, CalmOasisPalette
 
     can = Canvas(800, 600)
 
