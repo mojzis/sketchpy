@@ -1,7 +1,7 @@
 """Tests for gradient and named groups features."""
 
 import pytest
-from sketchpy.shapes import Canvas, Color
+from sketchpy import Canvas, Color
 
 
 class TestGradients:

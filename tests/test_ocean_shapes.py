@@ -1,7 +1,7 @@
 """Tests for ocean curve primitives and OceanShapes helpers."""
 
 import pytest
-from sketchpy.shapes import Canvas, Color, OceanPalette, OceanShapes
+from sketchpy import Canvas, Color, OceanPalette, OceanShapes
 
 
 def test_wave_basic():

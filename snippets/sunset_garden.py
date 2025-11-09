@@ -1,5 +1,5 @@
 # Sunset Garden - Peaceful layered landscape
-from sketchpy.shapes import Canvas, CreativeGardenPalette
+from sketchpy import Canvas, CreativeGardenPalette
 import random
 
 can = Canvas(400, 400)
