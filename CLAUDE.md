@@ -34,7 +34,7 @@ source .venv/bin/activate
 
 ## Important: Always Start the Server After Changes
 
-After making changes to lesson files, templates, or the shapes.py library, always run:
+After making changes to lesson files, templates, or the sketchpy library, always run:
 ```bash
 srv
 ```
@@ -49,22 +49,31 @@ Just report "Server running at https://localhost:8007/sketchpy/" - no need for v
 
 ### Core Components
 
-1. **sketchpy/shapes.py** - Main library containing:
-   - `Canvas` class: SVG rendering engine with method chaining support
-   - `Color` class: Predefined color constants for IDE autocomplete
-   - `CarShapes` class: Educational helper shapes (cars, traffic lights, roads)
-   - Shape methods: `rect()`, `circle()`, `ellipse()`, `line()`, `polygon()`, `text()`, `rounded_rect()`, `grid()`
+1. **sketchpy/** - Modular library structure:
+   - `canvas.py`: Canvas class with SVG rendering engine and method chaining support
+     - Shape methods: `rect()`, `circle()`, `ellipse()`, `line()`, `polygon()`, `text()`, `rounded_rect()`, `grid()`
+     - Utility methods: `show_palette()`, `to_svg()`, `save()`, `_repr_html_()`
+   - `palettes.py`: Color palette classes for IDE autocomplete
+     - `Color`: 12 basic colors (RED, BLUE, GREEN, etc.)
+     - `CalmOasisPalette`: 12 calming blues/greens/lavenders
+     - `CreativeGardenPalette`: 12 pastel colors
+     - `MathDoodlingPalette`: 12 colors for math visualizations
+     - `OceanPalette`: 12 ocean-themed colors (coral, seafoam, etc.)
+   - `helpers/`: Educational helper shape classes
+     - `cars.py`: CarShapes (cars, wheels, traffic lights, roads)
+     - `ocean.py`: OceanShapes (octopus, jellyfish, seaweed)
+   - `utils.py`: Local-only utilities (Point, quick_draw) - excluded from browser bundle
 
 2. **templates/lesson.html.jinja** - Browser-based learning environment template:
    - Split-pane UI with instructions and live code editor
    - Pyodide integration for running Python in the browser
    - Interactive tutorials for drawing cars and scenes
-   - Jinja2 template that embeds shapes.py code at build time
+   - Jinja2 template that embeds combined sketchpy code at build time
    - **⚠️ CRITICAL: Contains two script blocks marked "DO NOT MODIFY"** - these handle async module loading timing with Alpine.js. Modifying them causes "appState is not defined" errors.
 
 3. **scripts/** - Development utilities:
    - `srv.py`: HTTPS server with logging support (serves from project root)
-   - `build.py`: Generates output/index.html from template + shapes.py
+   - `build.py`: Combines sketchpy modules and generates output/index.html from templates
 
 ### Design Philosophy
 
@@ -187,7 +196,8 @@ npm test && pytest -m ""
 - Output file is generated
 - Generated Python code is syntactically valid
 - Required classes (Color, Canvas) are present
-- Browser-incompatible code is excluded (save(), Point, CarShapes)
+- Browser-incompatible code is excluded (save(), Point, quick_draw)
+- Helper classes are excluded (CarShapes, OceanShapes kept in separate lesson-specific bundles)
 - Required imports are included (typing)
 - Unused imports are excluded (dataclasses, enum)
 - `_repr_html_()` is present for marimo support
@@ -261,9 +271,9 @@ The web interface uses modular ES6 JavaScript with no bundler (CDN dependencies)
   - Python syntax highlighting
   - Smart autocomplete (context-aware)
   - Keyboard shortcuts (Ctrl/Cmd-Enter)
-- **apiDefinitions.dev.js** - Dynamic API extraction from shapes.py
+- **apiDefinitions.dev.js** - Dynamic API extraction from sketchpy library
   - Builds autocomplete definitions for Canvas methods
-  - Extracts Color palette constants
+  - Extracts Color palette constants from all palette classes
   - Provides working code examples with parameters
 
 **Supporting Files:**
@@ -283,7 +293,7 @@ The web interface uses modular ES6 JavaScript with no bundler (CDN dependencies)
 
 ### Building and Running the Web Interface
 
-The web interface is generated from a Jinja2 template that embeds the current shapes.py code.
+The web interface is generated from a Jinja2 template that embeds the combined sketchpy library code.
 
 **Quick Start:**
 ```bash
@@ -317,13 +327,15 @@ srv -f
 **Build Process (happens automatically):**
 - Auto-discovers all lessons from `themes/` directory (no manual YAML maintenance)
 - Extracts lesson metadata (title, description) from `lesson.md` files
-- Reads `sketchpy/shapes.py` and removes browser-incompatible code:
-  - File I/O methods like `save()`
-  - Unused `Point` dataclass (and associated `dataclasses`, `enum` imports)
-- Keeps `from typing` import (used for type hints in function signatures)
-- Keeps `_repr_html_()` for marimo compatibility
-- Removes type hints from function signatures for cleaner browser-side code
-- Stops at convenience functions (quick_draw, CarShapes) to keep payload small (~4KB)
+- Combines modular sketchpy code for browser use:
+  - Reads `palettes.py`, `canvas.py` and combines them into single module
+  - Removes browser-incompatible code: `save()`, `Point`, `quick_draw`
+  - Removes unused imports (`dataclasses`, `enum`)
+  - Keeps `from typing` import (used for type hints)
+  - Keeps `_repr_html_()` for marimo compatibility
+  - Removes type hints from function signatures for cleaner browser-side code
+  - Excludes helper classes (CarShapes, OceanShapes) from base bundle - loaded per-lesson
+- Keeps base payload small (~4KB) for fast initial load
 - Renders all templates with `BASE_PATH` configuration for deployment flexibility
 - Outputs to `output/` directory (ignored by git, regenerate as needed)
 
@@ -349,7 +361,7 @@ build
 srv
 
 # Terminal is immediately free - server runs in background
-# Edit sketchpy/shapes.py or templates/index.html.jinja
+# Edit sketchpy/ modules (canvas.py, palettes.py, helpers/) or templates/
 # -> Server auto-rebuilds and logs: "📝 Detected change: ..."
 
 # Monitor logs
@@ -415,13 +427,18 @@ BASE_PATH = '/sketchpy'
 **In marimo notebooks:**
 
 ```python
-from sketchpy.shapes import Canvas, Color, CarShapes
+from sketchpy import Canvas, Color, CarShapes, OceanShapes
+from sketchpy import CreativeGardenPalette, CalmOasisPalette
 
 # Create and display a canvas
 c = Canvas(800, 600)
 c.rect(100, 100, 200, 150, fill=Color.BLUE)
 c.circle(200, 200, 50, fill=Color.RED)
 c  # Auto-displays via _repr_html_()
+
+# Use helper shapes
+cars = CarShapes(c)
+cars.simple_car(100, 300, width=200)
 ```
 
 **In the browser (via development server):**
@@ -470,16 +487,24 @@ can.show_palette(Color)                  # Basic colors
 - Customizable layout (columns, padding, size)
 - Useful for exploring available colors
 - Available palettes:
-  - `CreativeGardenPalette`: 12 pastel colors (PEACH_WHISPER, ROSE_QUARTZ, BUTTER_YELLOW, etc.)
-  - `CalmOasisPalette`: 12 calming blues/greens (SKY_BLUE, MINT_FRESH, LAVENDER_MIST, etc.)
   - `Color`: 12 basic colors (RED, BLUE, GREEN, etc.)
+  - `CalmOasisPalette`: 12 calming blues/greens/lavenders (SKY_BLUE, MINT_FRESH, LAVENDER_MIST, etc.)
+  - `CreativeGardenPalette`: 12 pastel colors (PEACH_WHISPER, ROSE_QUARTZ, BUTTER_YELLOW, etc.)
+  - `MathDoodlingPalette`: 12 colors for math visualizations
+  - `OceanPalette`: 12 ocean-themed colors (CORAL_REEF, SEAFOAM_GREEN, DEEP_OCEAN, etc.)
 
-### CarShapes Helpers
-Pre-built educational shapes demonstrate composition:
+### Helper Shape Classes
+
+**CarShapes** - Vehicle-themed shapes for transportation lessons:
 - `simple_car()`: Full car from primitives
 - `wheel()`: Multi-layered wheel (tire, rim, hub)
 - `traffic_light()`: State-based light (red/yellow/green)
 - `road()`: Procedural dashed lane markers
+
+**OceanShapes** - Marine life shapes for ocean-themed lessons:
+- `octopus()`: Multi-tentacled octopus with animated curves
+- `jellyfish()`: Bell-shaped jellyfish with trailing tentacles
+- `seaweed()`: Wavy seaweed strands anchored to ocean floor
 
 ## Skills
 
@@ -538,7 +563,11 @@ Active skills loaded in Claude's context. Use when trigger conditions match.
   - `index.html.jinja`: Landing page template
 - **output/**: Generated files (gitignored, create via `build`)
 - **scripts/**: Python scripts exposed as commands via pyproject.toml
-- **sketchpy/**: Core library package (browser-first, marimo-compatible)
+- **sketchpy/**: Core library package (modular, browser-first, marimo-compatible)
+  - `canvas.py`: Canvas class with drawing methods
+  - `palettes.py`: Color palette classes
+  - `helpers/`: CarShapes, OceanShapes helper classes
+  - `utils.py`: Local-only utilities (excluded from browser bundle)
 - **static/js/**: Modular JavaScript (ES6 modules, no bundler)
   - `core/`: Main application modules (lessonState, editorSetup, apiDefinitions)
   - `errorHandler.js`: Beginner-friendly error formatting
