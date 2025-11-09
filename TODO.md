@@ -24,6 +24,7 @@ DEAR CLAUDE, please dont edit this.
 - ruff, ty 🚧
 - jsdoc - mentioned in js tooling last phase
 - readme - simplify, add notes about further development ?
+- split shapes, put imports into init file
 
 ## CLAUDE
 - fix lesson creation skill

@@ -6,6 +6,8 @@ No walking, just drawing. Perfect for building car scenes!
 from typing import List, Tuple, Optional, Dict, Union
 from dataclasses import dataclass
 from enum import Enum
+import math
+import random
 
 
 class Color:
@@ -80,6 +82,59 @@ class MathDoodlingPalette:
     # Subtle neutrals for backgrounds
     PAPER_WHITE = "#FAFAFA"     # Very light grey - like notebook paper
     PENCIL_GREY = "#E5E7EB"     # Subtle grey - like pencil guidelines
+
+class OceanPalette:
+    """Ocean-themed color palette for sea creatures and underwater scenes."""
+
+    # Blues and greens (water, seaweed)
+    DEEP_OCEAN = "#0A2E4D"      # Dark blue depths
+    OCEAN_BLUE = "#1E5A8E"      # Medium ocean blue
+    SHALLOW_WATER = "#4A90C8"   # Light blue shallows
+    SEAFOAM = "#88C7DC"         # Pale blue-green foam
+    KELP_GREEN = "#2D5C3F"      # Dark seaweed green
+    SEA_GREEN = "#4A8B6F"       # Medium aqua green
+
+    # Creature colors (octopus, fish, coral)
+    CORAL = "#E8695C"           # Coral/salmon pink
+    PURPLE_CORAL = "#A27BA2"    # Purple octopus
+    STARFISH_ORANGE = "#F4A460" # Sandy orange
+    TROPICAL_YELLOW = "#FFD966" # Bright yellow fish
+
+    # Accents
+    SAND = "#D4C5A9"            # Sandy ocean floor
+    SHELL_WHITE = "#F5F1E8"     # Pale shell/pearl
+
+    # Special (semi-transparent concept, rendered as light version)
+    TRANSLUCENT_BLUE = "#A8D8EA"  # Light blue for jellyfish
+
+def _bezier_points(p0: Tuple[float, float], p1: Tuple[float, float],
+                   p2: Tuple[float, float], p3: Optional[Tuple[float, float]] = None,
+                   steps: int = 50) -> List[Tuple[float, float]]:
+    """
+    Generate points along a Bézier curve.
+
+    Args:
+        p0: Start point (x, y)
+        p1: First control point (x, y)
+        p2: Second control point (x, y) [or end point if quadratic]
+        p3: End point (x, y) [None for quadratic]
+        steps: Number of sample points
+
+    Returns:
+        List of (x, y) tuples along the curve
+    """
+    points = []
+    for i in range(steps + 1):
+        t = i / steps
+        if p3 is None:  # Quadratic
+            x = (1-t)**2 * p0[0] + 2*(1-t)*t * p1[0] + t**2 * p2[0]
+            y = (1-t)**2 * p0[1] + 2*(1-t)*t * p1[1] + t**2 * p2[1]
+        else:  # Cubic
+            x = (1-t)**3 * p0[0] + 3*(1-t)**2*t * p1[0] + 3*(1-t)*t**2 * p2[0] + t**3 * p3[0]
+            y = (1-t)**3 * p0[1] + 3*(1-t)**2*t * p1[1] + 3*(1-t)*t**2 * p2[1] + t**3 * p3[1]
+        points.append((x, y))
+    return points
+
 
 @dataclass
 class Point:
@@ -434,6 +489,289 @@ class Canvas:
 
         return self
 
+    def wave(self, x1: float, y1: float, x2: float, y2: float,
+             height: float = 20, waves: int = 1,
+             stroke: str = Color.BLACK, stroke_width: int = 2) -> 'Canvas':
+        """
+        Draw a wavy line from (x1, y1) to (x2, y2).
+
+        Args:
+            x1, y1: Start point
+            x2, y2: End point
+            height: Wave amplitude (peak-to-trough distance)
+            waves: Number of complete wave cycles
+            stroke: Line color
+            stroke_width: Line thickness
+
+        Returns:
+            self (for method chaining)
+
+        Examples:
+            # Gentle ocean wave
+            can.wave(0, 300, 800, 300, height=30, waves=3)
+
+            # Choppy water
+            can.wave(0, 400, 800, 420, height=10, waves=8)
+        """
+        self._check_shape_limit()
+
+        # Calculate distance and angle
+        dx = x2 - x1
+        dy = y2 - y1
+        distance = math.sqrt(dx**2 + dy**2)
+        angle = math.atan2(dy, dx)
+
+        # Generate points along the wave
+        points = []
+        steps = max(50, int(waves * 20))  # More points for more waves
+
+        for i in range(steps + 1):
+            t = i / steps
+            # Position along line
+            base_x = x1 + t * dx
+            base_y = y1 + t * dy
+
+            # Perpendicular offset (sine wave)
+            wave_offset = height * math.sin(t * waves * 2 * math.pi)
+            offset_x = -wave_offset * math.sin(angle)
+            offset_y = wave_offset * math.cos(angle)
+
+            points.append((base_x + offset_x, base_y + offset_y))
+
+        # Draw as polyline (stroke only, no fill)
+        points_str = " ".join(f"{x},{y}" for x, y in points)
+        svg = f'<polyline points="{points_str}" fill="none" stroke="{stroke}" stroke-width="{stroke_width}"/>'
+
+        if self.current_group:
+            self.groups[self.current_group].append(svg)
+        else:
+            self.shapes.append(svg)
+
+        return self
+
+    def blob(self, x: float, y: float, radius: float = 50,
+             wobble: float = 0.2, points: int = 8,
+             fill: str = Color.BLUE, stroke: Optional[str] = None,
+             stroke_width: int = 1) -> 'Canvas':
+        """
+        Draw an organic, irregular circle (like a cartoon cloud or octopus head).
+        Uses smooth Bézier curves for a natural, flowing appearance.
+
+        Args:
+            x, y: Center point
+            radius: Average radius
+            wobble: How irregular (0-1, where 0 = perfect circle, 1 = very bumpy)
+            points: Number of control points (more = smoother, fewer = bumpier)
+            fill: Fill color
+            stroke: Optional outline color (defaults to same as fill)
+            stroke_width: Outline thickness
+
+        Returns:
+            self (for method chaining)
+
+        Examples:
+            # Smooth organic shape
+            can.blob(400, 300, radius=100, wobble=0.2)
+
+            # Very bumpy cloud
+            can.blob(200, 150, radius=60, wobble=0.5, points=6)
+        """
+        self._check_shape_limit()
+
+        if stroke is None:
+            stroke = fill
+
+        # Generate irregular anchor points around a circle
+        # To keep shapes convex, only vary radius outward (never inward)
+        anchor_points = []
+        for i in range(points):
+            angle = (i / points) * 2 * math.pi
+            # Randomize radius based on wobble, but stay convex (only expand, never shrink)
+            # Use a minimum radius to prevent concave shapes
+            r = radius * (1 + random.uniform(0, wobble))  # Only positive wobble
+            px = x + r * math.cos(angle)
+            py = y + r * math.sin(angle)
+            anchor_points.append((px, py))
+
+        # Generate smooth curve through anchor points using quadratic Bézier
+        # Control points are placed *outside* the direct line to keep convexity
+        smooth_points = []
+
+        for i in range(len(anchor_points)):
+            # Current anchor point
+            p1 = anchor_points[i]
+            # Next anchor point (wrap around)
+            p2 = anchor_points[(i + 1) % len(anchor_points)]
+
+            # Control point: push it outward from center to maintain convexity
+            # Calculate midpoint
+            mid_x = (p1[0] + p2[0]) / 2
+            mid_y = (p1[1] + p2[1]) / 2
+
+            # Vector from center to midpoint
+            dx = mid_x - x
+            dy = mid_y - y
+            dist = math.sqrt(dx**2 + dy**2)
+
+            # Push control point slightly outward (10-20% further from center)
+            if dist > 0:
+                push_factor = 1.15  # Push 15% further out
+                control_x = x + dx * push_factor
+                control_y = y + dy * push_factor
+            else:
+                control_x = mid_x
+                control_y = mid_y
+
+            # Sample the curve between p1 and p2
+            curve_points = _bezier_points(
+                p1,
+                (control_x, control_y),
+                p2,
+                steps=8  # Fewer steps since we have multiple segments
+            )
+
+            # Add all points except the last (to avoid duplicates)
+            smooth_points.extend(curve_points[:-1])
+
+        # Use polygon to draw the smooth blob
+        return self.polygon(smooth_points, fill=fill, stroke=stroke, stroke_width=stroke_width)
+
+    def tentacle(self, x1: float, y1: float, x2: float, y2: float,
+                 curl: float = 0.0, twist: float = 0.0, thickness: float = 20,
+                 taper: float = 0.5, fill: str = Color.PURPLE,
+                 stroke: Optional[str] = None, stroke_width: int = 1) -> 'Canvas':
+        """
+        Draw an organic tentacle from (x1, y1) to (x2, y2).
+        Can create S-curves and flowing shapes.
+
+        Args:
+            x1, y1: Base/thick end
+            x2, y2: Tip/thin end
+            curl: How much it curves (-1 to 1, 0 = straight)
+                  Positive = curves right, negative = curves left
+            twist: S-curve amount (0 to 1). Creates secondary curve in opposite direction.
+                   0 = simple curve, higher values = more pronounced S-shape
+            thickness: Width at base
+            taper: How much thinner at tip (0-1, where 1 = same width, 0 = point)
+            fill: Tentacle color
+            stroke: Optional outline color (defaults to same as fill)
+            stroke_width: Outline thickness
+
+        Returns:
+            self (for method chaining)
+
+        Examples:
+            # Gentle curve to the right
+            can.tentacle(400, 300, 300, 500, curl=0.3, thickness=30)
+
+            # S-curve tentacle (natural flowing)
+            can.tentacle(400, 300, 300, 500, curl=0.4, twist=0.5, thickness=30)
+
+            # Tight curl to the left
+            can.tentacle(400, 300, 500, 500, curl=-0.7, thickness=25)
+        """
+        self._check_shape_limit()
+
+        if stroke is None:
+            stroke = fill
+
+        # Calculate perpendicular direction for control points
+        dx = x2 - x1
+        dy = y2 - y1
+        distance = math.sqrt(dx**2 + dy**2)
+
+        # Perpendicular vector (rotated 90 degrees)
+        perp_x = -dy
+        perp_y = dx
+        perp_len = math.sqrt(perp_x**2 + perp_y**2)
+        if perp_len > 0:
+            perp_x /= perp_len
+            perp_y /= perp_len
+
+        if twist > 0:
+            # Use cubic Bézier for S-curve (two control points)
+            # First control point: 1/3 along, offset in curl direction
+            curl_distance1 = distance * abs(curl) * 0.4
+            cx1 = x1 + dx * 0.33 + perp_x * curl_distance1 * (1 if curl > 0 else -1)
+            cy1 = y1 + dy * 0.33 + perp_y * curl_distance1 * (1 if curl > 0 else -1)
+
+            # Second control point: 2/3 along, offset in OPPOSITE direction (creates S)
+            curl_distance2 = distance * abs(curl) * 0.4 * twist
+            cx2 = x1 + dx * 0.67 - perp_x * curl_distance2 * (1 if curl > 0 else -1)
+            cy2 = y1 + dy * 0.67 - perp_y * curl_distance2 * (1 if curl > 0 else -1)
+
+            # Generate centerline using cubic Bézier
+            centerline = _bezier_points((x1, y1), (cx1, cy1), (cx2, cy2), (x2, y2), steps=50)
+        else:
+            # Use quadratic Bézier for simple curve (one control point)
+            curl_distance = distance * abs(curl) * 0.5
+            cx = (x1 + x2) / 2 + perp_x * curl_distance * (1 if curl > 0 else -1)
+            cy = (y1 + y2) / 2 + perp_y * curl_distance * (1 if curl > 0 else -1)
+
+            # Generate centerline points using quadratic Bézier
+            centerline = _bezier_points((x1, y1), (cx, cy), (x2, y2), steps=50)
+
+        # Generate outline by offsetting perpendicular to centerline
+        outline_points = []
+        tip_thickness = thickness * taper
+
+        for i, (px, py) in enumerate(centerline):
+            t = i / (len(centerline) - 1)
+            # Interpolate thickness from base to tip
+            current_thickness = thickness * (1 - t) + tip_thickness * t
+            half_thickness = current_thickness / 2
+
+            # Calculate perpendicular direction at this point
+            if i < len(centerline) - 1:
+                next_x, next_y = centerline[i + 1]
+                tangent_x = next_x - px
+                tangent_y = next_y - py
+            else:
+                prev_x, prev_y = centerline[i - 1]
+                tangent_x = px - prev_x
+                tangent_y = py - prev_y
+
+            tangent_len = math.sqrt(tangent_x**2 + tangent_y**2)
+            if tangent_len > 0:
+                tangent_x /= tangent_len
+                tangent_y /= tangent_len
+
+            # Perpendicular offset
+            perp_x = -tangent_y
+            perp_y = tangent_x
+
+            # Add points on both sides
+            outline_points.append((px + perp_x * half_thickness, py + perp_y * half_thickness))
+
+        # Add other side in reverse
+        for i in range(len(centerline) - 1, -1, -1):
+            px, py = centerline[i]
+            t = i / (len(centerline) - 1)
+            current_thickness = thickness * (1 - t) + tip_thickness * t
+            half_thickness = current_thickness / 2
+
+            # Calculate perpendicular direction
+            if i < len(centerline) - 1:
+                next_x, next_y = centerline[i + 1]
+                tangent_x = next_x - px
+                tangent_y = next_y - py
+            else:
+                prev_x, prev_y = centerline[i - 1]
+                tangent_x = px - prev_x
+                tangent_y = py - prev_y
+
+            tangent_len = math.sqrt(tangent_x**2 + tangent_y**2)
+            if tangent_len > 0:
+                tangent_x /= tangent_len
+                tangent_y /= tangent_len
+
+            perp_x = -tangent_y
+            perp_y = tangent_x
+
+            outline_points.append((px - perp_x * half_thickness, py - perp_y * half_thickness))
+
+        return self.polygon(outline_points, fill=fill, stroke=stroke, stroke_width=stroke_width)
+
     def move_group(self, name: str, dx: float = 0, dy: float = 0) -> 'Canvas':
         """Move a group by offset (dx, dy)."""
         if name not in self.groups:
@@ -618,5 +956,162 @@ class CarShapes:
             while x < canvas.width:
                 canvas.rect(x, line_y - 2, dash_width, 4, fill=Color.YELLOW)
                 x += dash_width + gap_width
-        
+
         return canvas
+
+
+class OceanShapes:
+    """Pre-built ocean creature helpers for educational use."""
+
+    def __init__(self, canvas: Canvas):
+        """Initialize with a Canvas instance."""
+        self.canvas = canvas
+
+    def octopus(self, x: float, y: float, size: float = 100,
+                body_color: str = OceanPalette.CORAL,
+                eye_color: str = Color.WHITE) -> 'OceanShapes':
+        """
+        Draw a cute octopus.
+
+        Args:
+            x, y: Center position
+            size: Approximate size
+            body_color: Main body color
+            eye_color: Eye color
+
+        Returns:
+            self (for method chaining)
+
+        Example:
+            ocean = OceanShapes(can)
+            ocean.octopus(400, 200, size=120, body_color=OceanPalette.PURPLE_CORAL)
+        """
+        head_radius = size * 0.4
+        tentacle_length = size * 1.2
+
+        # Draw head (blob for organic look)
+        self.canvas.blob(x, y, radius=head_radius, wobble=0.15, points=12,
+                        fill=body_color, stroke=body_color, stroke_width=2)
+
+        # Draw 8 tentacles radiating from bottom of head
+        num_tentacles = 8
+        base_y = y + head_radius * 0.3  # Start tentacles slightly below center
+
+        for i in range(num_tentacles):
+            # Spread tentacles in an arc below the octopus
+            angle = math.pi * 0.1 + (i / (num_tentacles - 1)) * math.pi * 0.7  # 0.1π to 0.8π
+
+            # Calculate tentacle endpoint
+            end_x = x + math.cos(angle) * tentacle_length
+            end_y = base_y + math.sin(angle) * tentacle_length
+
+            # Add some curl and twist variation for natural S-curves
+            curl = random.uniform(-0.5, 0.5)
+            twist = random.uniform(0.6, 0.9)  # Natural flowing S-curves
+
+            # Vary thickness slightly
+            thickness = size * 0.15 * random.uniform(0.8, 1.0)
+
+            self.canvas.tentacle(x, base_y, end_x, end_y,
+                               curl=curl, twist=twist, thickness=thickness, taper=0.2,
+                               fill=body_color, stroke=body_color, stroke_width=1)
+
+        # Draw eyes
+        eye_size = size * 0.1
+        eye_offset_x = size * 0.15
+        eye_offset_y = -size * 0.1
+
+        # Left eye
+        self.canvas.circle(x - eye_offset_x, y + eye_offset_y, eye_size,
+                          fill=eye_color, stroke=Color.BLACK, stroke_width=2)
+        self.canvas.circle(x - eye_offset_x + eye_size * 0.2, y + eye_offset_y,
+                          eye_size * 0.5, fill=Color.BLACK, stroke=Color.BLACK)
+
+        # Right eye
+        self.canvas.circle(x + eye_offset_x, y + eye_offset_y, eye_size,
+                          fill=eye_color, stroke=Color.BLACK, stroke_width=2)
+        self.canvas.circle(x + eye_offset_x + eye_size * 0.2, y + eye_offset_y,
+                          eye_size * 0.5, fill=Color.BLACK, stroke=Color.BLACK)
+
+        return self
+
+    def jellyfish(self, x: float, y: float, size: float = 80,
+                  body_color: str = OceanPalette.TRANSLUCENT_BLUE,
+                  tentacle_count: int = 6) -> 'OceanShapes':
+        """
+        Draw a jellyfish.
+
+        Args:
+            x, y: Center of bell (top)
+            size: Bell diameter
+            body_color: Bell color
+            tentacle_count: Number of trailing tentacles
+
+        Returns:
+            self (for method chaining)
+        """
+        bell_radius = size * 0.5
+
+        # Draw bell (slightly flattened blob)
+        self.canvas.blob(x, y, radius=bell_radius, wobble=0.1, points=16,
+                        fill=body_color, stroke=body_color, stroke_width=1)
+
+        # Draw trailing tentacles
+        tentacle_length = size * 1.5
+        base_y = y + bell_radius * 0.5
+
+        for i in range(tentacle_count):
+            # Spread tentacles across bottom of bell
+            offset_x = (i - tentacle_count / 2) * (size * 0.2)
+            end_x = x + offset_x + random.uniform(-10, 10)
+            end_y = base_y + tentacle_length + random.uniform(-20, 20)
+
+            # Vary curl, twist, and thickness for natural flowing movement
+            curl = random.uniform(-0.4, 0.4)
+            twist = random.uniform(0.3, 0.8)  # Jellyfish have flowing S-curves
+            thickness = size * 0.05 * random.uniform(0.7, 1.0)
+
+            self.canvas.tentacle(x + offset_x * 0.5, base_y, end_x, end_y,
+                               curl=curl, twist=twist, thickness=thickness, taper=0.1,
+                               fill=body_color, stroke=body_color, stroke_width=1)
+
+        return self
+
+    def seaweed(self, x: float, y: float, height: float = 150,
+                sway: float = 0.3, color: str = OceanPalette.KELP_GREEN) -> 'OceanShapes':
+        """
+        Draw swaying seaweed.
+
+        Args:
+            x, y: Base position (ocean floor)
+            height: How tall
+            sway: How much it curves (0-1)
+            color: Seaweed color
+
+        Returns:
+            self (for method chaining)
+        """
+        # Main stem with gentle S-curve for natural sway
+        curl = random.uniform(-sway, sway)
+        twist = random.uniform(0.2, 0.5)  # Gentle S-curve like underwater plants
+        end_x = x + random.uniform(-20, 20)
+        end_y = y - height
+
+        self.canvas.tentacle(x, y, end_x, end_y,
+                           curl=curl, twist=twist, thickness=height * 0.08, taper=0.6,
+                           fill=color, stroke=color, stroke_width=1)
+
+        # Add a few small leaf-like shapes along the stem
+        num_leaves = random.randint(3, 5)
+        for i in range(num_leaves):
+            t = (i + 1) / (num_leaves + 1)  # Position along stem
+            leaf_x = x + (end_x - x) * t
+            leaf_y = y + (end_y - y) * t
+
+            # Small blob for leaf
+            leaf_size = height * 0.08
+            self.canvas.blob(leaf_x + random.uniform(-5, 5), leaf_y,
+                           radius=leaf_size, wobble=0.3, points=6,
+                           fill=color, stroke=color)
+
+        return self
