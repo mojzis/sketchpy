@@ -59,7 +59,8 @@ class OceanShapes:
         base_y = y + head_height * 0.85
 
         # At 85% height, pear width is approximately head_width * 0.59
-        attachment_width = head_width * 0.45
+        # Reduce further to account for tentacle thickness at angles
+        attachment_width = head_width * 0.35
 
         for i in range(num_tentacles):
             # Spread tentacles in an arc below the octopus
@@ -77,7 +78,7 @@ class OceanShapes:
             thickness = size * 0.12 * random.uniform(0.8, 1.0)
 
             # Calculate attachment point within body outline
-            # Spread evenly across attachment_width
+            # Account for tentacle thickness by keeping them more centered
             attach_offset = (i - (num_tentacles - 1) / 2) * (attachment_width / (num_tentacles - 1))
             attach_x = x + attach_offset
 
@@ -133,19 +134,19 @@ class OceanShapes:
         base_y = y + head_height * 0.85
 
         # At 85% height, pear width is approximately head_width * 0.59
-        # Each group should stay within body outline
-        group_width = head_width * 0.22
+        # Reduce to account for tentacle thickness at angles
+        group_width = head_width * 0.18
 
         for i in range(num_tentacles):
             # Group tentacles: 4 on left, 4 on right with gaps in middle
             if i < 4:
                 # Left group - spread from center-left to outer-left edge
-                angle = math.pi * 0.4 + (i / 3) * math.pi * 0.2
+                angle = math.pi * 0.42 + (i / 3) * math.pi * 0.16
                 # Attach points spread within left side of body
                 attach_x = x - (group_width * (1 - i / 3))
             else:
                 # Right group - spread from center-right to outer-right edge
-                angle = math.pi * 0.6 + ((i - 4) / 3) * math.pi * 0.2
+                angle = math.pi * 0.58 + ((i - 4) / 3) * math.pi * 0.16
                 # Attach points spread within right side of body
                 attach_x = x + (group_width * (1 - (i - 4) / 3))
 
@@ -211,11 +212,12 @@ class OceanShapes:
         base_y = y + head_height * 0.85
 
         # At 85% height, pear width is approximately head_width * 0.59
-        attachment_width = head_width * 0.5
+        # Account for thicker tentacles in cartoon style
+        attachment_width = head_width * 0.4
 
         for i in range(num_tentacles):
             # Wide spread for cartoon effect
-            angle = math.pi * 0.1 + (i / (num_tentacles - 1)) * math.pi * 0.8
+            angle = math.pi * 0.12 + (i / (num_tentacles - 1)) * math.pi * 0.76
 
             # Calculate tentacle endpoint
             end_x = x + math.cos(angle) * tentacle_length
