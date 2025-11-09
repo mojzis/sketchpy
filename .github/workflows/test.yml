@@ -39,6 +39,31 @@ jobs:
       - name: Run linter
         run: npm run lint
 
+  test-library-matrix:
+    name: Test sketchpy library (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install library only (no dev dependencies)
+        run: uv pip install -e . --system
+
+      - name: Test import and basic usage
+        run: |
+          python -c "from sketchpy import Canvas, Color; c = Canvas(400, 400); c.circle(200, 200, 50, fill=Color.RED); print('✓ sketchpy library works')"
+
   test-python-fast:
     name: Python Tests (Fast - No Browser)
     runs-on: ubuntu-latest
@@ -93,12 +118,13 @@ jobs:
   status-check:
     name: All Tests Passed
     runs-on: ubuntu-latest
-    needs: [test-js, test-python-fast, test-python-browser]
+    needs: [test-js, test-library-matrix, test-python-fast, test-python-browser]
     if: always()
     steps:
       - name: Check test results
         run: |
           if [ "${{ needs.test-js.result }}" != "success" ] || \
+             [ "${{ needs.test-library-matrix.result }}" != "success" ] || \
              [ "${{ needs.test-python-fast.result }}" != "success" ] || \
              [ "${{ needs.test-python-browser.result }}" != "success" ]; then
             echo "Some tests failed"
