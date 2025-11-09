@@ -6,7 +6,7 @@ app = marimo.App(width="medium")
 
 @app.cell
 def _():
-    from sketchpy.shapes import Canvas, CreativeGardenPalette, CalmOasisPalette
+    from sketchpy import Canvas, CreativeGardenPalette, CalmOasisPalette
 
     can = Canvas(800, 600)
 

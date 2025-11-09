@@ -5,7 +5,7 @@ Run with: uv run python examples/math_doodling_demo.py
 """
 
 import math
-from sketchpy.shapes import Canvas, MathDoodlingPalette
+from sketchpy import Canvas, MathDoodlingPalette
 
 # Example 1: Simple Overlap (Lesson 1 style)
 def simple_overlap():

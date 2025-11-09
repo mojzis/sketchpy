@@ -3,7 +3,7 @@ Demonstration of enhanced organic shapes with smooth Bézier blobs and S-curve t
 Shows the difference between simple curves and twisted S-curves.
 """
 
-from sketchpy.shapes import Canvas, Color, OceanPalette
+from sketchpy import Canvas, Color, OceanPalette
 import random
 
 # Seed for reproducibility

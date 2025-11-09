@@ -3,7 +3,7 @@ Demonstration of convex blob shapes.
 All blobs stay pleasantly rounded without weird concave indentations.
 """
 
-from sketchpy.shapes import Canvas, OceanPalette
+from sketchpy import Canvas, OceanPalette
 import random
 
 # Different seeds for variety

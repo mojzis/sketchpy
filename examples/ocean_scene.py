@@ -3,7 +3,7 @@ Complete underwater ocean scene using OceanShapes helpers.
 Demonstrates how easy it is to create complex scenes with simple API calls.
 """
 
-from sketchpy.shapes import Canvas, Color, OceanPalette, OceanShapes
+from sketchpy import Canvas, Color, OceanPalette, OceanShapes
 import random
 
 # Seed for reproducible randomness in shapes (changed to showcase S-curves)

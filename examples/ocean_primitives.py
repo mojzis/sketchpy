@@ -3,7 +3,7 @@ Demonstration of organic curve primitives: wave, blob, and tentacle.
 Shows how each primitive works with different parameters.
 """
 
-from sketchpy.shapes import Canvas, Color, OceanPalette
+from sketchpy import Canvas, Color, OceanPalette
 
 # Create canvas
 can = Canvas(800, 600, background=OceanPalette.SHALLOW_WATER)
