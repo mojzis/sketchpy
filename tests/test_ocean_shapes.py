@@ -235,3 +235,100 @@ def test_complete_ocean_scene():
     assert OceanPalette.SEAFOAM in svg
     assert 'polygon' in svg
     assert 'polyline' in svg
+
+
+def test_ocean_gradients_registered():
+    """OceanShapes automatically registers gradients on init."""
+    can = Canvas(800, 600)
+    ocean = OceanShapes(can)
+
+    # Verify gradients exist in canvas
+    assert "ocean_octopus_body" in can.gradients
+    assert "ocean_jellyfish_glow" in can.gradients
+    assert "ocean_seaweed_depth" in can.gradients
+    assert "ocean_tentacle_shading" in can.gradients
+
+
+def test_octopus_uses_gradient_by_default():
+    """Octopus uses gradient fill by default."""
+    can = Canvas(800, 600)
+    ocean = OceanShapes(can)
+    ocean.octopus(400, 300)
+
+    svg = can.to_svg()
+
+    # Should contain gradient definition
+    assert "grad_ocean_octopus_body" in svg
+    # Should reference gradient in shapes
+    assert "url(#grad_ocean_octopus_body)" in svg
+
+
+def test_jellyfish_uses_gradient_by_default():
+    """Jellyfish uses gradient fill by default."""
+    can = Canvas(800, 600)
+    ocean = OceanShapes(can)
+    ocean.jellyfish(400, 300)
+
+    svg = can.to_svg()
+
+    # Should contain gradient definition
+    assert "grad_ocean_jellyfish_glow" in svg
+    # Should reference gradient in shapes
+    assert "url(#grad_ocean_jellyfish_glow)" in svg
+
+
+def test_seaweed_uses_gradient_by_default():
+    """Seaweed uses gradient fill by default."""
+    can = Canvas(800, 600)
+    ocean = OceanShapes(can)
+    ocean.seaweed(400, 500)
+
+    svg = can.to_svg()
+
+    # Should contain gradient definition
+    assert "grad_ocean_seaweed_depth" in svg
+    # Should reference gradient in shapes
+    assert "url(#grad_ocean_seaweed_depth)" in svg
+
+
+def test_octopus_can_override_with_solid_color():
+    """Octopus can use solid color instead of gradient."""
+    can = Canvas(800, 600)
+    ocean = OceanShapes(can)
+    ocean.octopus(400, 300, body_color=Color.PURPLE)
+
+    svg = can.to_svg()
+
+    # Should use solid color
+    assert Color.PURPLE in svg
+    # Should NOT reference octopus body gradient in shapes
+    # (gradient def exists but isn't used)
+    assert "url(#grad_ocean_octopus_body)" not in svg
+
+
+def test_jellyfish_can_override_with_solid_color():
+    """Jellyfish can use solid color instead of gradient."""
+    can = Canvas(800, 600)
+    ocean = OceanShapes(can)
+    ocean.jellyfish(400, 300, body_color=OceanPalette.PURPLE_CORAL)
+
+    svg = can.to_svg()
+
+    # Should use solid color
+    assert OceanPalette.PURPLE_CORAL in svg
+    # Should NOT reference jellyfish gradient in shapes
+    assert "url(#grad_ocean_jellyfish_glow)" not in svg
+
+
+def test_seaweed_can_override_with_solid_color():
+    """Seaweed can use solid color instead of gradient."""
+    can = Canvas(800, 600)
+    ocean = OceanShapes(can)
+    ocean.seaweed(400, 500, color=OceanPalette.SEA_GREEN)
+
+    svg = can.to_svg()
+
+    # Should use solid color
+    assert OceanPalette.SEA_GREEN in svg
+    # Should NOT reference seaweed gradient in shapes
+    assert "url(#grad_ocean_seaweed_depth)" not in svg

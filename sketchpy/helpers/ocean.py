@@ -20,9 +20,59 @@ class OceanShapes:
     def __init__(self, canvas: 'Canvas'):
         """Initialize with a Canvas instance."""
         self.canvas = canvas
+        self._setup_gradients()
+
+    def _setup_gradients(self):
+        """Register predefined gradients for ocean shapes."""
+        # Octopus body: coral with darker edges for 3D depth
+        self.canvas.radial_gradient(
+            "ocean_octopus_body",
+            center=(50, 30),  # Top-lit effect
+            radius=70,
+            colors=[
+                ("#FF9B8A", 0),      # Light coral (highlight)
+                (OceanPalette.CORAL, 0.5),  # Base coral
+                ("#C84B3D", 1.0)     # Dark coral (shadow)
+            ]
+        )
+
+        # Jellyfish bell: translucent glow effect (bioluminescence)
+        self.canvas.radial_gradient(
+            "ocean_jellyfish_glow",
+            center=(50, 40),
+            radius=60,
+            colors=[
+                ("#FFFFFF", 0),      # Bright center
+                (OceanPalette.TRANSLUCENT_BLUE, 0.6),
+                ("#6EA8C8", 1.0)     # Darker edges
+            ]
+        )
+
+        # Seaweed: gradient from dark roots to light tips (underwater depth)
+        self.canvas.linear_gradient(
+            "ocean_seaweed_depth",
+            start=(0, 100),  # Bottom (dark)
+            end=(0, 0),      # Top (light)
+            colors=[
+                (OceanPalette.KELP_GREEN, 0),   # Dark base
+                (OceanPalette.SEA_GREEN, 1.0)   # Lighter tips
+            ]
+        )
+
+        # Tentacle shading (works for both octopus and jellyfish)
+        self.canvas.linear_gradient(
+            "ocean_tentacle_shading",
+            start=(0, 0),    # Left
+            end=(100, 0),    # Right
+            colors=[
+                ("#D8685C", 0),      # Shadow side
+                (OceanPalette.CORAL, 0.5),  # Middle
+                ("#FF9B8A", 1.0)     # Highlight side
+            ]
+        )
 
     def octopus(self, x: float, y: float, size: float = 100,
-                body_color: str = OceanPalette.CORAL,
+                body_color: str = "gradient:ocean_octopus_body",
                 eye_color: str = Color.WHITE) -> 'OceanShapes':
         """
         Draw a cute octopus.
@@ -90,7 +140,7 @@ class OceanShapes:
         return self
 
     def jellyfish(self, x: float, y: float, size: float = 80,
-                  body_color: str = OceanPalette.TRANSLUCENT_BLUE,
+                  body_color: str = "gradient:ocean_jellyfish_glow",
                   tentacle_count: int = 6) -> 'OceanShapes':
         """
         Draw a jellyfish.
@@ -132,7 +182,7 @@ class OceanShapes:
         return self
 
     def seaweed(self, x: float, y: float, height: float = 150,
-                sway: float = 0.3, color: str = OceanPalette.KELP_GREEN) -> 'OceanShapes':
+                sway: float = 0.3, color: str = "gradient:ocean_seaweed_depth") -> 'OceanShapes':
         """
         Draw swaying seaweed.
 
