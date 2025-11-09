@@ -54,6 +54,21 @@ print("✓ Initial security applied")
         await pyodide.runPythonAsync(shapesCode);
         console.log('✓ Canvas API loaded');
 
+        // Make classes globally available for user code
+        await pyodide.runPythonAsync(`
+import builtins
+# Make Canvas, Color, and palette classes available globally
+builtins.Canvas = Canvas
+builtins.Color = Color
+builtins.CalmOasisPalette = CalmOasisPalette
+builtins.CreativeGardenPalette = CreativeGardenPalette
+builtins.MathDoodlingPalette = MathDoodlingPalette
+builtins.OceanPalette = OceanPalette
+builtins.CarShapes = CarShapes
+builtins.OceanShapes = OceanShapes
+print("✓ Canvas, Color, and palettes available globally")
+        `);
+
         // Import ast module BEFORE we block imports (needed for validation)
         // Pre-import everything ast.walk() needs to avoid blocking stdlib internals
         // Also import math for Math Doodling lessons
