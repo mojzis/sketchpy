@@ -4,6 +4,7 @@ Ocean-themed shape helpers for drawing sea creatures.
 
 import math
 import random
+import time
 
 # Imports will be available when combined for browser
 try:
@@ -61,6 +62,9 @@ class OceanShapes:
         # At 85% height, pear width is approximately head_width * 0.59
         # Reduce further to account for tentacle thickness at angles
         attachment_width = head_width * 0.35
+
+        # Seed random for variation (use position and time for uniqueness)
+        random.seed(int(x * 1000 + y * 1000 + time.time() * 1000))
 
         for i in range(num_tentacles):
             # Spread tentacles in an arc below the octopus
@@ -136,6 +140,9 @@ class OceanShapes:
         # At 85% height, pear width is approximately head_width * 0.59
         # Reduce to account for tentacle thickness at angles
         group_width = head_width * 0.18
+
+        # Seed random for variation (use position and time for uniqueness)
+        random.seed(int(x * 1000 + y * 1000 + time.time() * 1000))
 
         for i in range(num_tentacles):
             # Group tentacles: 4 on left, 4 on right with gaps in middle
@@ -214,6 +221,9 @@ class OceanShapes:
         # At 85% height, pear width is approximately head_width * 0.59
         # Account for thicker tentacles in cartoon style
         attachment_width = head_width * 0.4
+
+        # Seed random for variation (use position and time for uniqueness)
+        random.seed(int(x * 1000 + y * 1000 + time.time() * 1000))
 
         for i in range(num_tentacles):
             # Wide spread for cartoon effect
