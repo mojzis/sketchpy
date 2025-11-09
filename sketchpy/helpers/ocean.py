@@ -23,15 +23,17 @@ class OceanShapes:
 
     def octopus(self, x: float, y: float, size: float = 100,
                 body_color: str = OceanPalette.CORAL,
-                eye_color: str = Color.WHITE) -> 'OceanShapes':
+                eye_color: str = Color.WHITE,
+                style: str = "classic") -> 'OceanShapes':
         """
-        Draw a cute octopus.
+        Draw a cute octopus with improved anatomy.
 
         Args:
-            x, y: Center position
+            x, y: Top center of head
             size: Approximate size
             body_color: Main body color
             eye_color: Eye color
+            style: "classic", "realistic", or "cartoon"
 
         Returns:
             self (for method chaining)
@@ -39,21 +41,25 @@ class OceanShapes:
         Example:
             ocean = OceanShapes(can)
             ocean.octopus(400, 200, size=120, body_color=OceanPalette.PURPLE_CORAL)
+            ocean.octopus(400, 400, size=120, style="realistic")
         """
-        head_radius = size * 0.4
+        if style == "realistic":
+            return self.octopus_realistic(x, y, size, body_color, eye_color)
+        elif style == "cartoon":
+            return self.octopus_cartoon(x, y, size, body_color, eye_color)
+
+        # Classic style with pear-shaped head
+        head_width = size * 0.8
+        head_height = size * 0.7
         tentacle_length = size * 1.2
 
-        # Draw head (blob for organic look)
-        self.canvas.blob(x, y, radius=head_radius, wobble=0.15, points=12,
-                        fill=body_color, stroke=body_color, stroke_width=2)
-
-        # Draw 8 tentacles radiating from bottom of head
+        # Draw tentacles FIRST (so they appear behind the head)
         num_tentacles = 8
-        base_y = y + head_radius * 0.3  # Start tentacles slightly below center
+        base_y = y + head_height  # Attach at bottom of pear shape
 
         for i in range(num_tentacles):
             # Spread tentacles in an arc below the octopus
-            angle = math.pi * 0.1 + (i / (num_tentacles - 1)) * math.pi * 0.7  # 0.1π to 0.8π
+            angle = math.pi * 0.15 + (i / (num_tentacles - 1)) * math.pi * 0.7
 
             # Calculate tentacle endpoint
             end_x = x + math.cos(angle) * tentacle_length
@@ -61,19 +67,27 @@ class OceanShapes:
 
             # Add some curl and twist variation for natural S-curves
             curl = random.uniform(-0.5, 0.5)
-            twist = random.uniform(0.6, 0.9)  # Natural flowing S-curves
+            twist = random.uniform(0.6, 0.9)
 
             # Vary thickness slightly
-            thickness = size * 0.15 * random.uniform(0.8, 1.0)
+            thickness = size * 0.12 * random.uniform(0.8, 1.0)
 
-            self.canvas.tentacle(x, base_y, end_x, end_y,
+            # Calculate attachment point on the pear bottom edge
+            attach_offset = (i - (num_tentacles - 1) / 2) * (head_width * 0.15)
+            attach_x = x + attach_offset
+
+            self.canvas.tentacle(attach_x, base_y, end_x, end_y,
                                curl=curl, twist=twist, thickness=thickness, taper=0.2,
                                fill=body_color, stroke=body_color, stroke_width=1)
+
+        # Draw pear-shaped head AFTER tentacles (appears in front)
+        self.canvas.pear(x, y, width=head_width, height=head_height,
+                        fill=body_color, stroke=body_color, stroke_width=2)
 
         # Draw eyes
         eye_size = size * 0.1
         eye_offset_x = size * 0.15
-        eye_offset_y = -size * 0.1
+        eye_offset_y = size * 0.2
 
         # Left eye
         self.canvas.circle(x - eye_offset_x, y + eye_offset_y, eye_size,
@@ -85,6 +99,146 @@ class OceanShapes:
         self.canvas.circle(x + eye_offset_x, y + eye_offset_y, eye_size,
                           fill=eye_color, stroke=Color.BLACK, stroke_width=2)
         self.canvas.circle(x + eye_offset_x + eye_size * 0.2, y + eye_offset_y,
+                          eye_size * 0.5, fill=Color.BLACK, stroke=Color.BLACK)
+
+        return self
+
+    def octopus_realistic(self, x: float, y: float, size: float = 100,
+                         body_color: str = OceanPalette.CORAL,
+                         eye_color: str = Color.WHITE) -> 'OceanShapes':
+        """
+        Draw a realistic octopus with grouped tentacles (4 per side).
+
+        Args:
+            x, y: Top center of head
+            size: Approximate size
+            body_color: Main body color
+            eye_color: Eye color
+
+        Returns:
+            self (for method chaining)
+        """
+        head_width = size * 0.85
+        head_height = size * 0.75
+        tentacle_length = size * 1.3
+
+        # Draw tentacles FIRST in two groups (left and right)
+        num_tentacles = 8
+        base_y = y + head_height
+
+        for i in range(num_tentacles):
+            # Group tentacles: 4 on left, 4 on right with gaps in middle
+            if i < 4:
+                # Left group
+                angle = math.pi * 0.35 + (i / 3) * math.pi * 0.25
+                side_offset = -head_width * 0.2
+            else:
+                # Right group
+                angle = math.pi * 0.55 + ((i - 4) / 3) * math.pi * 0.25
+                side_offset = head_width * 0.2
+
+            # Calculate tentacle endpoint
+            end_x = x + side_offset + math.cos(angle) * tentacle_length
+            end_y = base_y + math.sin(angle) * tentacle_length
+
+            # More natural curl variation
+            curl = random.uniform(-0.4, 0.4)
+            twist = random.uniform(0.5, 0.8)
+
+            thickness = size * 0.13 * random.uniform(0.85, 1.0)
+
+            attach_x = x + side_offset
+
+            self.canvas.tentacle(attach_x, base_y - size * 0.05, end_x, end_y,
+                               curl=curl, twist=twist, thickness=thickness, taper=0.15,
+                               fill=body_color, stroke=body_color, stroke_width=1)
+
+        # Draw pear-shaped head
+        self.canvas.pear(x, y, width=head_width, height=head_height,
+                        fill=body_color, stroke=body_color, stroke_width=2)
+
+        # Draw eyes
+        eye_size = size * 0.12
+        eye_offset_x = size * 0.18
+        eye_offset_y = size * 0.22
+
+        # Left eye
+        self.canvas.circle(x - eye_offset_x, y + eye_offset_y, eye_size,
+                          fill=eye_color, stroke=Color.BLACK, stroke_width=2)
+        self.canvas.circle(x - eye_offset_x + eye_size * 0.25, y + eye_offset_y,
+                          eye_size * 0.45, fill=Color.BLACK, stroke=Color.BLACK)
+
+        # Right eye
+        self.canvas.circle(x + eye_offset_x, y + eye_offset_y, eye_size,
+                          fill=eye_color, stroke=Color.BLACK, stroke_width=2)
+        self.canvas.circle(x + eye_offset_x + eye_size * 0.25, y + eye_offset_y,
+                          eye_size * 0.45, fill=Color.BLACK, stroke=Color.BLACK)
+
+        return self
+
+    def octopus_cartoon(self, x: float, y: float, size: float = 100,
+                       body_color: str = OceanPalette.CORAL,
+                       eye_color: str = Color.WHITE) -> 'OceanShapes':
+        """
+        Draw a cartoon octopus with exaggerated features and curly tentacles.
+
+        Args:
+            x, y: Top center of head
+            size: Approximate size
+            body_color: Main body color
+            eye_color: Eye color
+
+        Returns:
+            self (for method chaining)
+        """
+        head_width = size * 0.9
+        head_height = size * 0.65
+        tentacle_length = size * 1.4
+
+        # Draw very curly tentacles FIRST
+        num_tentacles = 8
+        base_y = y + head_height
+
+        for i in range(num_tentacles):
+            # Wide spread for cartoon effect
+            angle = math.pi * 0.1 + (i / (num_tentacles - 1)) * math.pi * 0.8
+
+            # Calculate tentacle endpoint
+            end_x = x + math.cos(angle) * tentacle_length
+            end_y = base_y + math.sin(angle) * tentacle_length
+
+            # Exaggerated curl and twist
+            curl = random.uniform(-0.7, 0.7)
+            twist = random.uniform(0.7, 1.0)  # More S-curves
+
+            thickness = size * 0.14 * random.uniform(0.9, 1.1)
+
+            attach_offset = (i - (num_tentacles - 1) / 2) * (head_width * 0.12)
+            attach_x = x + attach_offset
+
+            self.canvas.tentacle(attach_x, base_y, end_x, end_y,
+                               curl=curl, twist=twist, thickness=thickness, taper=0.25,
+                               fill=body_color, stroke=body_color, stroke_width=1)
+
+        # Draw exaggerated pear head (shorter and wider)
+        self.canvas.pear(x, y, width=head_width, height=head_height,
+                        fill=body_color, stroke=body_color, stroke_width=2)
+
+        # Draw large cartoon eyes
+        eye_size = size * 0.13
+        eye_offset_x = size * 0.2
+        eye_offset_y = size * 0.18
+
+        # Left eye (larger whites)
+        self.canvas.circle(x - eye_offset_x, y + eye_offset_y, eye_size,
+                          fill=eye_color, stroke=Color.BLACK, stroke_width=2)
+        self.canvas.circle(x - eye_offset_x + eye_size * 0.3, y + eye_offset_y - eye_size * 0.1,
+                          eye_size * 0.5, fill=Color.BLACK, stroke=Color.BLACK)
+
+        # Right eye
+        self.canvas.circle(x + eye_offset_x, y + eye_offset_y, eye_size,
+                          fill=eye_color, stroke=Color.BLACK, stroke_width=2)
+        self.canvas.circle(x + eye_offset_x + eye_size * 0.3, y + eye_offset_y - eye_size * 0.1,
                           eye_size * 0.5, fill=Color.BLACK, stroke=Color.BLACK)
 
         return self
