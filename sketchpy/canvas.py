@@ -576,7 +576,7 @@ class Canvas:
         top_width = width * 0.75  # Slightly narrower at very top
         shoulder_width = width  # Widest point
         waist_width = width * 0.65  # Narrower in middle
-        bottom_width = width * 0.55  # Gently rounded at bottom (less pointy)
+        bottom_width = width * 0.62  # Broader base for tentacle attachment
 
         # Build the outline using bezier curves
         points = []

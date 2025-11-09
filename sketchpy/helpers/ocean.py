@@ -90,10 +90,10 @@ class OceanShapes:
         self.canvas.pear(x, y, width=head_width, height=head_height,
                         fill=body_color, stroke=body_color, stroke_width=2)
 
-        # Draw eyes (smaller)
-        eye_size = size * 0.06
+        # Draw eyes (smaller and lower)
+        eye_size = size * 0.055
         eye_offset_x = size * 0.15
-        eye_offset_y = size * 0.22
+        eye_offset_y = size * 0.26
 
         # Left eye
         self.canvas.circle(x - eye_offset_x, y + eye_offset_y, eye_size,
@@ -168,10 +168,10 @@ class OceanShapes:
         self.canvas.pear(x, y, width=head_width, height=head_height,
                         fill=body_color, stroke=body_color, stroke_width=2)
 
-        # Draw eyes (smaller)
-        eye_size = size * 0.07
+        # Draw eyes (smaller and lower)
+        eye_size = size * 0.065
         eye_offset_x = size * 0.18
-        eye_offset_y = size * 0.25
+        eye_offset_y = size * 0.3
 
         # Left eye
         self.canvas.circle(x - eye_offset_x, y + eye_offset_y, eye_size,
@@ -241,10 +241,10 @@ class OceanShapes:
         self.canvas.pear(x, y, width=head_width, height=head_height,
                         fill=body_color, stroke=body_color, stroke_width=2)
 
-        # Draw cartoon eyes (big but not huge)
-        eye_size = size * 0.09
+        # Draw cartoon eyes (moderate size and lower)
+        eye_size = size * 0.08
         eye_offset_x = size * 0.2
-        eye_offset_y = size * 0.2
+        eye_offset_y = size * 0.25
 
         # Left eye (larger whites)
         self.canvas.circle(x - eye_offset_x, y + eye_offset_y, eye_size,
