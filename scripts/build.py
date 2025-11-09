@@ -45,65 +45,90 @@ def remove_type_hints_simple(code: str) -> str:
     return code
 
 
-def process_shapes_code(shapes_path: Path) -> str:
+def process_shapes_code(sketchpy_dir: Path) -> str:
     """
-    Read and process shapes.py for embedding in Pyodide.
+    Combine modular sketchpy code for embedding in Pyodide.
 
-    Removes browser-incompatible code like file I/O (save method).
-    Keeps imports and display methods for marimo compatibility.
+    Reads from modular structure:
+    - palettes.py: Color classes
+    - canvas.py: Canvas with all drawing methods
+    - helpers/ocean.py: OceanShapes class
+    - helpers/cars.py: CarShapes class
+
+    Combines them into single browser-ready bundle, removing:
+    - Import statements (modules will be in same scope)
+    - Type hints (browser doesn't need them)
+    - save() method (file I/O not supported)
+    - Docstrings at module level
     """
-    code = shapes_path.read_text()
+    modules_to_include = [
+        sketchpy_dir / 'palettes.py',
+        sketchpy_dir / 'canvas.py',
+        sketchpy_dir / 'helpers' / 'ocean.py',
+        sketchpy_dir / 'helpers' / 'cars.py',
+    ]
 
-    # Remove the docstring at the top
-    code = re.sub(r'^""".*?"""', '', code, flags=re.DOTALL | re.MULTILINE).lstrip()
+    combined_parts = []
 
-    # Process code line by line, keeping imports but removing browser-incompatible methods
-    lines = code.split('\n')
-    filtered_lines = []
-    skip_until_blank = False
-
-    for line in lines:
-        # Skip unused imports
-        if line.startswith('from dataclasses import') or line.startswith('from enum import'):
+    for module_path in modules_to_include:
+        if not module_path.exists():
+            logger.warning(f"Module not found: {module_path}")
             continue
 
-        # Skip the Point dataclass (not used, and breaks with type hint removal)
-        if line.startswith('class Point:') or '@dataclass' in line:
-            skip_until_blank = True
-            continue
+        code = module_path.read_text()
 
-        # Skip the save() method (file I/O not needed in browser)
-        if 'def save(self' in line:
-            skip_until_blank = True
-            continue
+        # Remove module-level docstrings at the top
+        code = re.sub(r'^""".*?"""', '', code, flags=re.DOTALL | re.MULTILINE).lstrip()
 
-        # Skip CarShapes class and everything after (not needed for basic tutorial)
-        if line.startswith('# Convenience functions') or line.startswith('def quick_draw'):
-            break
+        # Remove all import statements (modules will be combined)
+        lines = code.split('\n')
+        filtered_lines = []
+        skip_until_blank = False
 
-        if line.startswith('# Higher-level car-themed shapes') or line.startswith('class CarShapes'):
-            break
+        for line in lines:
+            # Skip import statements
+            if line.startswith('from ') or line.startswith('import '):
+                continue
 
-        if skip_until_blank:
-            if line.strip() == '' or (line and not line[0].isspace() and line.strip()):
-                skip_until_blank = False
-            continue
+            # Skip try/except import blocks
+            if line.strip().startswith('try:') or line.strip().startswith('except ImportError:'):
+                skip_until_blank = True
+                continue
 
-        filtered_lines.append(line)
+            # Skip the save() method (file I/O not needed in browser)
+            if 'def save(self' in line:
+                skip_until_blank = True
+                continue
 
-    processed_code = '\n'.join(filtered_lines)
+            if skip_until_blank:
+                # End of import block or save method
+                if line.strip() == '' or (line and not line[0].isspace() and line.strip() and not line.strip().startswith('pass')):
+                    skip_until_blank = False
+                    # Don't include the line that ends the block if it's 'pass'
+                    if line.strip() == 'pass':
+                        continue
+                continue
+
+            filtered_lines.append(line)
+
+        module_code = '\n'.join(filtered_lines)
+        combined_parts.append(module_code)
+
+    # Combine all modules
+    combined_code = '\n\n'.join(combined_parts)
 
     # Clean up excessive blank lines
-    processed_code = re.sub(r'\n\n\n+', '\n\n', processed_code)
+    combined_code = re.sub(r'\n\n\n+', '\n\n', combined_code)
 
     # Remove type hints using iterative regex approach
-    processed_code = remove_type_hints_simple(processed_code)
+    combined_code = remove_type_hints_simple(combined_code)
 
     # Remove return type annotations (these use ` ->` which is easier to match)
-    processed_code = re.sub(r' -> [\'"]?Canvas[\'"]?', '', processed_code)
-    processed_code = re.sub(r' -> (str|None)', '', processed_code)
+    combined_code = re.sub(r' -> [\'"]?Canvas[\'"]?', '', combined_code)
+    combined_code = re.sub(r' -> [\'"]?OceanShapes[\'"]?', '', combined_code)
+    combined_code = re.sub(r' -> (str|None)', '', combined_code)
 
-    return processed_code.strip()
+    return combined_code.strip()
 
 
 def execute_snippet(snippet_path: Path, project_root: Path):
@@ -518,15 +543,15 @@ def main():
     """Generate index.html from template."""
     # Setup paths
     project_root = Path(__file__).parent.parent
-    shapes_path = project_root / 'sketchpy' / 'shapes.py'
+    sketchpy_dir = project_root / 'sketchpy'
     templates_dir = project_root / 'templates'
     output_dir = project_root / 'output'
 
     # Ensure output directory exists
     output_dir.mkdir(exist_ok=True)
 
-    # Process shapes.py code
-    shapes_code = process_shapes_code(shapes_path)
+    # Combine modular sketchpy code for browser
+    shapes_code = process_shapes_code(sketchpy_dir)
 
     # Setup Jinja2 environment
     env = Environment(loader=FileSystemLoader(templates_dir))

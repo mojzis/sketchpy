@@ -1,111 +1,18 @@
 """
-shapes.py - Simple SVG shape library for learning Python
-No walking, just drawing. Perfect for building car scenes!
+Canvas - main drawing surface with SVG rendering.
 """
 
 from typing import List, Tuple, Optional, Dict, Union
-from dataclasses import dataclass
-from enum import Enum
 import math
 import random
 
+# Import palettes (will be available when combined for browser)
+try:
+    from .palettes import Color
+except ImportError:
+    # For standalone browser bundle, Color will be defined in same scope
+    pass
 
-class Color:
-    """Common colors with good IDE completion."""
-    RED = "#FF0000"
-    BLUE = "#0000FF"
-    GREEN = "#00FF00"
-    YELLOW = "#FFFF00"
-    BLACK = "#000000"
-    WHITE = "#FFFFFF"
-    GRAY = "#808080"
-    ORANGE = "#FFA500"
-    PURPLE = "#800080"
-    PINK = "#FFC0CB"
-    BROWN = "#8B4513"
-    SILVER = "#C0C0C0"
-
-class CalmOasisPalette:
-    """
-    Calming palette focused on therapeutic blues, greens, and lavenders.
-    Best for: Focus, relaxation, reducing anxiety, promoting peaceful work.
-    """
-    SKY_BLUE = "#A5C8E4"        # Soft, calming blue - promotes tranquility
-    MINT_FRESH = "#B0E0A8"      # Gentle green - reduces stress, aids focus
-    LAVENDER_MIST = "#E5DAFF"   # Soft purple - encourages creativity & calm
-    POWDER_BLUE = "#BFEFFF"     # Light blue - soothing, spacious feeling
-    SAGE_GREEN = "#C0ECCC"      # Tea green - natural, peaceful, clarity
-    PERIWINKLE = "#CCCCFF"      # Blue-purple - thoughtful, gentle
-    CREAM = "#FFF7D4"           # Warm neutral - safe, comfortable
-    SOFT_AQUA = "#AFDFE5"       # Aqua - refreshing, balanced
-    PALE_LILAC = "#E6D5FF"      # Lilac - imaginative, serene
-    CLOUD_WHITE = "#F5F5F5"     # Off-white - spacious, clean
-    MIST_GRAY = "#D3D3D3"       # Light gray - neutral, grounding
-    SEAFOAM = "#C8FFE1"         # Mint-aqua - healing, optimistic
-
-class CreativeGardenPalette:
-    """
-    Broader pastel palette for creative expression while staying calm.
-    Best for: Variety, self-expression, encouraging creativity, balanced energy.
-    """
-    PEACH_WHISPER = "#FFDAC1"   # Soft peach - warm, friendly, gentle
-    ROSE_QUARTZ = "#F6A8A6"     # Muted pink - nurturing, empathetic
-    BUTTER_YELLOW = "#FFF0A3"   # Soft yellow - optimistic, clear thinking
-    MINT_CREAM = "#C0ECCC"      # Mint green - fresh, balanced, growth
-    SKY_BREEZE = "#A5C8E4"      # Powder blue - peaceful, trustworthy
-    LILAC_DREAM = "#D5C3E0"     # Soft lilac - creative, sophisticated
-    CORAL_BLUSH = "#FFB3B3"     # Gentle coral - energetic but not overwhelming
-    LEMON_CHIFFON = "#F9F0C1"   # Pale yellow - joyful, light
-    MISTY_MAUVE = "#E8D4E8"     # Soft mauve - elegant, calming
-    HONEYDEW = "#E8F5E3"        # Very pale green - restful, natural
-    VANILLA_CREAM = "#FAF0E6"   # Warm white - cozy, safe
-    DOVE_GRAY = "#D5D5D5"       # Soft gray - stable, grounding
-
-class MathDoodlingPalette:
-    """
-    Ultra-minimal triadic palette for abstract geometric patterns.
-    Inspired by classroom compass doodling - overlapping circles creating meditative art.
-
-    Best for: Mathematical patterns, symmetry exploration, transparent layering.
-    Use with low opacity (0.15-0.4) for beautiful color mixing effects.
-    """
-    # Triadic core colors (evenly spaced on color wheel)
-    MIST_BLUE = "#93C5FD"       # Soft blue - calm, mathematical, precise
-    MIST_ROSE = "#FCA5A5"       # Gentle rose - warmth, creativity, balance
-    MIST_MINT = "#86EFAC"       # Light mint - growth, harmony, freshness
-
-    # Extended shades for variety
-    DEEP_BLUE = "#3B82F6"       # Deeper blue for contrast
-    WARM_CORAL = "#F87171"      # Warmer rose for emphasis
-    FRESH_GREEN = "#4ADE80"     # Brighter mint for accents
-
-    # Subtle neutrals for backgrounds
-    PAPER_WHITE = "#FAFAFA"     # Very light grey - like notebook paper
-    PENCIL_GREY = "#E5E7EB"     # Subtle grey - like pencil guidelines
-
-class OceanPalette:
-    """Ocean-themed color palette for sea creatures and underwater scenes."""
-
-    # Blues and greens (water, seaweed)
-    DEEP_OCEAN = "#0A2E4D"      # Dark blue depths
-    OCEAN_BLUE = "#1E5A8E"      # Medium ocean blue
-    SHALLOW_WATER = "#4A90C8"   # Light blue shallows
-    SEAFOAM = "#88C7DC"         # Pale blue-green foam
-    KELP_GREEN = "#2D5C3F"      # Dark seaweed green
-    SEA_GREEN = "#4A8B6F"       # Medium aqua green
-
-    # Creature colors (octopus, fish, coral)
-    CORAL = "#E8695C"           # Coral/salmon pink
-    PURPLE_CORAL = "#A27BA2"    # Purple octopus
-    STARFISH_ORANGE = "#F4A460" # Sandy orange
-    TROPICAL_YELLOW = "#FFD966" # Bright yellow fish
-
-    # Accents
-    SAND = "#D4C5A9"            # Sandy ocean floor
-    SHELL_WHITE = "#F5F1E8"     # Pale shell/pearl
-
-    # Special (semi-transparent concept, rendered as light version)
-    TRANSLUCENT_BLUE = "#A8D8EA"  # Light blue for jellyfish
 
 def _bezier_points(p0: Tuple[float, float], p1: Tuple[float, float],
                    p2: Tuple[float, float], p3: Optional[Tuple[float, float]] = None,
@@ -134,13 +41,6 @@ def _bezier_points(p0: Tuple[float, float], p1: Tuple[float, float],
             y = (1-t)**3 * p0[1] + 3*(1-t)**2*t * p1[1] + 3*(1-t)*t**2 * p2[1] + t**3 * p3[1]
         points.append((x, y))
     return points
-
-
-@dataclass
-class Point:
-    """A point in 2D space."""
-    x: float
-    y: float
 
 
 class GroupContext:
@@ -328,7 +228,7 @@ class Canvas:
         else:
             self.shapes.append(svg)
         return self
-    
+
     def circle(self, x: float = 50, y: float = 50, radius: float = 25,
                fill: str = Color.BLACK, stroke: str = Color.BLACK,
                stroke_width: float = 1, opacity: float = 1.0) -> 'Canvas':
@@ -352,7 +252,7 @@ class Canvas:
         else:
             self.shapes.append(svg)
         return self
-    
+
     def ellipse(self, x: float = 50, y: float = 50, rx: float = 40, ry: float = 25,
                 fill: str = Color.BLACK, stroke: str = Color.BLACK,
                 stroke_width: float = 1) -> 'Canvas':
@@ -364,7 +264,7 @@ class Canvas:
         else:
             self.shapes.append(svg)
         return self
-    
+
     def line(self, x1: float = 0, y1: float = 0, x2: float = 100, y2: float = 100,
              stroke: str = Color.BLACK, stroke_width: float = 2) -> 'Canvas':
         """Draw a line from (x1, y1) to (x2, y2)."""
@@ -375,7 +275,7 @@ class Canvas:
         else:
             self.shapes.append(svg)
         return self
-    
+
     def polygon(self, points: Optional[List[Tuple[float, float]]] = None,
                 fill: str = Color.BLACK, stroke: str = Color.BLACK,
                 stroke_width: float = 1) -> 'Canvas':
@@ -390,7 +290,7 @@ class Canvas:
         else:
             self.shapes.append(svg)
         return self
-    
+
     def text(self, x: float = 0, y: float = 20, text: str = "Hello",
              size: int = 16, fill: str = Color.BLACK,
              font: str = "Arial") -> 'Canvas':
@@ -402,7 +302,7 @@ class Canvas:
         else:
             self.shapes.append(svg)
         return self
-    
+
     def rounded_rect(self, x: float = 0, y: float = 0, width: float = 100, height: float = 100,
                      rx: float = 5, ry: float = 5,
                      fill: str = Color.BLACK, stroke: str = Color.BLACK,
@@ -415,7 +315,7 @@ class Canvas:
         else:
             self.shapes.append(svg)
         return self
-    
+
     def grid(self, spacing: int = 50, color: str = "#E8E8E8",
              show_coords: bool = True) -> 'Canvas':
         """
@@ -825,7 +725,7 @@ class Canvas:
         self.group_visibility = {}
         self.current_group = None
         return self
-    
+
     def to_svg(self) -> str:
         """Generate the complete SVG string."""
         svg_header = f'<svg width="{self.width}" height="{self.height}" xmlns="http://www.w3.org/2000/svg">'
@@ -854,264 +754,13 @@ class Canvas:
         svg_footer = '</svg>'
 
         return svg_header + svg_background + defs_section + ungrouped + grouped + svg_footer
-    
+
     def save(self, filename: str) -> None:
         """Save the canvas to an SVG file."""
         with open(filename, 'w') as f:
             f.write(self.to_svg())
         print(f"Saved to {filename}")
-    
+
     def _repr_html_(self):
         """Automatic display in marimo."""
         return self.to_svg()
-
-
-# Convenience functions for quick sketching
-def quick_draw(width: int = 800, height: int = 600) -> Canvas:
-    """Create a canvas quickly for sketching."""
-    return Canvas(width, height)
-
-
-# Higher-level car-themed shapes
-class CarShapes:
-    """Pre-made car-themed shapes for easy drawing."""
-    
-    @staticmethod
-    def simple_car(canvas: Canvas, x: float, y: float, 
-                   width: float = 120, height: float = 50,
-                   color: str = Color.RED) -> Canvas:
-        """Draw a simple side-view car."""
-        # Body
-        canvas.rounded_rect(x, y, width, height, rx=5, fill=color, stroke=Color.BLACK, stroke_width=2)
-        
-        # Roof (windshield area)
-        roof_width = width * 0.4
-        roof_height = height * 0.6
-        canvas.polygon([
-            (x + width * 0.25, y),
-            (x + width * 0.35, y - roof_height),
-            (x + width * 0.65, y - roof_height),
-            (x + width * 0.75, y)
-        ], fill=color, stroke=Color.BLACK, stroke_width=2)
-        
-        # Wheels
-        wheel_radius = height * 0.35
-        canvas.circle(x + width * 0.25, y + height, wheel_radius, 
-                     fill=Color.BLACK, stroke=Color.GRAY, stroke_width=2)
-        canvas.circle(x + width * 0.75, y + height, wheel_radius,
-                     fill=Color.BLACK, stroke=Color.GRAY, stroke_width=2)
-        
-        return canvas
-    
-    @staticmethod
-    def wheel(canvas: Canvas, x: float, y: float, radius: float = 20,
-              tire_color: str = Color.BLACK, rim_color: str = Color.SILVER) -> Canvas:
-        """Draw a detailed wheel."""
-        # Tire
-        canvas.circle(x, y, radius, fill=tire_color)
-        # Rim
-        canvas.circle(x, y, radius * 0.6, fill=rim_color, stroke=Color.GRAY, stroke_width=2)
-        # Hub
-        canvas.circle(x, y, radius * 0.2, fill=Color.GRAY)
-        return canvas
-    
-    @staticmethod
-    def traffic_light(canvas: Canvas, x: float, y: float,
-                      active: str = "red") -> Canvas:
-        """Draw a traffic light. active can be 'red', 'yellow', or 'green'."""
-        # Housing
-        canvas.rounded_rect(x, y, 60, 180, rx=10, fill=Color.BLACK, stroke=Color.GRAY, stroke_width=3)
-        
-        # Lights
-        colors = {
-            "red": (Color.RED, Color.GRAY, Color.GRAY),
-            "yellow": (Color.GRAY, Color.YELLOW, Color.GRAY),
-            "green": (Color.GRAY, Color.GRAY, Color.GREEN)
-        }
-        
-        red, yellow, green = colors.get(active, colors["red"])
-        
-        canvas.circle(x + 30, y + 30, 20, fill=red, stroke=Color.BLACK, stroke_width=2)
-        canvas.circle(x + 30, y + 90, 20, fill=yellow, stroke=Color.BLACK, stroke_width=2)
-        canvas.circle(x + 30, y + 150, 20, fill=green, stroke=Color.BLACK, stroke_width=2)
-        
-        return canvas
-    
-    @staticmethod
-    def road(canvas: Canvas, y: float, lane_width: float = 60,
-             num_lanes: int = 2) -> Canvas:
-        """Draw a horizontal road with lanes."""
-        road_height = lane_width * num_lanes
-        
-        # Road surface
-        canvas.rect(0, y, canvas.width, road_height, fill=Color.GRAY)
-        
-        # Lane markers (dashed lines)
-        dash_width = 40
-        gap_width = 20
-        
-        for lane in range(1, num_lanes):
-            line_y = y + lane * lane_width
-            x = 0
-            while x < canvas.width:
-                canvas.rect(x, line_y - 2, dash_width, 4, fill=Color.YELLOW)
-                x += dash_width + gap_width
-
-        return canvas
-
-
-class OceanShapes:
-    """Pre-built ocean creature helpers for educational use."""
-
-    def __init__(self, canvas: Canvas):
-        """Initialize with a Canvas instance."""
-        self.canvas = canvas
-
-    def octopus(self, x: float, y: float, size: float = 100,
-                body_color: str = OceanPalette.CORAL,
-                eye_color: str = Color.WHITE) -> 'OceanShapes':
-        """
-        Draw a cute octopus.
-
-        Args:
-            x, y: Center position
-            size: Approximate size
-            body_color: Main body color
-            eye_color: Eye color
-
-        Returns:
-            self (for method chaining)
-
-        Example:
-            ocean = OceanShapes(can)
-            ocean.octopus(400, 200, size=120, body_color=OceanPalette.PURPLE_CORAL)
-        """
-        head_radius = size * 0.4
-        tentacle_length = size * 1.2
-
-        # Draw head (blob for organic look)
-        self.canvas.blob(x, y, radius=head_radius, wobble=0.15, points=12,
-                        fill=body_color, stroke=body_color, stroke_width=2)
-
-        # Draw 8 tentacles radiating from bottom of head
-        num_tentacles = 8
-        base_y = y + head_radius * 0.3  # Start tentacles slightly below center
-
-        for i in range(num_tentacles):
-            # Spread tentacles in an arc below the octopus
-            angle = math.pi * 0.1 + (i / (num_tentacles - 1)) * math.pi * 0.7  # 0.1π to 0.8π
-
-            # Calculate tentacle endpoint
-            end_x = x + math.cos(angle) * tentacle_length
-            end_y = base_y + math.sin(angle) * tentacle_length
-
-            # Add some curl and twist variation for natural S-curves
-            curl = random.uniform(-0.5, 0.5)
-            twist = random.uniform(0.6, 0.9)  # Natural flowing S-curves
-
-            # Vary thickness slightly
-            thickness = size * 0.15 * random.uniform(0.8, 1.0)
-
-            self.canvas.tentacle(x, base_y, end_x, end_y,
-                               curl=curl, twist=twist, thickness=thickness, taper=0.2,
-                               fill=body_color, stroke=body_color, stroke_width=1)
-
-        # Draw eyes
-        eye_size = size * 0.1
-        eye_offset_x = size * 0.15
-        eye_offset_y = -size * 0.1
-
-        # Left eye
-        self.canvas.circle(x - eye_offset_x, y + eye_offset_y, eye_size,
-                          fill=eye_color, stroke=Color.BLACK, stroke_width=2)
-        self.canvas.circle(x - eye_offset_x + eye_size * 0.2, y + eye_offset_y,
-                          eye_size * 0.5, fill=Color.BLACK, stroke=Color.BLACK)
-
-        # Right eye
-        self.canvas.circle(x + eye_offset_x, y + eye_offset_y, eye_size,
-                          fill=eye_color, stroke=Color.BLACK, stroke_width=2)
-        self.canvas.circle(x + eye_offset_x + eye_size * 0.2, y + eye_offset_y,
-                          eye_size * 0.5, fill=Color.BLACK, stroke=Color.BLACK)
-
-        return self
-
-    def jellyfish(self, x: float, y: float, size: float = 80,
-                  body_color: str = OceanPalette.TRANSLUCENT_BLUE,
-                  tentacle_count: int = 6) -> 'OceanShapes':
-        """
-        Draw a jellyfish.
-
-        Args:
-            x, y: Center of bell (top)
-            size: Bell diameter
-            body_color: Bell color
-            tentacle_count: Number of trailing tentacles
-
-        Returns:
-            self (for method chaining)
-        """
-        bell_radius = size * 0.5
-
-        # Draw bell (slightly flattened blob)
-        self.canvas.blob(x, y, radius=bell_radius, wobble=0.1, points=16,
-                        fill=body_color, stroke=body_color, stroke_width=1)
-
-        # Draw trailing tentacles
-        tentacle_length = size * 1.5
-        base_y = y + bell_radius * 0.5
-
-        for i in range(tentacle_count):
-            # Spread tentacles across bottom of bell
-            offset_x = (i - tentacle_count / 2) * (size * 0.2)
-            end_x = x + offset_x + random.uniform(-10, 10)
-            end_y = base_y + tentacle_length + random.uniform(-20, 20)
-
-            # Vary curl, twist, and thickness for natural flowing movement
-            curl = random.uniform(-0.4, 0.4)
-            twist = random.uniform(0.3, 0.8)  # Jellyfish have flowing S-curves
-            thickness = size * 0.05 * random.uniform(0.7, 1.0)
-
-            self.canvas.tentacle(x + offset_x * 0.5, base_y, end_x, end_y,
-                               curl=curl, twist=twist, thickness=thickness, taper=0.1,
-                               fill=body_color, stroke=body_color, stroke_width=1)
-
-        return self
-
-    def seaweed(self, x: float, y: float, height: float = 150,
-                sway: float = 0.3, color: str = OceanPalette.KELP_GREEN) -> 'OceanShapes':
-        """
-        Draw swaying seaweed.
-
-        Args:
-            x, y: Base position (ocean floor)
-            height: How tall
-            sway: How much it curves (0-1)
-            color: Seaweed color
-
-        Returns:
-            self (for method chaining)
-        """
-        # Main stem with gentle S-curve for natural sway
-        curl = random.uniform(-sway, sway)
-        twist = random.uniform(0.2, 0.5)  # Gentle S-curve like underwater plants
-        end_x = x + random.uniform(-20, 20)
-        end_y = y - height
-
-        self.canvas.tentacle(x, y, end_x, end_y,
-                           curl=curl, twist=twist, thickness=height * 0.08, taper=0.6,
-                           fill=color, stroke=color, stroke_width=1)
-
-        # Add a few small leaf-like shapes along the stem
-        num_leaves = random.randint(3, 5)
-        for i in range(num_leaves):
-            t = (i + 1) / (num_leaves + 1)  # Position along stem
-            leaf_x = x + (end_x - x) * t
-            leaf_y = y + (end_y - y) * t
-
-            # Small blob for leaf
-            leaf_size = height * 0.08
-            self.canvas.blob(leaf_x + random.uniform(-5, 5), leaf_y,
-                           radius=leaf_size, wobble=0.3, points=6,
-                           fill=color, stroke=color)
-
-        return self
