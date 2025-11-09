@@ -1,5 +1,5 @@
 # Geometric Harmony - Balanced pattern design
-from sketchpy.shapes import Canvas, CreativeGardenPalette, CalmOasisPalette
+from sketchpy import Canvas, CreativeGardenPalette, CalmOasisPalette
 
 can = Canvas(400, 400)
 

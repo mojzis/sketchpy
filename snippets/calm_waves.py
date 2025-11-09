@@ -1,5 +1,5 @@
 # Calm Waves - Soothing ocean pattern
-from sketchpy.shapes import Canvas, CalmOasisPalette
+from sketchpy import Canvas, CalmOasisPalette
 import math
 
 can = Canvas(400, 400)

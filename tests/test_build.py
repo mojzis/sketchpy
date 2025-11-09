@@ -99,11 +99,10 @@ def test_generated_code_excludes_browser_incompatible():
     assert 'def save(' not in python_code, "save() method should be excluded"
     assert 'class Point' not in python_code, "Point class should be excluded"
     assert '@dataclass' not in python_code, "dataclass decorator should be excluded"
-    assert 'class CarShapes' not in python_code, "CarShapes should be excluded"
 
 
 def test_generated_code_has_required_imports():
-    """Test that the generated code has required imports."""
+    """Test that the generated code has no import statements (modules are combined)."""
     # Run build first
     subprocess.run(['uv', 'run', 'build'], cwd=PROJECT_ROOT, check=True)
 
@@ -116,12 +115,34 @@ def test_generated_code_has_required_imports():
     assert match is not None, "Could not find Python code in generated HTML (window.SHAPES_CODE)"
     python_code = match.group(1)
 
-    # Check for required imports
-    assert 'from typing import' in python_code, "typing import missing"
-
-    # These should NOT be imported (not needed)
+    # After modular refactoring, imports are stripped (modules are combined into one bundle)
+    # These should NOT be imported (modules are in same scope)
+    assert 'from typing import' not in python_code, "typing should not be imported (stripped during build)"
+    assert 'from sketchpy' not in python_code, "cross-module imports should be stripped"
     assert 'from dataclasses import' not in python_code, "dataclasses should not be imported"
     assert 'from enum import' not in python_code, "enum should not be imported"
+
+
+def test_generated_code_includes_helper_classes():
+    """Test that helper shape classes are included in browser bundle."""
+    # Run build first
+    subprocess.run(['uv', 'run', 'build'], cwd=PROJECT_ROOT, check=True)
+
+    content = OUTPUT_FILE.read_text()
+    match = re.search(
+        r'window\.SHAPES_CODE = `(.*?)`;',
+        content,
+        re.DOTALL
+    )
+    assert match is not None, "Could not find Python code in generated HTML (window.SHAPES_CODE)"
+    python_code = match.group(1)
+
+    # These helper classes SHOULD be included for educational use
+    assert 'class OceanShapes' in python_code, "OceanShapes class should be included"
+    assert 'class CarShapes' in python_code, "CarShapes class should be included"
+    assert 'def octopus(' in python_code, "OceanShapes.octopus method should be included"
+    assert 'def jellyfish(' in python_code, "OceanShapes.jellyfish method should be included"
+    assert 'def simple_car(' in python_code, "CarShapes.simple_car method should be included"
 
 
 def test_generated_code_has_repr_html():

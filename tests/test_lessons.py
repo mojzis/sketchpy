@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 # Import the classes needed by lessons
-from sketchpy.shapes import Canvas, Color, CreativeGardenPalette, CalmOasisPalette
+from sketchpy import Canvas, Color, CreativeGardenPalette, CalmOasisPalette
 
 # Import the extraction function from build.py
 from scripts.build import extract_main_function_body
@@ -28,7 +28,7 @@ def create_pyodide_namespace():
     This namespace blocks imports like the real environment does.
     """
     import math
-    from sketchpy.shapes import MathDoodlingPalette
+    from sketchpy import MathDoodlingPalette, OceanPalette, OceanShapes, CarShapes
 
     namespace = {
         'Canvas': Canvas,
@@ -36,6 +36,9 @@ def create_pyodide_namespace():
         'CreativeGardenPalette': CreativeGardenPalette,
         'CalmOasisPalette': CalmOasisPalette,
         'MathDoodlingPalette': MathDoodlingPalette,
+        'OceanPalette': OceanPalette,
+        'OceanShapes': OceanShapes,
+        'CarShapes': CarShapes,
         'math': math,  # Math module for trigonometry
         '__builtins__': __builtins__,
     }
