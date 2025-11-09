@@ -123,10 +123,10 @@ def process_shapes_code(sketchpy_dir: Path) -> str:
     # Remove type hints using iterative regex approach
     combined_code = remove_type_hints_simple(combined_code)
 
-    # Remove return type annotations (these use ` ->` which is easier to match)
-    combined_code = re.sub(r' -> [\'"]?Canvas[\'"]?', '', combined_code)
-    combined_code = re.sub(r' -> [\'"]?OceanShapes[\'"]?', '', combined_code)
-    combined_code = re.sub(r' -> (str|None)', '', combined_code)
+    # Remove ALL return type annotations (these use ` ->` which is easier to match)
+    # This catches all remaining types including List, Tuple, Dict, etc.
+    # Pattern matches from " ->" to the ":" at the end of function signatures
+    combined_code = re.sub(r' ->[^:]+:', ':', combined_code)
 
     return combined_code.strip()
 
