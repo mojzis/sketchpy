@@ -50,12 +50,13 @@ class OceanShapes:
 
         # Classic style with pear-shaped head
         head_width = size * 0.8
-        head_height = size * 0.7
+        head_height = size * 0.75
         tentacle_length = size * 1.2
 
         # Draw tentacles FIRST (so they appear behind the head)
         num_tentacles = 8
-        base_y = y + head_height  # Attach at bottom of pear shape
+        # Attach tentacles closer to head (at 85% of head height)
+        base_y = y + head_height * 0.85
 
         for i in range(num_tentacles):
             # Spread tentacles in an arc below the octopus
@@ -84,10 +85,10 @@ class OceanShapes:
         self.canvas.pear(x, y, width=head_width, height=head_height,
                         fill=body_color, stroke=body_color, stroke_width=2)
 
-        # Draw eyes
-        eye_size = size * 0.1
+        # Draw eyes (smaller)
+        eye_size = size * 0.06
         eye_offset_x = size * 0.15
-        eye_offset_y = size * 0.2
+        eye_offset_y = size * 0.22
 
         # Left eye
         self.canvas.circle(x - eye_offset_x, y + eye_offset_y, eye_size,
@@ -119,12 +120,13 @@ class OceanShapes:
             self (for method chaining)
         """
         head_width = size * 0.85
-        head_height = size * 0.75
+        head_height = size * 0.8
         tentacle_length = size * 1.3
 
         # Draw tentacles FIRST in two groups (left and right)
         num_tentacles = 8
-        base_y = y + head_height
+        # Attach closer to head
+        base_y = y + head_height * 0.85
 
         for i in range(num_tentacles):
             # Group tentacles: 4 on left, 4 on right with gaps in middle
@@ -149,7 +151,7 @@ class OceanShapes:
 
             attach_x = x + side_offset
 
-            self.canvas.tentacle(attach_x, base_y - size * 0.05, end_x, end_y,
+            self.canvas.tentacle(attach_x, base_y, end_x, end_y,
                                curl=curl, twist=twist, thickness=thickness, taper=0.15,
                                fill=body_color, stroke=body_color, stroke_width=1)
 
@@ -157,10 +159,10 @@ class OceanShapes:
         self.canvas.pear(x, y, width=head_width, height=head_height,
                         fill=body_color, stroke=body_color, stroke_width=2)
 
-        # Draw eyes
-        eye_size = size * 0.12
+        # Draw eyes (smaller)
+        eye_size = size * 0.07
         eye_offset_x = size * 0.18
-        eye_offset_y = size * 0.22
+        eye_offset_y = size * 0.25
 
         # Left eye
         self.canvas.circle(x - eye_offset_x, y + eye_offset_y, eye_size,
@@ -192,12 +194,13 @@ class OceanShapes:
             self (for method chaining)
         """
         head_width = size * 0.9
-        head_height = size * 0.65
+        head_height = size * 0.7
         tentacle_length = size * 1.4
 
         # Draw very curly tentacles FIRST
         num_tentacles = 8
-        base_y = y + head_height
+        # Attach closer to head
+        base_y = y + head_height * 0.85
 
         for i in range(num_tentacles):
             # Wide spread for cartoon effect
@@ -224,10 +227,10 @@ class OceanShapes:
         self.canvas.pear(x, y, width=head_width, height=head_height,
                         fill=body_color, stroke=body_color, stroke_width=2)
 
-        # Draw large cartoon eyes
-        eye_size = size * 0.13
+        # Draw cartoon eyes (big but not huge)
+        eye_size = size * 0.09
         eye_offset_x = size * 0.2
-        eye_offset_y = size * 0.18
+        eye_offset_y = size * 0.2
 
         # Left eye (larger whites)
         self.canvas.circle(x - eye_offset_x, y + eye_offset_y, eye_size,
