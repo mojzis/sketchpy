@@ -46,7 +46,7 @@ def _(mo):
 @app.cell
 def _(Canvas, OceanShapes, OceanPalette):
     # Classic style octopus
-    can_classic = Canvas(800, 600, background=OceanPalette.OCEAN_FLOOR)
+    can_classic = Canvas(800, 600, background=OceanPalette.SAND)
 
     # Add gradient to show tentacle placement
     can_classic.radial_gradient(
@@ -69,14 +69,14 @@ def _(Canvas, OceanShapes, OceanPalette):
 @app.cell
 def _(Canvas, OceanShapes, OceanPalette):
     # Realistic style octopus
-    can_realistic = Canvas(800, 600, background=OceanPalette.OCEAN_FLOOR)
+    can_realistic = Canvas(800, 600, background=OceanPalette.SAND)
 
     # Gradient to highlight anatomy
     can_realistic.radial_gradient(
         "octopus_gradient2",
         center=(50, 30),
         radius=80,
-        colors=[OceanPalette.SUNSET_ORANGE, OceanPalette.CORAL_REEF]
+        colors=[OceanPalette.STARFISH_ORANGE, OceanPalette.CORAL]
     )
 
     ocean_realistic = OceanShapes(can_realistic)
@@ -93,14 +93,14 @@ def _(Canvas, OceanShapes, OceanPalette):
 @app.cell
 def _(Canvas, OceanShapes, OceanPalette):
     # Cartoon style octopus
-    can_cartoon = Canvas(800, 600, background=OceanPalette.OCEAN_FLOOR)
+    can_cartoon = Canvas(800, 600, background=OceanPalette.SAND)
 
     # Fun gradient for cartoon
     can_cartoon.radial_gradient(
         "octopus_gradient3",
         center=(50, 30),
         radius=80,
-        colors=[OceanPalette.PINK_CORAL, OceanPalette.PURPLE_CORAL]
+        colors=[OceanPalette.CORAL, OceanPalette.PURPLE_CORAL]
     )
 
     ocean_cartoon = OceanShapes(can_cartoon)
@@ -120,21 +120,21 @@ def _(Canvas, OceanShapes, OceanPalette, Color):
     can_compare = Canvas(1200, 400, background=OceanPalette.DEEP_OCEAN)
 
     # Add some underwater ambiance
-    can_compare.circle(200, 100, 80, fill=OceanPalette.SEAFOAM_GREEN, opacity=0.3)
-    can_compare.circle(1000, 150, 100, fill=OceanPalette.SEAFOAM_GREEN, opacity=0.3)
+    can_compare.circle(200, 100, 80, fill=OceanPalette.SEAFOAM, opacity=0.3)
+    can_compare.circle(1000, 150, 100, fill=OceanPalette.SEAFOAM, opacity=0.3)
 
     ocean_compare = OceanShapes(can_compare)
 
     # Classic
-    can_compare.radial_gradient("grad1", colors=[OceanPalette.CORAL, OceanPalette.SUNSET_ORANGE])
+    can_compare.radial_gradient("grad1", colors=[OceanPalette.CORAL, OceanPalette.STARFISH_ORANGE])
     ocean_compare.octopus(200, 100, size=120, body_color="gradient:grad1", style="classic")
 
     # Realistic
-    can_compare.radial_gradient("grad2", colors=[OceanPalette.PURPLE_CORAL, OceanPalette.PINK_CORAL])
+    can_compare.radial_gradient("grad2", colors=[OceanPalette.PURPLE_CORAL, OceanPalette.CORAL])
     ocean_compare.octopus(600, 100, size=120, body_color="gradient:grad2", style="realistic")
 
     # Cartoon
-    can_compare.radial_gradient("grad3", colors=[OceanPalette.SUNSET_ORANGE, OceanPalette.CORAL_REEF])
+    can_compare.radial_gradient("grad3", colors=[OceanPalette.STARFISH_ORANGE, OceanPalette.CORAL])
     ocean_compare.octopus(1000, 100, size=120, body_color="gradient:grad3", style="cartoon")
 
     # Labels
@@ -152,9 +152,9 @@ def _(Canvas, Color):
     can_pear = Canvas(800, 400, background="#F0F0F0")
 
     # Show pears in different sizes and orientations
-    can_pear.pear(150, 50, width=80, height=120, fill=Color.GREEN, stroke=Color.DARKGREEN, stroke_width=2)
+    can_pear.pear(150, 50, width=80, height=120, fill=Color.GREEN, stroke="#006400", stroke_width=2)
     can_pear.pear(350, 50, width=120, height=100, fill=Color.YELLOW, stroke=Color.ORANGE, stroke_width=2)
-    can_pear.pear(600, 50, width=100, height=140, fill=Color.RED, stroke=Color.DARKRED, stroke_width=2)
+    can_pear.pear(600, 50, width=100, height=140, fill=Color.RED, stroke="#8B0000", stroke_width=2)
 
     # Labels
     can_pear.text(100, 200, "Tall & Narrow", size=14, fill=Color.BLACK)
