@@ -536,6 +536,101 @@ class Canvas:
         # Use polygon to draw the smooth blob
         return self.polygon(smooth_points, fill=fill, stroke=stroke, stroke_width=stroke_width)
 
+    def pear(self, x: float, y: float, width: float = 80, height: float = 100,
+             fill: str = Color.GREEN, stroke: Optional[str] = None,
+             stroke_width: int = 1) -> 'Canvas':
+        """
+        Draw a pear shape (wide at top, narrow at bottom).
+
+        Args:
+            x, y: Top center point
+            width: Maximum width (at the shoulders)
+            height: Total height
+            fill: Fill color
+            stroke: Optional outline color (defaults to same as fill)
+            stroke_width: Outline thickness
+
+        Returns:
+            self (for method chaining)
+
+        Examples:
+            # Octopus head
+            can.pear(400, 200, width=120, height=100, fill=OceanPalette.CORAL)
+
+            # Fruit
+            can.pear(300, 150, width=60, height=80, fill=Color.GREEN)
+        """
+        self._check_shape_limit()
+
+        if stroke is None:
+            stroke = fill
+
+        # Generate pear outline using control points
+        # Top portion: wide rounded top (head/shoulders)
+        top_y = y
+        shoulder_y = y + height * 0.3
+        waist_y = y + height * 0.6
+        bottom_y = y + height
+
+        # Width at different heights
+        top_width = width * 0.75  # Slightly narrower at very top
+        shoulder_width = width  # Widest point
+        waist_width = width * 0.65  # Narrower in middle
+        bottom_width = width * 0.62  # Broader base for tentacle attachment
+
+        # Build the outline using bezier curves
+        points = []
+
+        # Right side (top to bottom)
+        # Top curve
+        for i in range(13):
+            t = i / 12
+            # Bezier from top to shoulder
+            y_pos = top_y + (shoulder_y - top_y) * t
+            w = top_width + (shoulder_width - top_width) * t
+            # Use smooth curve
+            curve_factor = math.sin(t * math.pi / 2)
+            points.append((x + w/2 * curve_factor, y_pos))
+
+        # Shoulder to waist
+        for i in range(13):
+            t = i / 12
+            y_pos = shoulder_y + (waist_y - shoulder_y) * t
+            w = shoulder_width + (waist_width - shoulder_width) * t
+            points.append((x + w/2, y_pos))
+
+        # Waist to bottom
+        for i in range(13):
+            t = i / 12
+            y_pos = waist_y + (bottom_y - waist_y) * t
+            w = waist_width + (bottom_width - waist_width) * t
+            # Smooth taper
+            curve_factor = 1 - (1 - t)**2
+            points.append((x + w/2 * (1 - 0.3 * curve_factor), y_pos))
+
+        # Left side (bottom to top) - mirror
+        for i in range(13, -1, -1):
+            t = i / 12
+            y_pos = waist_y + (bottom_y - waist_y) * t
+            w = waist_width + (bottom_width - waist_width) * t
+            curve_factor = 1 - (1 - t)**2
+            points.append((x - w/2 * (1 - 0.3 * curve_factor), y_pos))
+
+        for i in range(12, -1, -1):
+            t = i / 12
+            y_pos = shoulder_y + (waist_y - shoulder_y) * t
+            w = shoulder_width + (waist_width - shoulder_width) * t
+            points.append((x - w/2, y_pos))
+
+        for i in range(12, -1, -1):
+            t = i / 12
+            y_pos = top_y + (shoulder_y - top_y) * t
+            w = top_width + (shoulder_width - top_width) * t
+            curve_factor = math.sin(t * math.pi / 2)
+            points.append((x - w/2 * curve_factor, y_pos))
+
+        return self.polygon(points, fill=fill, stroke=stroke, stroke_width=stroke_width)
+
     def tentacle(self, x1: float, y1: float, x2: float, y2: float,
                  curl: float = 0.0, twist: float = 0.0, thickness: float = 20,
                  taper: float = 0.5, fill: str = Color.PURPLE,
