@@ -22,6 +22,8 @@ After you see the octopus, try changing these numbers:
 - `OceanShapes(can)` - Gives you ocean creature superpowers
 - `octopus(400, 300, size=120)` - Draws an octopus at position (400, 300) with size 120
 
+**Cool detail**: Your octopus has a built-in gradient that makes it look 3D - lighter in the middle and darker on the edges, just like a real octopus!
+
 Don't worry about understanding everything yet. Just experiment and have fun!
 
 ### Challenge
