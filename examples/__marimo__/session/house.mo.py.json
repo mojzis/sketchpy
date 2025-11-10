@@ -1,12 +1,12 @@
 {
   "version": "1",
   "metadata": {
-    "marimo_version": "0.17.2"
+    "marimo_version": "0.17.7"
   },
   "cells": [
     {
       "id": "Hbol",
-      "code_hash": "37ef2c8cc09269234d8739b076b5eb38",
+      "code_hash": "7fa0dd15a91acea8fd6edb2df616d117",
       "outputs": [
         {
           "type": "data",
@@ -18,20 +18,13 @@
       "console": []
     },
     {
-      "id": "SUiO",
+      "id": "MJUe",
       "code_hash": "0357217f997381db0b68ef4fb7207324",
-      "outputs": [
-        {
-          "type": "data",
-          "data": {
-            "application/json": "[\"MAX_AREA\", \"MAX_HEIGHT\", \"MAX_SHAPES\", \"MAX_WIDTH\", \"__class__\", \"__delattr__\", \"__dict__\", \"__dir__\", \"__doc__\", \"__eq__\", \"__firstlineno__\", \"__format__\", \"__ge__\", \"__getattribute__\", \"__getstate__\", \"__gt__\", \"__hash__\", \"__init__\", \"__init_subclass__\", \"__le__\", \"__lt__\", \"__module__\", \"__ne__\", \"__new__\", \"__reduce__\", \"__reduce_ex__\", \"__repr__\", \"__setattr__\", \"__sizeof__\", \"__static_attributes__\", \"__str__\", \"__subclasshook__\", \"__weakref__\", \"_check_shape_limit\", \"_repr_html_\", \"_resolve_fill\", \"background\", \"circle\", \"clear\", \"current_group\", \"ellipse\", \"gradients\", \"grid\", \"group\", \"group_transforms\", \"group_visibility\", \"groups\", \"height\", \"hide_group\", \"line\", \"linear_gradient\", \"move_group\", \"polygon\", \"radial_gradient\", \"rect\", \"remove_group\", \"rotate_group\", \"rounded_rect\", \"save\", \"shapes\", \"show_group\", \"show_palette\", \"text\", \"to_svg\", \"width\"]"
-          }
-        }
-      ],
+      "outputs": [],
       "console": []
     },
     {
-      "id": "srsw",
+      "id": "vblA",
       "code_hash": null,
       "outputs": [],
       "console": []

@@ -270,11 +270,14 @@ def daemonize(project_root):
     # Redirect standard file descriptors to /dev/null
     sys.stdout.flush()
     sys.stderr.flush()
-    with open(os.devnull, 'r') as devnull:
-        os.dup2(devnull.fileno(), sys.stdin.fileno())
-    with open(os.devnull, 'a+') as devnull:
-        os.dup2(devnull.fileno(), sys.stdout.fileno())
-        os.dup2(devnull.fileno(), sys.stderr.fileno())
+
+    # Open /dev/null and keep it open (don't use context manager)
+    devnull_r = open(os.devnull, 'r')
+    devnull_w = open(os.devnull, 'a+')
+
+    os.dup2(devnull_r.fileno(), sys.stdin.fileno())
+    os.dup2(devnull_w.fileno(), sys.stdout.fileno())
+    os.dup2(devnull_w.fileno(), sys.stderr.fileno())
 
 
 def main():

@@ -7,11 +7,7 @@ import math
 import random
 
 # Import palettes (will be available when combined for browser)
-try:
-    from .palettes import Color
-except ImportError:
-    # For standalone browser bundle, Color will be defined in same scope
-    pass
+from .palettes import Color
 
 
 def _bezier_points(p0: Tuple[float, float], p1: Tuple[float, float],

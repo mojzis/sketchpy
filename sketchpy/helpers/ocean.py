@@ -7,12 +7,8 @@ import random
 import time
 
 # Imports will be available when combined for browser
-try:
-    from ..canvas import Canvas
-    from ..palettes import Color, OceanPalette
-except ImportError:
-    # For standalone browser bundle, these will be defined in same scope
-    pass
+from ..canvas import Canvas
+from ..palettes import Color, OceanPalette
 
 
 class OceanShapes:

@@ -1,4 +1,4 @@
-from sketchpy.shapes import Canvas, MathDoodlingPalette
+from sketchpy import Canvas, MathDoodlingPalette
 
 
 def main():
