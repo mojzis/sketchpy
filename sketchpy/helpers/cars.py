@@ -132,13 +132,11 @@ class CarShapes:
         # Front window
         self.canvas.ellipse(x + width * 0.6, y + roof_height/2 - height * 0.1,
                       rx=window_width/2, ry=window_height/2,
-                      fill=window_color, stroke=Color.BLACK, stroke_width=1,
-                      opacity=0.6)
+                      fill=window_color, stroke=Color.BLACK, stroke_width=1)
         # Back window
         self.canvas.ellipse(x + width * 0.4, y + roof_height/2 - height * 0.1,
                       rx=window_width/2, ry=window_height/2,
-                      fill=window_color, stroke=Color.BLACK, stroke_width=1,
-                      opacity=0.6)
+                      fill=window_color, stroke=Color.BLACK, stroke_width=1)
 
         # Wheels - use ellipses for modern look
         wheel_width = height * 0.4
@@ -182,8 +180,7 @@ class CarShapes:
         # Dark tinted window
         self.canvas.ellipse(x + width * 0.55, y + roof_height/2 - height * 0.05,
                       rx=roof_width/2 * 0.8, ry=roof_height/2 * 0.7,
-                      fill="#1a1a1a", stroke=Color.BLACK, stroke_width=1,
-                      opacity=0.8)
+                      fill="#1a1a1a", stroke=Color.BLACK, stroke_width=1)
 
         # Small spoiler at back - use polygon
         spoiler_y = y + roof_height/2 - height * 0.2
@@ -234,8 +231,7 @@ class CarShapes:
             window_x = x + width * 0.15 + i * window_spacing
             self.canvas.rounded_rect(window_x, window_y, window_width, window_height,
                                rx=5, ry=5, fill="#87CEEB",
-                               stroke=Color.BLACK, stroke_width=2,
-                               opacity=0.7)
+                               stroke=Color.BLACK, stroke_width=2)
 
         # Destination sign on top front
         self.canvas.rounded_rect(x + width * 0.05, y + height * 0.05,
