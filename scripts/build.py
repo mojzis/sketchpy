@@ -29,6 +29,7 @@ def remove_type_hints_simple(code: str) -> str:
     """
     Remove Python type hints using a simple regex-based approach.
     Handles common types including Union, Optional, List, Tuple, Dict, etc.
+    Preserves variable assignments like: self.groups: Dict[str, List[str]] = {}
     """
     # First, collapse nested generic types by removing innermost brackets iteratively
     # This converts Union[List[str], List[Tuple[str, float]], None] -> Union[List, List, None] -> Union
@@ -39,8 +40,13 @@ def remove_type_hints_simple(code: str) -> str:
         if code == before:  # No more changes
             break
 
-    # Now remove all type hints (including the collapsed generics and simple types)
-    code = re.sub(r': (List|Tuple|Optional|Union|Dict|float|int|str|bool|None)+', '', code)
+    # Remove type hints from variable assignments while preserving the assignment
+    # Match patterns like: variable: Type = value
+    # Replace with: variable = value
+    code = re.sub(r'(\w+): +(List|Tuple|Optional|Union|Dict|float|int|str|bool|None)+(\[[\w\[\], ]+\])? +=', r'\1 =', code)
+
+    # Remove standalone type hints (not followed by =)
+    code = re.sub(r': +(List|Tuple|Optional|Union|Dict|float|int|str|bool|None)+(?!\s*=)', '', code)
 
     return code
 
@@ -80,19 +86,19 @@ def process_shapes_code(sketchpy_dir: Path) -> str:
         # Remove module-level docstrings at the top
         code = re.sub(r'^""".*?"""', '', code, flags=re.DOTALL | re.MULTILINE).lstrip()
 
-        # Remove all import statements (modules will be combined)
+        # Remove internal sketchpy imports (modules will be combined)
+        # Keep external/built-in imports (math, random, typing, etc.)
         lines = code.split('\n')
         filtered_lines = []
         skip_until_blank = False
 
         for line in lines:
-            # Skip import statements
-            if line.startswith('from ') or line.startswith('import '):
+            # Skip internal relative imports (from .palettes, from .utils, etc.)
+            if line.startswith('from .'):
                 continue
 
-            # Skip try/except import blocks
-            if line.strip().startswith('try:') or line.strip().startswith('except ImportError:'):
-                skip_until_blank = True
+            # Skip typing imports (type hints removed anyway)
+            if line.startswith('from typing import'):
                 continue
 
             # Skip the save() method (file I/O not needed in browser)
@@ -101,12 +107,9 @@ def process_shapes_code(sketchpy_dir: Path) -> str:
                 continue
 
             if skip_until_blank:
-                # End of import block or save method
-                if line.strip() == '' or (line and not line[0].isspace() and line.strip() and not line.strip().startswith('pass')):
+                # End of save method
+                if line.strip() == '' or (line and not line[0].isspace() and line.strip()):
                     skip_until_blank = False
-                    # Don't include the line that ends the block if it's 'pass'
-                    if line.strip() == 'pass':
-                        continue
                 continue
 
             filtered_lines.append(line)
@@ -126,7 +129,8 @@ def process_shapes_code(sketchpy_dir: Path) -> str:
     # Remove ALL return type annotations (these use ` ->` which is easier to match)
     # This catches all remaining types including List, Tuple, Dict, etc.
     # Pattern matches from " ->" to the ":" at the end of function signatures
-    combined_code = re.sub(r' ->[^:]+:', ':', combined_code)
+    # Use [^:\n]+ to only match within a single line (prevent matching -> in comments across lines)
+    combined_code = re.sub(r' ->[^:\n]+:', ':', combined_code)
 
     return combined_code.strip()
 

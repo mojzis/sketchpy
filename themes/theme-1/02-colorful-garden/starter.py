@@ -1,4 +1,4 @@
-from sketchpy.shapes import Canvas, CreativeGardenPalette, CalmOasisPalette
+from sketchpy import Canvas, CreativeGardenPalette, CalmOasisPalette
 
 
 def main():

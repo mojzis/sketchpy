@@ -1,4 +1,4 @@
-from sketchpy.shapes import Canvas, CreativeGardenPalette
+from sketchpy import Canvas, CreativeGardenPalette
 
 
 def main():

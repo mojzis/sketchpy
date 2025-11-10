@@ -59,8 +59,8 @@ def test_server_auto_restart():
 
     assert result1.returncode == 0, f"First server failed to start: {result1.stderr}"
 
-    # Give it time to start
-    time.sleep(2)
+    # Give it time to start and complete initial build (can take 3-4 seconds)
+    time.sleep(5)
 
     # Check that PID file was created
     assert PID_FILE.exists(), "PID file was not created"
