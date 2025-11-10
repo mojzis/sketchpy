@@ -4,7 +4,7 @@ Octopus Variations Demo - Testing three different octopus styles
 
 import marimo
 
-__generated_with = "0.10.13"
+__generated_with = "0.17.7"
 app = marimo.App(width="full")
 
 
@@ -23,28 +23,26 @@ def _():
 
 @app.cell
 def _(mo):
-    mo.md(
-        """
-        # Octopus Variations Demo
+    mo.md("""
+    # Octopus Variations Demo
 
-        Testing three different octopus styles with improved anatomy:
+    Testing three different octopus styles with improved anatomy:
 
-        1. **Classic** - Pear-shaped head, evenly spread tentacles
-        2. **Realistic** - Grouped tentacles (4 per side)
-        3. **Cartoon** - Exaggerated features with curly tentacles
+    1. **Classic** - Pear-shaped head, evenly spread tentacles
+    2. **Realistic** - Grouped tentacles (4 per side)
+    3. **Cartoon** - Exaggerated features with curly tentacles
 
-        All three styles now have:
-        - Tentacles drawn **behind** the head (not on top)
-        - Pear-shaped head (wide top, narrow bottom)
-        - Better tentacle attachment points
-        - Visible tentacle curvatures when gradients are applied
-        """
-    )
+    All three styles now have:
+    - Tentacles drawn **behind** the head (not on top)
+    - Pear-shaped head (wide top, narrow bottom)
+    - Better tentacle attachment points
+    - Visible tentacle curvatures when gradients are applied
+    """)
     return
 
 
 @app.cell
-def _(Canvas, OceanShapes, OceanPalette):
+def _(Canvas, OceanPalette, OceanShapes):
     # Classic style octopus
     can_classic = Canvas(800, 600, background=OceanPalette.SAND)
 
@@ -63,13 +61,13 @@ def _(Canvas, OceanShapes, OceanPalette):
     )
 
     can_classic
-    return can_classic, ocean_classic
+    return
 
 
 @app.cell
-def _(Canvas, OceanShapes, OceanPalette):
+def _(Canvas, OceanPalette, OceanShapes):
     # Realistic style octopus
-    can_realistic = Canvas(800, 600, background=OceanPalette.SAND)
+    can_realistic = Canvas(800, 550, background=OceanPalette.SAND)
 
     # Gradient to highlight anatomy
     can_realistic.radial_gradient(
@@ -87,11 +85,11 @@ def _(Canvas, OceanShapes, OceanPalette):
     )
 
     can_realistic
-    return can_realistic, ocean_realistic
+    return
 
 
 @app.cell
-def _(Canvas, OceanShapes, OceanPalette):
+def _(Canvas, OceanPalette, OceanShapes):
     # Cartoon style octopus
     can_cartoon = Canvas(800, 600, background=OceanPalette.SAND)
 
@@ -105,17 +103,17 @@ def _(Canvas, OceanShapes, OceanPalette):
 
     ocean_cartoon = OceanShapes(can_cartoon)
     ocean_cartoon.octopus(
-        400, 150, size=150,
+        400, 150, size=100,
         body_color="gradient:octopus_gradient3",
         style="cartoon"
     )
 
     can_cartoon
-    return can_cartoon, ocean_cartoon
+    return
 
 
 @app.cell
-def _(Canvas, OceanShapes, OceanPalette, Color):
+def _(Canvas, Color, OceanPalette, OceanShapes):
     # Comparison view - all three side by side
     can_compare = Canvas(1200, 400, background=OceanPalette.DEEP_OCEAN)
 
@@ -143,7 +141,7 @@ def _(Canvas, OceanShapes, OceanPalette, Color):
     can_compare.text(950, 380, "CARTOON", size=18, fill=Color.WHITE)
 
     can_compare
-    return can_compare, ocean_compare
+    return
 
 
 @app.cell
@@ -162,37 +160,35 @@ def _(Canvas, Color):
     can_pear.text(550, 220, "Classic Pear", size=14, fill=Color.BLACK)
 
     can_pear
-    return (can_pear,)
+    return
 
 
 @app.cell
 def _(mo):
-    mo.md(
-        """
-        ## Key Improvements
+    mo.md("""
+    ## Key Improvements
 
-        ### Drawing Order
-        - Tentacles are now drawn **before** the head
-        - This makes them appear behind, creating depth
-        - The head overlaps the tentacle bases naturally
+    ### Drawing Order
+    - Tentacles are now drawn **before** the head
+    - This makes them appear behind, creating depth
+    - The head overlaps the tentacle bases naturally
 
-        ### Pear-Shaped Head
-        - New `pear()` primitive method added to Canvas
-        - Wide at top (mantle), narrow at bottom
-        - Provides better attachment points for tentacles
-        - More anatomically correct for octopus/cephalopod shape
+    ### Pear-Shaped Head
+    - New `pear()` primitive method added to Canvas
+    - Wide at top (mantle), narrow at bottom
+    - Provides better attachment points for tentacles
+    - More anatomically correct for octopus/cephalopod shape
 
-        ### Tentacle Placement
-        - **Classic**: Evenly spread across bottom edge
-        - **Realistic**: Grouped (4 left, 4 right) for natural look
-        - **Cartoon**: Wide spread with exaggerated curves
+    ### Tentacle Placement
+    - **Classic**: Evenly spread across bottom edge
+    - **Realistic**: Grouped (4 left, 4 right) for natural look
+    - **Cartoon**: Wide spread with exaggerated curves
 
-        ### Gradient Visibility
-        - With gradients applied, tentacle curvatures are now visible
-        - No penetration into head
-        - Clean attachment at the narrow bottom of pear shape
-        """
-    )
+    ### Gradient Visibility
+    - With gradients applied, tentacle curvatures are now visible
+    - No penetration into head
+    - Clean attachment at the narrow bottom of pear shape
+    """)
     return
 
 
