@@ -57,12 +57,12 @@ markers = [
 
 [tool.poe.tasks]
 # Test commands
-test-js = "npm test"
+test-js = "bun run test"
 test-py = "pytest"
 test = ["test-js", "test-py"]
 
 # Lint commands
-lint-js = "npm run lint"
+lint-js = "bun run lint"
 lint-py = "ruff check ."
 lint = ["lint-js", "lint-py"]
 

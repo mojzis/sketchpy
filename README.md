@@ -145,7 +145,7 @@ The browser interface lets you write code and see the results immediately, with 
 Run tests:
 ```bash
 uv run pytest          # Python tests
-npm test              # JavaScript tests
+bun run test          # JavaScript tests
 ```
 
 Build the browser interface:

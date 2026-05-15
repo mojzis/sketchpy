@@ -160,20 +160,24 @@ pytest --maxfail=5
 **JavaScript Tests:**
 ```bash
 # Run JavaScript unit tests (fast, ~400ms, 43 tests)
-npm test
+bun run test
 
 # Run tests in watch mode
-npm run test:watch
+bun run test:watch
 
 # Run tests with coverage report
-npm run test:coverage
+bun run test:coverage
 
 # Run linter
-npm run lint
+bun run lint
 
 # Auto-fix linting issues
-npm run lint:fix
+bun run lint:fix
 ```
+
+JS tooling uses **bun** (single binary, no node/npm needed). Bun runs vitest and eslint
+unchanged — the test runner is still vitest, bun just replaces npm as the package manager
+and script runner.
 
 **JS Test Coverage:**
 - **errorHandler.test.js** (26 tests): Error formatting, hints, categorization
@@ -185,10 +189,10 @@ npm run lint:fix
 **Full Test Suite:**
 ```bash
 # Run fast tests only (JS unit + Python non-browser, ~3s total)
-npm test && pytest
+bun run test && pytest
 
 # Run EVERYTHING including browser tests (~35s total)
-npm test && pytest -m ""
+bun run test && pytest -m ""
 ```
 
 **Build Tests (`test_build.py`)** - Fast, no browser:
@@ -226,7 +230,7 @@ npm test && pytest -m ""
 - **canvasApi.test.js** (7 tests): API presence checks (Canvas, Color classes)
 - **domElements.test.js** (10 tests): Template structure (buttons, editor, Alpine.js)
 - **Total: 53 unit tests** verifying core JS/template logic
-- Run with `npm test` (fast, ~500ms)
+- Run with `bun run test` (fast, ~500ms)
 
 ### CRITICAL: Alpine.js Initialization Pattern
 
