@@ -26,7 +26,7 @@ car1_y = ???
 car1_color = Color.???
 
 # Draw it
-cars.rounded_car(can, car1_x, car1_y, color=car1_color)
+cars.rounded_car(car1_x, car1_y, color=car1_color)
 ```
 
 ### Tips

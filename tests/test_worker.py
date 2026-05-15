@@ -5,6 +5,8 @@ import time
 import pytest
 from playwright.sync_api import sync_playwright
 
+pytestmark = pytest.mark.browser
+
 
 def test_worker_initializes_without_errors(http_server):
     """Test that the Pyodide worker initializes without import errors.

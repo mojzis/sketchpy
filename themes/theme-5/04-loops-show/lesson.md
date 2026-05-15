@@ -12,17 +12,17 @@ Learn how loops let you repeat code without copying and pasting.
 ### The Magic of Loops
 Instead of writing:
 ```python
-cars.simple_car(can, 50, 400, color=Color.BLUE)
-cars.simple_car(can, 200, 400, color=Color.BLUE)
-cars.simple_car(can, 350, 400, color=Color.BLUE)
-cars.simple_car(can, 500, 400, color=Color.BLUE)
+cars.simple_car(50, 400, color=Color.BLUE)
+cars.simple_car(200, 400, color=Color.BLUE)
+cars.simple_car(350, 400, color=Color.BLUE)
+cars.simple_car(500, 400, color=Color.BLUE)
 ```
 
 We write:
 ```python
 for i in range(4):
     x = 50 + i * 150
-    cars.simple_car(can, x, 400, color=Color.BLUE)
+    cars.simple_car(x, 400, color=Color.BLUE)
 ```
 
 The loop does it 4 times automatically!

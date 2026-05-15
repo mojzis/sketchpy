@@ -19,7 +19,7 @@ def draw_street_scene(x, y, color):
     can.rect(x, y, 200, 100, fill="#555555")
 
     # Draw car
-    cars.rounded_car(can, x + 50, y + 30, color=color)
+    cars.rounded_car(x + 50, y + 30, color=color)
 
 # Call it
 draw_street_scene(100, 200, Color.BLUE)

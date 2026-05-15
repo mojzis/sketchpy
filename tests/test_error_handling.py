@@ -9,6 +9,8 @@ import pytest
 import re
 from playwright.sync_api import sync_playwright, Page, expect
 
+pytestmark = pytest.mark.browser
+
 
 @pytest.fixture(scope="function")
 def lesson_page(http_server):

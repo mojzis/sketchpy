@@ -13,16 +13,16 @@ Learn how `if/else` statements let your code make choices.
 Instead of everything being the same:
 ```python
 for i in range(6):
-    cars.rounded_car(can, x, y, color=Color.BLUE)  # Always blue
+    cars.rounded_car(x, y, color=Color.BLUE)  # Always blue
 ```
 
 Make choices:
 ```python
 for i in range(6):
     if i % 2 == 0:  # If i is even
-        cars.rounded_car(can, x, y, color=Color.BLUE)
+        cars.rounded_car(x, y, color=Color.BLUE)
     else:  # If i is odd
-        cars.sports_car(can, x, y, color=Color.RED)
+        cars.sports_car(x, y, color=Color.RED)
 ```
 
 ### Common Conditions

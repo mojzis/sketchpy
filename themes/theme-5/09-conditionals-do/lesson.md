@@ -30,11 +30,11 @@ else:
 
 # Car type based on condition
 if i % 3 == 0:
-    cars.bus(can, x, y, color=color)
+    cars.bus(x, y, color=color)
 elif i % 3 == 1:
-    cars.sports_car(can, x, y, color=color)
+    cars.sports_car(x, y, color=color)
 else:
-    cars.rounded_car(can, x, y, color=color)
+    cars.rounded_car(x, y, color=color)
 ```
 
 ### Ideas

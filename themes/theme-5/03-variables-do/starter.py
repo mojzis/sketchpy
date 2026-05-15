@@ -1,17 +1,26 @@
 from sketchpy import Canvas, Color
 from sketchpy.helpers.cars import CarShapes
 
-can = Canvas(800, 600)
-cars = CarShapes()
 
-# Draw your road here
-cars.road(can, y=450, lane_width=80)
+def main():
+    can = Canvas(800, 600)
+    cars = CarShapes(can)
 
-# Create your variables and draw vehicles here
-# Example:
-# my_car_x = 100
-# my_car_y = 400
-# my_car_color = Color.BLUE
-# cars.rounded_car(can, my_car_x, my_car_y, color=my_car_color)
+    # Draw your road here
+    cars.road(y=450, lane_width=80)
 
-can
+    # Create your variables and draw vehicles here
+    # Example:
+    # my_car_x = 100
+    # my_car_y = 400
+    # my_car_color = Color.BLUE
+    # cars.rounded_car(my_car_x, my_car_y, color=my_car_color)
+
+    return can
+
+
+if __name__ == '__main__':
+    from pathlib import Path
+    Path('debug_out').mkdir(exist_ok=True)
+    canvas = main()
+    canvas.save('debug_out/output-03.svg')

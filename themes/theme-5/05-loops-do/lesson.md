@@ -17,7 +17,7 @@ Use a `for` loop to draw multiple vehicles in a pattern.
 ```python
 for i in range(???):  # How many vehicles?
     x = ??? + i * ???  # Starting position + spacing
-    cars.rounded_car(can, x, y, ...)
+    cars.rounded_car(x, y, ...)
 ```
 
 ### Tips

@@ -15,8 +15,8 @@ A function is like a recipe. You write it once, then use it many times:
 ```python
 def draw_traffic_light_scene(x, y):
     """Draw a traffic light with a waiting car"""
-    cars.traffic_light(can, x, y, active="red")
-    cars.simple_car(can, x + 100, y + 140, width=100)
+    cars.traffic_light(x, y, active="red")
+    cars.simple_car(x + 100, y + 140, width=100)
 ```
 
 Now you can call it:

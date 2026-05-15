@@ -3,6 +3,8 @@
 import pytest
 from playwright.sync_api import sync_playwright, expect
 
+pytestmark = pytest.mark.browser
+
 
 def test_codemirror_initialized(http_server):
     """Test that CodeMirror 6 editor is initialized."""

@@ -11,8 +11,8 @@ Learn how variables make your code flexible and easy to change.
 ### How Variables Work
 Instead of typing numbers everywhere:
 ```python
-cars.rounded_car(can, 100, 300, 140, 50, Color.BLUE)
-cars.rounded_car(can, 300, 300, 140, 50, Color.BLUE)
+cars.rounded_car(100, 300, 140, 50, Color.BLUE)
+cars.rounded_car(300, 300, 140, 50, Color.BLUE)
 ```
 
 Use variables:
