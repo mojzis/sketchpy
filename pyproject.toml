@@ -33,7 +33,7 @@ dev = [
     "watchdog>=6.0.0",
     "ruff>=0.14.2",
     "ty>=0.0.1a24",
-    "pymarkdownlnt>=0.9.33",
+    "pymarkdownlnt>=0.9.39",
 ]
 
 [tool.pytest.ini_options]
