@@ -96,11 +96,6 @@ class LoggingHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
         logger.info(f"{self.address_string()} - {format % args}")
 
 
-def write_pid():
-    """Write process ID to file."""
-    with open(PID_FILE, 'w') as f:
-        f.write(str(os.getpid()))
-
 def kill_existing_server():
     """Kill existing server if running."""
     if not PID_FILE.exists():
@@ -141,12 +136,6 @@ def kill_existing_server():
         PID_FILE.unlink()
 
 
-def remove_pid():
-    """Remove PID file on shutdown."""
-    if PID_FILE.exists():
-        PID_FILE.unlink()
-
-
 def run_build():
     """Run the build script to generate output/index.html."""
     try:
@@ -160,9 +149,9 @@ def run_build():
 class RebuildEventHandler(FileSystemEventHandler):
     """File watcher that triggers rebuilds on changes."""
 
-    def __init__(self, debounce_seconds=0.5):
+    def __init__(self):
         super().__init__()
-        self.debounce_seconds = debounce_seconds
+        self.debounce_seconds = 0.5
         self.last_rebuild_time = 0
 
     def should_trigger_rebuild(self, event):
@@ -218,7 +207,7 @@ class RebuildEventHandler(FileSystemEventHandler):
 
 def start_file_watcher(project_root):
     """Start watching for file changes in sketchpy/ and templates/."""
-    event_handler = RebuildEventHandler(debounce_seconds=0.5)
+    event_handler = RebuildEventHandler()
     observer = Observer()
 
     watch_dirs = []
@@ -337,7 +326,7 @@ def main():
     logger.info(f"🚀 Server: https://localhost:{PORT}/sketchpy/ (also at https://{local_ip}:{PORT}/sketchpy/)")
 
     # Write PID file
-    write_pid()
+    PID_FILE.write_text(str(os.getpid()))
 
     try:
         httpd = http.server.HTTPServer(('0.0.0.0', PORT), LoggingHTTPRequestHandler)
@@ -356,7 +345,7 @@ def main():
     finally:
         observer.stop()
         observer.join()
-        remove_pid()
+        PID_FILE.unlink(missing_ok=True)
 
 
 if __name__ == '__main__':
