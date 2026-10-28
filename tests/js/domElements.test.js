@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { JSDOM } from 'jsdom';
-import { readFileSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import { resolve } from 'path';
 
 describe('DOM Elements in lesson template', () => {
@@ -11,7 +11,12 @@ describe('DOM Elements in lesson template', () => {
   beforeEach(() => {
     // Read the lesson template
     const templatePath = resolve(process.cwd(), 'templates', 'lesson.html.jinja');
-    lessonHTML = readFileSync(templatePath, 'utf-8');
+    // Include components, since the template pulls them in via Jinja includes
+    const componentsDir = resolve(process.cwd(), 'templates', 'components');
+    lessonHTML = [
+      readFileSync(templatePath, 'utf-8'),
+      ...readdirSync(componentsDir).map((f) => readFileSync(resolve(componentsDir, f), 'utf-8')),
+    ].join('\n');
 
     // Create a DOM from the template (simplified - Jinja2 variables removed)
     const simplifiedHTML = lessonHTML

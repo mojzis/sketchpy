@@ -3,11 +3,11 @@ name = "sketchpy"
 version = "0.1.0"
 description = "Educational Python graphics library for teaching programming through visual art"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.14"
 dependencies = []
 
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=84.0.0"]
 build-backend = "setuptools.build_meta"
 
 [project.scripts]
@@ -23,17 +23,17 @@ packages = ["sketchpy", "scripts"]
 
 [dependency-groups]
 dev = [
-    "playwright>=1.55.0",
-    "pytest>=8.4.2",
-    "poethepoet>=0.37.0",
+    "playwright>=1.64.1",
+    "pytest>=9.2.0",
+    "poethepoet>=0.49.0",
     "jinja2>=3.1.6",
-    "marimo",
-    "markdown>=3.9",
+    "marimo>=0.25.2",
+    "markdown>=3.11.2",
     "pyyaml>=6.0.3",
     "watchdog>=6.0.0",
-    "ruff>=0.14.2",
-    "ty>=0.0.1a24",
-    "pymarkdownlnt>=0.9.33",
+    "ruff>=0.17.3",
+    "ty>=0.0.94",
+    "pymarkdownlnt>=0.9.41",
 ]
 
 [tool.pytest.ini_options]

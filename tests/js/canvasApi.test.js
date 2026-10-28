@@ -3,6 +3,12 @@ import { JSDOM } from 'jsdom';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
+// Library source is split across modules; read them combined
+const readLibrary = () =>
+  ['canvas.py', 'palettes.py']
+    .map((f) => readFileSync(resolve(process.cwd(), 'sketchpy', f), 'utf-8'))
+    .join('\n');
+
 describe('Canvas API availability in generated code', () => {
   let generatedCode;
 
@@ -17,8 +23,7 @@ describe('Canvas API availability in generated code', () => {
 
   describe('Canvas class', () => {
     it('should be present in generated Python code', () => {
-      const shapesPath = resolve(process.cwd(), 'sketchpy', 'shapes.py');
-      const shapesCode = readFileSync(shapesPath, 'utf-8');
+      const shapesCode = readLibrary();
 
       expect(shapesCode).toContain('class Canvas');
       expect(shapesCode).toContain('def rect(');
@@ -27,23 +32,20 @@ describe('Canvas API availability in generated code', () => {
     });
 
     it('should have method chaining support', () => {
-      const shapesPath = resolve(process.cwd(), 'sketchpy', 'shapes.py');
-      const shapesCode = readFileSync(shapesPath, 'utf-8');
+      const shapesCode = readLibrary();
 
       // Method chaining means methods return self
       expect(shapesCode).toContain('return self');
     });
 
     it('should have grid method', () => {
-      const shapesPath = resolve(process.cwd(), 'sketchpy', 'shapes.py');
-      const shapesCode = readFileSync(shapesPath, 'utf-8');
+      const shapesCode = readLibrary();
 
       expect(shapesCode).toContain('def grid(');
     });
 
     it('should have show_palette method', () => {
-      const shapesPath = resolve(process.cwd(), 'sketchpy', 'shapes.py');
-      const shapesCode = readFileSync(shapesPath, 'utf-8');
+      const shapesCode = readLibrary();
 
       expect(shapesCode).toContain('def show_palette(');
     });
@@ -51,15 +53,13 @@ describe('Canvas API availability in generated code', () => {
 
   describe('Color class', () => {
     it('should be present in generated Python code', () => {
-      const shapesPath = resolve(process.cwd(), 'sketchpy', 'shapes.py');
-      const shapesCode = readFileSync(shapesPath, 'utf-8');
+      const shapesCode = readLibrary();
 
       expect(shapesCode).toContain('class Color');
     });
 
     it('should have basic color constants', () => {
-      const shapesPath = resolve(process.cwd(), 'sketchpy', 'shapes.py');
-      const shapesCode = readFileSync(shapesPath, 'utf-8');
+      const shapesCode = readLibrary();
 
       expect(shapesCode).toContain('RED =');
       expect(shapesCode).toContain('BLUE =');
@@ -67,8 +67,7 @@ describe('Canvas API availability in generated code', () => {
     });
 
     it('should have hex color values', () => {
-      const shapesPath = resolve(process.cwd(), 'sketchpy', 'shapes.py');
-      const shapesCode = readFileSync(shapesPath, 'utf-8');
+      const shapesCode = readLibrary();
 
       // Check for hex color format
       expect(shapesCode).toMatch(/#[0-9A-F]{6}/i);
@@ -77,16 +76,14 @@ describe('Canvas API availability in generated code', () => {
 
   describe('Palette classes', () => {
     it('should have CreativeGardenPalette', () => {
-      const shapesPath = resolve(process.cwd(), 'sketchpy', 'shapes.py');
-      const shapesCode = readFileSync(shapesPath, 'utf-8');
+      const shapesCode = readLibrary();
 
       expect(shapesCode).toContain('class CreativeGardenPalette');
       expect(shapesCode).toContain('PEACH_WHISPER');
     });
 
     it('should have CalmOasisPalette', () => {
-      const shapesPath = resolve(process.cwd(), 'sketchpy', 'shapes.py');
-      const shapesCode = readFileSync(shapesPath, 'utf-8');
+      const shapesCode = readLibrary();
 
       expect(shapesCode).toContain('class CalmOasisPalette');
       expect(shapesCode).toContain('SKY_BLUE');
@@ -97,16 +94,14 @@ describe('Canvas API availability in generated code', () => {
     it('should not include save() method in browser build', () => {
       // This would need to check the actual build output
       // For now, just verify the source has it (build strips it)
-      const shapesPath = resolve(process.cwd(), 'sketchpy', 'shapes.py');
-      const shapesCode = readFileSync(shapesPath, 'utf-8');
+      const shapesCode = readLibrary();
 
       expect(shapesCode).toContain('def save(');
       // The build.py script should strip this for browser
     });
 
     it('should keep _repr_html_ for marimo support', () => {
-      const shapesPath = resolve(process.cwd(), 'sketchpy', 'shapes.py');
-      const shapesCode = readFileSync(shapesPath, 'utf-8');
+      const shapesCode = readLibrary();
 
       expect(shapesCode).toContain('def _repr_html_');
     });

@@ -29,7 +29,7 @@ export class CodeExecutor {
             ? '../static/js/pyodide-worker.js'
             : 'static/js/pyodide-worker.js';
 
-        this.worker = new Worker(workerPath);
+        this.worker = new Worker(workerPath, { type: 'module' });
         this.isWorkerReady = false;
 
         // Handle worker messages

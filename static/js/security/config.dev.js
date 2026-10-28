@@ -47,6 +47,6 @@ export const SecurityConfig = {
 
     // Worker Config
     WORKER_PATH: '/static/js/pyodide-worker.js',  // Will be adjusted at runtime
-    PYODIDE_VERSION: '0.25.0',
-    PYODIDE_CDN: 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/',
+    PYODIDE_VERSION: '314.0.7',
+    PYODIDE_CDN: 'https://cdn.jsdelivr.net/pyodide/v314.0.7/full/',
 };

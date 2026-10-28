@@ -1,5 +1,5 @@
-// Import Pyodide from CDN
-importScripts('https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js');
+// Import Pyodide from CDN (Pyodide 314+ requires a module worker)
+import { loadPyodide } from 'https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.mjs';
 
 // Import error handler (can't use ES6 import in worker, so we'll load it differently)
 // For now, we'll implement the error handler inline in the worker
@@ -18,7 +18,7 @@ async function initPyodide() {
     console.log('Initializing Pyodide in worker...');
 
     pyodide = await loadPyodide({
-        indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/'
+        indexURL: 'https://cdn.jsdelivr.net/pyodide/v314.0.7/full/'
     });
 
     console.log('Pyodide loaded, applying initial security...');

@@ -58,7 +58,7 @@ function appState() {
                 ? `${basePath}/static/js/pyodide-worker.dev.js`  // From lessons/ subdirectory
                 : `${basePath}/static/js/pyodide-worker.dev.js`; // From root
 
-            this.pyodideWorker = new Worker(workerPath);
+            this.pyodideWorker = new Worker(workerPath, { type: 'module' });
 
             this.pyodideWorker.onmessage = (event) => {
                 this.handleWorkerMessage(event);
